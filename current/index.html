@@ -944,7 +944,7 @@ OGC 08-068r2,<br>
 <div class="sect3">
 <h4 id="_overview_and_purpose">3.1.1. Overview and Purpose</h4>
 <div class="paragraph">
-<p>The main functionality of the PEP is to be able to stand between a client and the client&#8217;s desired resource. By creating this setup, where only the PEP is visible to an external request, we effectively secure whatver is behind the PEP. The PEP will enforce any policy for a resource configured in the Authorization Server, following the UMA 2.0 standard.</p>
+<p>The main functionality of the PEP is to be able to stand between a client and the client&#8217;s desired resource. By creating this setup, where only the PEP is visible to an external request, we effectively secure whatever is behind the PEP. The PEP will enforce any policy for a resource configured in the Authorization Server, following the UMA 2.0 standard.</p>
 </div>
 <div class="paragraph">
 <p>The PEP, when started, follows these steps:</p>
@@ -955,7 +955,7 @@ OGC 08-068r2,<br>
 <p>Load the configuration from the config file</p>
 </li>
 <li>
-<p>Parse the configuration from the Auth Server, using WellKnownHandler</p>
+<p>Parse the configuration from the Auth Server (for example, the correct endpoints), using WellKnownHandler</p>
 </li>
 <li>
 <p>If no client is configured at the config file, it will register itself, using the SCIM Client</p>
@@ -1242,7 +1242,7 @@ The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-re
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-06-01 10:07:30 UTC
+Last updated 2020-06-01 10:30:22 UTC
 </div>
 </div>
 </body>
