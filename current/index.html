@@ -41,14 +41,23 @@
 <ul class="sectlevel3">
 <li><a href="#_overview_and_purpose">3.1.1. Overview and Purpose</a></li>
 <li><a href="#_software_reuse_and_dependencies">3.1.2. Software Reuse and Dependencies</a></li>
-<li><a href="#_interfaces">3.1.3. Interfaces</a></li>
+<li><a href="#_interfaces">3.1.3. Interfaces</a>
+<ul class="sectlevel4">
+<li><a href="#_https_reverse_proxy_listener">3.1.3.1. HTTP(S) (Reverse Proxy Listener)</a></li>
+<li><a href="#_https_to_resource_server">3.1.3.2. HTTP(S) (to Resource Server)</a></li>
+<li><a href="#_uma_to_login_service">3.1.3.3. UMA (to Login Service)</a></li>
+<li><a href="#_oidc_to_login_service">3.1.3.4. OIDC (to Login Service)</a></li>
+<li><a href="#_scim_to_login_service">3.1.3.5. SCIM (to Login Service)</a></li>
+</ul>
+</li>
 <li><a href="#_data">3.1.4. Data</a>
 <ul class="sectlevel4">
 <li><a href="#_configuration">3.1.4.1. Configuration</a></li>
 <li><a href="#_data_flow">3.1.4.2. Data flow</a></li>
 </ul>
 </li>
-<li><a href="#_applicable_resources">3.1.5. Applicable Resources</a></li>
+<li><a href="#_extensibility">3.1.5. Extensibility</a></li>
+<li><a href="#_applicable_resources">3.1.6. Applicable Resources</a></li>
 </ul>
 </li>
 <li><a href="#_cli">3.2. CLI</a>
@@ -972,7 +981,7 @@ OGC 08-068r2,<br>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle.</p>
+<p>The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle. In the future the resources will be stored in a DB instead of just RAM.</p>
 </li>
 </ol>
 </div>
@@ -1065,6 +1074,9 @@ In case the request is accompained by a header using a valid RPT in the format <
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p>To further clarify the flow the PEP uses, you can also take a look at the Data Flow in this document.</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_software_reuse_and_dependencies">3.1.2. Software Reuse and Dependencies</h4>
@@ -1093,12 +1105,84 @@ In case the request is accompained by a header using a valid RPT in the format <
 </div>
 <div class="sect3">
 <h4 id="_interfaces">3.1.3. Interfaces</h4>
+<div class="sect4">
+<h5 id="_https_reverse_proxy_listener">3.1.3.1. HTTP(S) (Reverse Proxy Listener)</h5>
 <div class="paragraph">
-<p>The PEP proxy&#8217;s only interface is an HTTP listener, which can be configured through the config file.<br>
-The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-resource&gt;</code>.</p>
+<p>An HTTP listener, which can be configured through the config file.<br>
+This is the only input interface to interact directly with the PEP from outside, and is managed by the reverse proxy.</p>
+</div>
+<div class="paragraph">
+<p>The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-resource&gt;</code>.</p>
 </div>
 <div class="paragraph">
 <p>This interface will parse the path and the headers in order to assert authentication and authorization of the client requesting the resource.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_https_to_resource_server">3.1.3.2. HTTP(S) (to Resource Server)</h5>
+<div class="paragraph">
+<p>The PEP will contact via HTTP with the configured Resource Server whenever a valid request with a valid RPT is done, or whenever RPT is not needed to access the resource.</p>
+</div>
+<div class="paragraph">
+<p>The PEP will make a request to the RS, and will return the answer verbatim to the client that requested it, effectively acting like a transparent proxy from the client&#8217;s point of view. This allows the mentioned desired behaviour of being able to protect anything just placing the PEP "in front of" the resource to protect.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_uma_to_login_service">3.1.3.3. UMA (to Login Service)</h5>
+<div class="paragraph">
+<p>The PEP will make the requests needed to handle the resources, along with the necessary requests to create tickets and check the validity of RPTs.</p>
+</div>
+<div class="paragraph">
+<p>The endpoints used for UMA are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>RESOURCE_REGISTRATION</p>
+</li>
+<li>
+<p>PERMISSION</p>
+</li>
+<li>
+<p>INTROSPECTION</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_oidc_to_login_service">3.1.3.4. OIDC (to Login Service)</h5>
+<div class="paragraph">
+<p>The PEP uses the OIDC protocol in order to authenticate itself as a valid UMA client, and uses this OIDC client in all UMA-related queries.</p>
+</div>
+<div class="paragraph">
+<p>These queries are done against the Login Service, and the endpoints used are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>TOKEN_ENDPOINT</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_scim_to_login_service">3.1.3.5. SCIM (to Login Service)</h5>
+<div class="paragraph">
+<p>The PEP has the capability to auto-register itself as a client if there is no client pre-configured from previous starts or previous configuration.</p>
+</div>
+<div class="paragraph">
+<p>In order to do this, it utilizes the SCIM protocol, and queries the Login Service.</p>
+</div>
+<div class="paragraph">
+<p>The endpoints used for SCIM are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>AUTH_CLIENT_POST</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -1158,12 +1242,39 @@ The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-re
 <p>The only information the PEP handles are tickets given by the Auth Server, and RPTs which are sent only to the Auth Server.</p>
 </div>
 <div class="paragraph">
-<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into memory</p>
+<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into memory, but in the future they will be stored on a separate database to allow large amounts of resources and more complex queries.</p>
+</div>
+<div class="paragraph">
+<p>What follows is an example of the nominal flow for the PEP, and "ADES" is the Resource Server the PEP is protecting:</p>
+</div>
+<div class="imageblock text-right">
+<div class="content">
+<img src="./images/PEPflow.png" alt="PEPflow">
+</div>
 </div>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_applicable_resources">3.1.5. Applicable Resources</h4>
+<h4 id="_extensibility">3.1.5. Extensibility</h4>
+<div class="paragraph">
+<p>The design of the PEP allows for further improvements if need be. For example:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The resource management in memory could be expanded to a full on DB, by changing how <code>custom_uma.py</code> works internally.</p>
+</li>
+<li>
+<p>The UMA library used allows for quick implementations for resource managing, such as creation, deleting and editing.</p>
+</li>
+<li>
+<p>The proxy can be expanded to parse further parameters on top of the HTTP protocol, allowing for any kind of plugin or complex mechanism desired.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applicable_resources">3.1.6. Applicable Resources</h4>
 <div class="ulist">
 <ul>
 <li>
@@ -1242,7 +1353,7 @@ The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-re
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-06-01 13:22:01 UTC
+Last updated 2020-06-01 15:12:20 UTC
 </div>
 </div>
 </body>
