@@ -5,16 +5,16 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.10">
-<meta name="description" content="&lt;Template Service&gt; Design Document for the Common Architecture">
+<meta name="description" content="PEP Engine Design Document for the Common Architecture">
 <meta name="keywords" content="common architecture design">
 <meta name="author" content="TVUK System Team">
-<title>&lt;Template Service&gt; Design Document: EOEPCA.SDD.xxx</title>
+<title>PEP Engine Design Document: EOEPCA.SDD.xxx</title>
 <link rel="stylesheet" href="stylesheets/eoepca.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body class="book toc2 toc-left">
 <div id="header">
-<h1>&lt;Template Service&gt; Design Document: EOEPCA.SDD.xxx</h1>
+<h1>PEP Engine Design Document: EOEPCA.SDD.xxx</h1>
 <div class="details">
 <span id="author" class="author">TVUK System Team</span><br>
 <span id="email" class="email">&lt;<a href="mailto:Eoepca.SystemTeam@telespazio.com">Eoepca.SystemTeam@telespazio.com</a>&gt;</span><br>
@@ -23,7 +23,7 @@
 <br><span id="revremark"></span>
 </div>
 <div id="toc" class="toc2">
-<div id="toctitle">&lt;Template Service&gt; Design Document</div>
+<div id="toctitle">PEP Engine Design Document</div>
 <ul class="sectlevel1">
 <li><a href="#_introduction">1. Introduction</a>
 <ul class="sectlevel2">
@@ -35,7 +35,31 @@
 </ul>
 </li>
 <li><a href="#mainOverview">2. Overview</a></li>
-<li><a href="#mainDesign">3. Design</a></li>
+<li><a href="#mainComponents">3. Building Block Design</a>
+<ul class="sectlevel2">
+<li><a href="#_reverse_proxy_service">3.1. Reverse Proxy Service</a>
+<ul class="sectlevel3">
+<li><a href="#_overview_and_purpose">3.1.1. Overview and Purpose</a></li>
+<li><a href="#_software_reuse_and_dependencies">3.1.2. Software Reuse and Dependencies</a></li>
+<li><a href="#_interfaces">3.1.3. Interfaces</a></li>
+<li><a href="#_data">3.1.4. Data</a>
+<ul class="sectlevel4">
+<li><a href="#_configuration">3.1.4.1. Configuration</a></li>
+<li><a href="#_data_flow">3.1.4.2. Data flow</a></li>
+</ul>
+</li>
+<li><a href="#_applicable_resources">3.1.5. Applicable Resources</a></li>
+</ul>
+</li>
+<li><a href="#_cli">3.2. CLI</a>
+<ul class="sectlevel3">
+<li><a href="#_overview_and_purpose_2">3.2.1. Overview and Purpose</a></li>
+<li><a href="#_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</a></li>
+<li><a href="#_applicable_resources_2">3.2.3. Applicable Resources</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -44,7 +68,7 @@
 <div class="sectionbody">
 <div class="paragraph">
 <p>EO Exploitation Platform Common Architecture<br>
-<em>&lt;Template Service&gt; Design Document</em><br>
+<em>PEP Engine Design Document</em><br>
 EOEPCA.SDD.xxx</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -112,7 +136,7 @@ The Amendment Record Sheet below records the history and issue status of this do
 <div class="sect2">
 <h3 id="_purpose_and_scope">1.1. Purpose and Scope</h3>
 <div class="paragraph">
-<p>This document presents the &lt;Template Service&gt; Design for the Common Architecture.</p>
+<p>This document presents the PEP Engine Design for the Common Architecture.</p>
 </div>
 </div>
 <div class="sect2">
@@ -121,11 +145,11 @@ The Amendment Record Sheet below records the history and issue status of this do
 <dl>
 <dt class="hdlist1">Section 2 - <a href="#mainOverview">Overview</a></dt>
 <dd>
-<p>Provides an over of the &lt;Template Service&gt; component, within the context of the wider Common Architecture design.</p>
+<p>Provides an over of the PEP Engine component, within the context of the wider Common Architecture design.</p>
 </dd>
-<dt class="hdlist1">Section 3 - <a href="#mainDesign">Design</a></dt>
+<dt class="hdlist1">Section 3 - <a href="#mainDesign">[mainDesign]</a></dt>
 <dd>
-<p>Provides the design of the &lt;Template Service&gt; component.</p>
+<p>Provides the design of the PEP Engine component.</p>
 </dd>
 </dl>
 </div>
@@ -869,10 +893,342 @@ OGC 08-068r2,<br>
 </div>
 </div>
 <div class="sect1">
-<h2 id="mainDesign">3. Design</h2>
+<h2 id="mainComponents">3. Building Block Design</h2>
 <div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Content Description</div>
 <div class="paragraph">
-<p>TBD</p>
+<p>This section contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>A concise breakdown of the Building Block in several independent services (when applicable). For each component, the following subsections are added:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Overview and purpose: indicating the functionality covered by the component</p>
+</li>
+<li>
+<p>SW Reuse and Dependencies: indicating reuse of third party open source solutions (if any) and any pre-required Dependencies</p>
+</li>
+<li>
+<p>Interfaces: both internal to the building block and those exposed externally</p>
+</li>
+<li>
+<p>Data: Data usage of the building block, data flow and any GDPR concerns should be addressed here</p>
+</li>
+<li>
+<p>Applicable Resources: links and references to (Reference Docs), and repositories.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>When a breakdown is necessary, a general overview of the building block can be given. On the contrary, no breakdown indicates a single component development with the same expected sections.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_reverse_proxy_service">3.1. Reverse Proxy Service</h3>
+<div class="sect3">
+<h4 id="_overview_and_purpose">3.1.1. Overview and Purpose</h4>
+<div class="paragraph">
+<p>The main functionality of the PEP is to be able to stand between a client and the client&#8217;s desired resource. By creating this setup, where only the PEP is visible to an external request, we effectively secure whatver is behind the PEP. The PEP will enforce any policy for a resource configured in the Authorization Server, following the UMA 2.0 standard.</p>
+</div>
+<div class="paragraph">
+<p>The PEP, when started, follows these steps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Load the configuration from the config file</p>
+</li>
+<li>
+<p>Parse the configuration from the Auth Server, using WellKnownHandler</p>
+</li>
+<li>
+<p>If no client is configured at the config file, it will register itself, using the SCIM Client</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>If the PEP had to register itself, then it will save the client&#8217;s information on the config file, saving it in case a restart is needed.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>Create OIDC and UMA clients</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p>The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>If it doesn&#8217;t exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not neeeded.</p>
+</li>
+<li>
+<p>Start reverse proxy using Flask and await requests</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>When launched, the PEP will answer to all requests that start with the configured path. These answers will come in the form of UMA tickets (if there are no RPT provided, or an invalid one is used).<br>
+In case the request is accompained by a header using a valid RPT in the format <code>Authorization: Bearer &lt;valid_RPT&gt;</code>, the PEP will make a request to the resource server, for the resource located exactly at the path requested (minus the configured at config), and return the resource&#8217;s server answer.</p>
+</div>
+<div class="paragraph">
+<p>Examples follow, assuming the following conditions:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>path configured for the reverse proxy is "/pep"</p>
+</li>
+<li>
+<p>the PEP is at pep.domain.com/pep</p>
+</li>
+<li>
+<p>Resource server is at remote.server.com</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Token</th>
+<th class="tableblock halign-left valign-top">Request to PEP</th>
+<th class="tableblock halign-left valign-top">PEP Action</th>
+<th class="tableblock halign-left valign-top">PEP answer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No RPT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None (request does not get to PEP endpoint)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">None (the PEP doesn&#8217;t see this request)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No RPT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/thing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Generate ticket for "/thing"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401 + ticket</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Valid RPT for "/thing"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/thing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Request to remote.server.com/thing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contents of remote.server.com/thing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Valid RPT for "/thing"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/different</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Generate ticket for "/different"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401 + ticket</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">INVALID RPT for "/thing"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/thing</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Generate ticket for "/thing"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401 + ticket</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No RPT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/thing/with/large/path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Generate ticket for "/thing/with/large/path"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401 + ticket</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Valid RPT for "/thing/with/large/path"</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">pep.domain.com/pep/thing/with/large/path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Request to remote.server.com/thing/with/large/path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contents of remote.server.com/thing/with/large/path</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_software_reuse_and_dependencies">3.1.2. Software Reuse and Dependencies</h4>
+<div class="paragraph">
+<p>All requirements for the executing of the reverse proxy are found under src/requirements.txt, and expect Python 3.6.9 or greater to work.</p>
+</div>
+<div class="paragraph">
+<p>The most important are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>EOEPCA-SCIM</strong>: Used to auto-register itself as a client to the Auth. Server upon startup</p>
+</li>
+<li>
+<p><strong>EOEPCA-UMA</strong>: Used as the backbone of the PEP, allows for generation of tickets, verification of RPTs, and any other UMA-related action.</p>
+</li>
+<li>
+<p><strong>WellKnownHandler</strong>: Used to dynamically check the configuration of the Authorization Server on each execution. For example, it can get the needed endpoints for any API the PEP needs, such as the token request for OIDC.</p>
+</li>
+<li>
+<p><strong>Flask</strong>: External to EOEPCA&#8217;s project, this library allows the PEP to create the actual reverse proxy, sending and recieving custom requests.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_interfaces">3.1.3. Interfaces</h4>
+<div class="paragraph">
+<p>The PEP proxy&#8217;s only interface is an HTTP listener, which can be configured through the config file.<br>
+The default listener for this interface is <code>0.0.0.0:5566/pep/&lt;path-to-resource&gt;</code>.</p>
+</div>
+<div class="paragraph">
+<p>This interface will parse the path and the headers in order to assert authentication and authorization of the client requesting the resource.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data">3.1.4. Data</h4>
+<div class="sect4">
+<h5 id="_configuration">3.1.4.1. Configuration</h5>
+<div class="paragraph">
+<p>The PEP gets all its configuration from the file located under <code>config/config.json</code>.</p>
+</div>
+<div class="paragraph">
+<p>The parameters that are accepted, and their meaning, are as follows:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>realm</strong>: 'realm' parameter answered for each UMA ticket. Default is "eoepca"</p>
+</li>
+<li>
+<p><strong>auth_server_url</strong>: complete url (with "https") of the Authorization server.</p>
+</li>
+<li>
+<p><strong>proxy_endpoint</strong>: "/path"-formatted string to indicate where the reverse proxy should listen. The proxy will catch any request that starts with that path. Default is "/pep"</p>
+</li>
+<li>
+<p><strong>service_host</strong>: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces</p>
+</li>
+<li>
+<p><strong>service_port</strong>: Port for the proxy to listen on. By default, <strong>5566</strong>. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.</p>
+</li>
+<li>
+<p><strong>s_margin_rpt_valid</strong>: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using <strong>5</strong> will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.</p>
+</li>
+<li>
+<p><strong>check_ssl_certs</strong>: Toggle on/off (bool) to check certificates in all requests. This should be forced to True in a production environment</p>
+</li>
+<li>
+<p><strong>use_threads</strong>: Toggle on/off (bool) the usage of threads for the proxy. Recommended to be left as True.</p>
+</li>
+<li>
+<p><strong>debug_mode</strong>: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.</p>
+</li>
+<li>
+<p><strong>resource_server_endpoint</strong>: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.</p>
+</li>
+<li>
+<p><strong>client_id</strong>: string indicating a client_id for an already registered and configured client. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
+</li>
+<li>
+<p><strong>client_secret</strong>: string indicating the client secret for the client_id. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_data_flow">3.1.4.2. Data flow</h5>
+<div class="paragraph">
+<p>The only information the PEP handles are tickets given by the Auth Server, and RPTs which are sent only to the Auth Server.</p>
+</div>
+<div class="paragraph">
+<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into memory</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applicable_resources">3.1.5. Applicable Resources</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>UMA 2.0 Specification - <a href="https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html" class="bare">https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s SCIM Client - <a href="https://github.com/EOEPCA/um-common-scim-client" class="bare">https://github.com/EOEPCA/um-common-scim-client</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s UMA Client - <a href="https://github.com/EOEPCA/um-common-uma-client" class="bare">https://github.com/EOEPCA/um-common-uma-client</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s Well Known Handler - <a href="https://github.com/EOEPCA/well-known-handler" class="bare">https://github.com/EOEPCA/well-known-handler</a></p>
+</li>
+<li>
+<p>Flask - <a href="https://github.com/pallets/flask" class="bare">https://github.com/pallets/flask</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_cli">3.2. CLI</h3>
+<div class="sect3">
+<h4 id="_overview_and_purpose_2">3.2.1. Overview and Purpose</h4>
+<div class="paragraph">
+<p>Included with the PEP there is a folder with scripts at <code>/CLI</code>. These scripts serve as a demo tool, and could be used in testing. For more information on what variables are expected, all scripts incorporate a '-h' help command.</p>
+</div>
+<div class="paragraph">
+<p>The files are the following:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>authenticate-user.sh</strong>: Takes credentials for a client and a user, and uses them to get an id_token from the Auth Server. This token can be used in other scripts or actions as long as it is valid.</p>
+</li>
+<li>
+<p><strong>get-rpt.sh</strong>: Will use a ticket and credentials in the form of an id_token to request an RPT to access a resource.</p>
+</li>
+<li>
+<p><strong>request-resource.sh</strong>: This script interacts with the PEP, and will make requests to it with the given parameters. It&#8217;s a clean way of composing a correct http request to the PEP.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</h4>
+<div class="paragraph">
+<p>The scripts need the library 'WellKnownHandler', to dynamically get the correct endpoints for the auth server, and thus they also need Python 3.6.9 or greater to execute it.</p>
+</div>
+<div class="paragraph">
+<p>Other than that, only Bash and Curl are required.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applicable_resources_2">3.2.3. Applicable Resources</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>UMA 2.0 Specification - <a href="https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html" class="bare">https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s Well Known Handler - <a href="https://github.com/EOEPCA/well-known-handler" class="bare">https://github.com/EOEPCA/well-known-handler</a></p>
+</li>
+</ul>
 </div>
 <hr>
 <div class="paragraph large">
@@ -881,10 +1237,12 @@ OGC 08-068r2,<br>
 </div>
 </div>
 </div>
+</div>
+</div>
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-05-29 12:28:59 UTC
+Last updated 2020-06-01 10:07:30 UTC
 </div>
 </div>
 </body>
