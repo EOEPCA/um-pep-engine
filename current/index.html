@@ -36,12 +36,7 @@
 </li>
 <li><a href="#mainOverview">2. Overview</a>
 <ul class="sectlevel2">
-<li><a href="#_building_block_overview">2.1. Building Block Overview</a>
-<ul class="sectlevel3">
-<li><a href="#_ticket_generation">2.1.1. Ticket generation</a></li>
-<li><a href="#_resource_protection_rpt_validation">2.1.2. Resource protection &amp; RPT validation</a></li>
-</ul>
-</li>
+<li><a href="#_building_block_overview">2.1. Building Block Overview</a></li>
 <li><a href="#_external_interfaces">2.2. External Interfaces</a>
 <ul class="sectlevel3">
 <li><a href="#_https_reverse_proxy_listener">2.2.1. HTTP(S) (Reverse Proxy Listener)</a></li>
@@ -51,9 +46,19 @@
 <li><a href="#_scim_to_login_service">2.2.5. SCIM (to Login Service)</a></li>
 </ul>
 </li>
-<li><a href="#_required_resources_todo">2.3. Required resources TODO</a></li>
-<li><a href="#_static_architecture_todo">2.4. Static Architecture TODO</a></li>
-<li><a href="#_use_cases_todo">2.5. Use cases TODO</a></li>
+<li><a href="#_required_resources">2.3. Required resources</a>
+<ul class="sectlevel3">
+<li><a href="#_software">2.3.1. Software</a></li>
+</ul>
+</li>
+<li><a href="#_static_architecture">2.4. Static Architecture</a></li>
+<li><a href="#_use_cases">2.5. Use cases</a>
+<ul class="sectlevel3">
+<li><a href="#_self_authentication_registration">2.5.1. Self Authentication &amp; Registration</a></li>
+<li><a href="#_ticket_generation">2.5.2. Ticket generation</a></li>
+<li><a href="#_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#mainComponents">3. Building Block Design</a>
@@ -1060,26 +1065,6 @@ In case the request is accompained by a header using a valid RPT in the format <
 <div class="paragraph">
 <p>To further clarify the flow the PEP uses, you can also take a look at the Data Flow in section <a href="#_data_flow">Data flow</a></p>
 </div>
-<div class="sect3">
-<h4 id="_ticket_generation">2.1.1. Ticket generation</h4>
-<div class="paragraph">
-<p>The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.<br>
-Ticket generation as per the UMAv2.0 standard, are only valid for that requested it and for that specific resource.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_resource_protection_rpt_validation">2.1.2. Resource protection &amp; RPT validation</h4>
-<div class="paragraph">
-<p>The PEP when presented with an RPT in an <code>Authorization</code> HTTP header, will check the validity of this token for the requested resource. This token is only valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker.</p>
-</div>
-<div class="paragraph">
-<p>The PEP will only protect the resources that it recognizes as such. This means that, even without an RPT, the PEP will alllow a client to pass-through directly to the resource server if there is no identified resource that matches what the client is requesting.</p>
-</div>
-<div class="paragraph">
-<p>This behaviour, which is analogous to a blacklist approach (we only deny access a priori of a bunch of resources), can be easily switched to a "whitelist" with simple changes in the code.<br>
-On the other hand, this baseline functionality is desirable to allow PEP-chaining, and allows for more complex workflows in the future.</p>
-</div>
-</div>
 </div>
 <div class="sect2">
 <h3 id="_external_interfaces">2.2. External Interfaces</h3>
@@ -1164,16 +1149,148 @@ This is the only input interface to interact directly with the PEP from outside,
 </div>
 </div>
 <div class="sect2">
-<h3 id="_required_resources_todo">2.3. Required resources TODO</h3>
-
+<h3 id="_required_resources">2.3. Required resources</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Content Description</div>
+<div class="paragraph">
+<p>This section contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>List of HW and SW required resources for the correct functioning of the building Block</p>
+</li>
+<li>
+<p>References to open repositories (when applicable)</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_software">2.3.1. Software</h4>
+<div class="paragraph">
+<p>The following Open-Source Software is required to support the deployment and integration of the Policy Enforcement Point:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>EOEPCA&#8217;s SCIM Client - <a href="https://github.com/EOEPCA/um-common-scim-client" class="bare">https://github.com/EOEPCA/um-common-scim-client</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s UMA Client - <a href="https://github.com/EOEPCA/um-common-uma-client" class="bare">https://github.com/EOEPCA/um-common-uma-client</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s Well Known Handler - <a href="https://github.com/EOEPCA/well-known-handler" class="bare">https://github.com/EOEPCA/well-known-handler</a></p>
+</li>
+<li>
+<p>Reverse Proxy for Python - Flask - <a href="https://github.com/pallets/flask" class="bare">https://github.com/pallets/flask</a></p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_static_architecture_todo">2.4. Static Architecture TODO</h3>
-
+<h3 id="_static_architecture">2.4. Static Architecture</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Content Description</div>
+<div class="paragraph">
+<p>This section contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Diagram and description of the major logical components within the Building Block</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The Policy Enforcement Point at this moment is composed of only one component: The reverse proxy.</p>
+</div>
+<div class="paragraph">
+<p>The next section <a href="#Design">[Design]</a> contains detailed descriptions and references needed to understand the intricacies of this component.</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_use_cases_todo">2.5. Use cases TODO</h3>
+<h3 id="_use_cases">2.5. Use cases</h3>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="title">Content Description</div>
+<div class="paragraph">
+<p>This section contains:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Diagrams and definition of the use cases covered by this Building Block</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="imageblock text-right">
+<div class="content">
+<img src="./images/PEPflow.png" alt="PEPflow">
+</div>
+</div>
+<div class="sect3">
+<h4 id="_self_authentication_registration">2.5.1. Self Authentication &amp; Registration</h4>
+<div class="paragraph">
+<p>(Represented in the above graph by the request to Login Service in the section "PEP Authentication" )</p>
+</div>
+<div class="paragraph">
+<p>The PEP has an internal UMA Client used for alll the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_ticket_generation">2.5.2. Ticket generation</h4>
+<div class="paragraph">
+<p>(Represented in the above graph by the request to Login Service called "Request for ticket")</p>
+</div>
+<div class="paragraph">
+<p>The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.<br>
+Ticket generation as per the UMAv2.0 standard, are only valid for that requested it and for that specific resource.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</h4>
+<div class="paragraph">
+<p>The PEP when presented with an RPT in an <code>Authorization</code> HTTP header, will check the validity of this token for the requested resource. This token is only valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker.</p>
+</div>
+<div class="paragraph">
+<p>The PEP will only protect the resources that it recognizes as such. This means that, even without an RPT, the PEP will alllow a client to pass-through directly to the resource server if there is no identified resource that matches what the client is requesting.</p>
+</div>
+<div class="paragraph">
+<p>This behaviour, which is analogous to a blacklist approach (we only deny access a priori of a bunch of resources), can be easily switched to a "whitelist" with simple changes in the code.<br>
+On the other hand, this baseline functionality is desirable to allow PEP-chaining, and allows for more complex workflows in the future.</p>
+</div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 </div>
@@ -1431,7 +1548,7 @@ This is the only input interface to interact directly with the PEP from outside,
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-06-02 15:30:51 UTC
+Last updated 2020-06-02 16:23:30 UTC
 </div>
 </div>
 </body>
