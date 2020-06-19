@@ -1,4 +1,162 @@
 [[mainOverview]]
 = Overview
 
-TBD
+== Building Block Overview
+
+[NOTE]
+.Content Description
+================================
+This section contains:
+
+* High-Level Description of the Building Block
+* Context within EOEPCA
+================================
+
+The main functionality of the PEP is to be able to stand between a client and the client's desired resource. By creating this setup, where only the PEP is visible to an external request, we effectively secure whatever is behind the PEP. The PEP will enforce any policy for a resource configured in the Authorization Server, following the UMA 2.0 standard.
+
+The PEP, when started, follows these steps:
+
+. Load the configuration from the config file
+. Parse the configuration from the Auth Server (for example, the correct endpoints), using WellKnownHandler
+. If no client is configured at the config file, it will register itself, using the SCIM Client
+.. If the PEP had to register itself, then it will save the client's information on the config file, saving it in case a restart is needed.
+. Create OIDC and UMA clients
+.. The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle. In the future the resources will be stored in a DB instead of just RAM.
+. If it doesn't exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not neeeded.
+. Start reverse proxy using Flask and await requests
+
+When launched, the PEP will answer to all requests that start with the configured path. These answers will come in the form of UMA tickets (if there are no RPT provided, or an invalid one is used).
+In case the request is accompained by a header using a valid RPT in the format `Authorization: Bearer <valid_RPT>`, the PEP will make a request to the resource server, for the resource located exactly at the path requested (minus the configured at config), and return the resource's server answer.
+
+Examples follow, assuming the following conditions:
+
+- path configured for the reverse proxy is "/pep"
+- the PEP is at pep.domain.com/pep
+- Resource server is at remote.server.com
+
+
+[cols="4*"]
+|===
+| Token | Request to PEP | PEP Action | PEP answer
+
+| No RPT | pep.domain.com | None (request does not get to PEP endpoint) | None (the PEP doesn't see this request) 
+| No RPT | pep.domain.com/pep/thing | Generate ticket for "/thing" | 401 + ticket 
+| Valid RPT for "/thing" | pep.domain.com/pep/thing | Request to remote.server.com/thing | Contents of remote.server.com/thing 
+| Valid RPT for "/thing" | pep.domain.com/pep/different | Generate ticket for "/different" | 401 + ticket 
+| INVALID RPT for "/thing" | pep.domain.com/pep/thing | Generate ticket for "/thing" | 401 + ticket 
+| No RPT | pep.domain.com/pep/thing/with/large/path | Generate ticket for "/thing/with/large/path" | 401 + ticket 
+| Valid RPT for "/thing/with/large/path" | pep.domain.com/pep/thing/with/large/path | Request to remote.server.com/thing/with/large/path | Contents of remote.server.com/thing/with/large/path
+
+|===
+
+To further clarify the flow the PEP uses, you can also take a look at the Data Flow in section <<Data flow>>
+
+== External Interfaces
+
+=== HTTP(S) (Reverse Proxy Listener)
+An HTTP listener, which can be configured through the config file.
+This is the only input interface to interact directly with the PEP from outside, and is managed by the reverse proxy.
+
+The default listener for this interface is `0.0.0.0:5566/pep/<path-to-resource>`.
+
+This interface will parse the path and the headers in order to assert authentication and authorization of the client requesting the resource.
+
+=== HTTP(S) (to Resource Server)
+The PEP will contact via HTTP with the configured Resource Server whenever a valid request with a valid RPT is done, or whenever RPT is not needed to access the resource.
+
+The PEP will make a request to the RS, and will return the answer verbatim to the client that requested it, effectively acting like a transparent proxy from the client's point of view. This allows the mentioned desired behaviour of being able to protect anything just placing the PEP "in front of" the resource to protect.
+
+=== UMA (to Login Service)
+The PEP will make the requests needed to handle the resources, along with the necessary requests to create tickets and check the validity of RPTs.
+
+The endpoints used for UMA are:
+
+* RESOURCE_REGISTRATION
+* PERMISSION
+* INTROSPECTION
+
+=== OIDC (to Login Service) 
+The PEP uses the OIDC protocol in order to authenticate itself as a valid UMA client, and uses this OIDC client in all UMA-related queries.
+
+These queries are done against the Login Service, and the endpoints used are:
+
+* TOKEN_ENDPOINT
+
+=== SCIM (to Login Service)
+The PEP has the capability to auto-register itself as a client if there is no client pre-configured from previous starts or previous configuration.
+
+In order to do this, it utilizes the SCIM protocol, and queries the Login Service.
+
+The endpoints used for SCIM are:
+
+* AUTH_CLIENT_POST
+
+== Required resources
+
+[NOTE]
+.Content Description
+================================
+This section contains:
+
+* List of HW and SW required resources for the correct functioning of the building Block
+* References to open repositories (when applicable)
+
+================================
+
+=== Software
+
+The following Open-Source Software is required to support the deployment and integration of the Policy Enforcement Point:
+
+* EOEPCA's SCIM Client - https://github.com/EOEPCA/um-common-scim-client
+* EOEPCA's UMA Client - https://github.com/EOEPCA/um-common-uma-client
+* EOEPCA's Well Known Handler - https://github.com/EOEPCA/well-known-handler
+* Reverse Proxy for Python - Flask - https://github.com/pallets/flask
+
+== Static Architecture 
+
+[NOTE]
+.Content Description
+================================
+This section contains:
+
+* Diagram and description of the major logical components within the Building Block
+
+================================
+
+The Policy Enforcement Point at this moment is composed of only one component: The reverse proxy.
+
+The next section <<Design>> contains detailed descriptions and references needed to understand the intricacies of this component.
+
+== Use cases
+
+[NOTE]
+.Content Description
+================================
+This section contains:
+
+* Diagrams and definition of the use cases covered by this Building Block
+
+================================
+
+image::../images/PEPflow.png[top=5%, align=right, pdfwidth=6.5in]
+
+=== Self Authentication & Registration
+(Represented in the above graph by the request to Login Service in the section "PEP Authentication" )
+
+The PEP has an internal UMA Client used for alll the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.
+
+=== Ticket generation
+
+(Represented in the above graph by the request to Login Service called "Request for ticket")
+
+The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.
+Ticket generation as per the UMAv2.0 standard, are only valid for that requested it and for that specific resource. 
+
+=== Resource protection & RPT validation
+
+The PEP when presented with an RPT in an `Authorization` HTTP header, will check the validity of this token for the requested resource. This token is only valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker.
+
+The PEP will only protect the resources that it recognizes as such. This means that, even without an RPT, the PEP will alllow a client to pass-through directly to the resource server if there is no identified resource that matches what the client is requesting.
+
+This behaviour, which is analogous to a blacklist approach (we only deny access a priori of a bunch of resources), can be easily switched to a "whitelist" with simple changes in the code.
+On the other hand, this baseline functionality is desirable to allow PEP-chaining, and allows for more complex workflows in the future.

@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pep-engine
+  labels:
+    app: pep-engine
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http-pep
+    protocol: TCP
+  - port: 443
+    name: https-pep
+    targetPort: 443
+    protocol: TCP
+  selector:
+    app: pep-engine
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: pep-engine
+    labels:
+        app: pep-engine
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: pep-engine
+    template:
+        metadata:
+            labels:
+                app: pep-engine
+        spec:
+            containers:
+            - name: pep-engine
+              imagePullPolicy: Always
+              image: eoepca/um-pep-engine:latest
+              ports:
+                - containerPort: 80
+                  name: http-pep
+                - containerPort: 443
+                  name: https-pep
+              envFrom:
+                - configMapRef:
+                    name: um-pep-engine-config
+            hostAliases:
+            - ip: NGINX_IP
+              hostnames:
+              - {{GLUU_DOMAIN}}  
+            volumes:
+            - name: pep-engine-logs
+              persistentVolumeClaim:
+                claimName: pep-engine-logs-volume-claim
+            - name: pep-engine-lib-ext
+              persistentVolumeClaim:
+                claimName: pep-engine-lib-ext-volume-claim
+            - name: pep-engine-custom-static
+              persistentVolumeClaim:
+                claimName: pep-engine-custom-static-volume-claim
+            - name: pep-engine-custom-pages
+              persistentVolumeClaim:
+                claimName: pep-engine-custom-pages-volume-claim

@@ -1,16 +1,3 @@
-<!--
-***
-*** To avoid retyping too much info. Do a search and replace for the following:
-*** um-pep-engine
--->
-
-<!-- PROJECT SHIELDS -->
-<!--
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-
 [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
@@ -28,12 +15,10 @@
   <h3 align="center">um-pep-engine</h3>
 
   <p align="center">
-    Template for developing an EOEPCA Service
+    Policy Enforcement Point for EOEPCA project
     <br />
-    <a href="https://github.com/EOEPCA/um-pep-engine"><strong>Explore the docs »</strong></a>
+    <a href="https://eoepca.github.io/um-pep-engine/"><strong>Explore the docs »</strong></a>
     <br />
-    <a href="https://github.com/EOEPCA/um-pep-engine">View Demo</a>
-    ·
     <a href="https://github.com/EOEPCA/um-pep-engine/issues">Report Bug</a>
     ·
     <a href="https://github.com/EOEPCA/um-pep-engine/issues">Request Feature</a>
@@ -42,18 +27,18 @@
 
 ## Table of Contents
 
-- [Steps to use this template](#steps-to-use-this-template)
 - [Table of Contents](#table-of-contents)
-- [About The Project](#about-the-project)
   - [Built With](#built-with)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
-  - [Testing](#testing)
-- [Documentation](#documentation)
-- [Usage](#usage)
-  - [Running the template service](#running-the-template-service)
-  - [Upgrading Gradle Wrapper](#upgrading-gradle-wrapper)
+- [Dependencies](#dependencies)
+- [Configuration](#configuration)
+- [Usage & functionality](#usage--functionality)
+- [Developer documentation](#developer-documentation)
+  - [Demo functionality](#demo-functionality)
+  - [Endpoints](#endpoints)
+  - [Resources cache](#resources-cache)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -62,16 +47,13 @@
 
 <!-- ABOUT THE PROJECT -->
 
-## About The Project
-
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
 ### Built With
 
 - [Python](https://www.python.org//)
-- [PyTest](https://docs.pytest.org)
 - [YAML](https://yaml.org/)
 - [Travis CI](https://travis-ci.com/)
+- [Docker](https://docker.com)
+- [Kubernetes](https://kubernetes.io)
 
 <!-- GETTING STARTED -->
 
@@ -97,34 +79,99 @@ vagrant ssh
 3. Clone the repo
 
 ```sh
-git clone https://github.com/EOEPCA/um-pep-enginegit
+git clone https://github.com/EOEPCA/um-pep-engine.git
 ```
 
 4. Change local directory
 
 ```sh
-cd template-service
+cd um-pep-engine
+```
+## Dependencies
+The PEP is written and tested for python 3.6.9, and has all dependencies listed in src/requirements.txt
+
+## Configuration
+
+The PEP gets all its configuration from the file located under `config/config.json`.
+The parameters that are accepted, and their meaning, are as follows:
+- **realm**: 'realm' parameter answered for each UMA ticket. Default is "eoepca"
+- **auth_server_url**: complete url (with "https") of the Authorization server.
+- **proxy_endpoint**: "/path"-formatted string to indicate where the reverse proxy should listen. The proxy will catch any request that starts with that path. Default is "/pep"
+- **service_host**: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces
+- **service_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
+- **s_margin_rpt_valid**: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using **5** will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.
+- **check_ssl_certs**: Toggle on/off (bool) to check certificates in all requests. This should be forced to True in a production environment
+- **use_threads**: Toggle on/off (bool) the usage of threads for the proxy. Recommended to be left as True.
+- **debug_mode**: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.
+- **resource_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
+- **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
+- **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
+
+## Usage & functionality
+
+Use directly from docker with
+```sh
+docker run --publish <configured-port>:<configured-port> <docker image>
+```
+Where **configured-port** is the port configured inside the config.json file inside the image. The default image is called **eoepca/um-pep-engine:latest**.
+
+If this is running in a development environment without proper DNS setup, add the following to your docker run command:
+```sh
+--add-host <auth-server-dns>:<your-ip>
 ```
 
-## Documentation
+When launched, the PEP will answer to all requests that start with the configured path. These answers will come in the form of UUMA tickets (if there are no RPT provided, or an invalid one is used).
+In case the request is accompained by an "Authorization: Bearer <valid_RPT>", the PEP will make a request to the resource server, for the resource located exactly at the path requested (minus the configured at config), and return the resource's server answer.
 
-The component documentation can be found at https://eoepca.github.io/um-pep-engine/.
+Examples, given the example values of:
+- path configured: "/pep"
+- PEP is at pep.domain.com/pep
+- Resource server is at remote.server.com
 
-<!-- USAGE EXAMPLES -->
+| Token | Request to PEP | PEP Action | PEP answer |
+|-------|---------|------------|--------------|
+| No RPT | pep.domain.com | None (request does not get to PEP endpoint) | None (the PEP doesn't see this request) |
+| No RPT | pep.domain.com/pep/thing | Generate ticket for "/thing" | 401 + ticket |
+| Valid RPT for "/thing" | pep.domain.com/pep/thing | Request to remote.server.com/thing | Contents of remote.server.com/thing |
+| Valid RPT for "/thing" | pep.domain.com/pep/different | Generate ticket for "/different" | 401 + ticket |
+| INVALID RPT for "/thing" | pep.domain.com/pep/thing | Generate ticket for "/thing" | 401 + ticket |
+| No RPT | pep.domain.com/pep/thing/with/large/path | Generate ticket for "/thing/with/large/path" | 401 + ticket |
+| Valid RPT for "/thing/with/large/path" | pep.domain.com/pep/thing/with/large/path | Request to remote.server.com/thing/with/large/path | Contents of remote.server.com/thing/with/large/path |
 
-## Usage
+## Developer documentation
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+### Demo functionality
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+At the moment, the PEP will auto register a resource for the sake of demoing it's capabilities, using the `create` function of the UMA handler. This can be deleted if unwanted, or expanded to dinamically register resources. Note that the UMA library used allows for full control over resources (create, delete, etc) and could be used to help in that functionality expansion.
 
-<!-- ROADMAP -->
+### Test functionality
+
+In order to test the PEP engine at the moment first you have reach this prerequisites:
+
+- Register a client and a user inside the gluu instance and update the test_settings.json
+- Disable current UMA Policies and set inside JSONConfig > OxAuth umaGrantAccessIfNoPolicies to true
+
+### Endpoints
+
+The PEP uses the following endpoints from a "Well Known Handler", which parses the Auth server's "well-known" endpoints:
+
+- OIDC_TOKEN_ENDPOINT
+- UMA_V2_RESOURCE_REGISTRATION_ENDPOINT
+- UMA_V2_PERMISSION_ENDPOINT
+- UMA_V2_INTROSPECTION_ENDPOIN
+
+### Resources cache
+
+The internal UMA handler works with an in-memory list of resources at `self.registered_resources`, and uses that to get it's data.
+
+This can be expanded to a better database, by replacing the functions `update_resources_from_as` and `add_resource_to_cache`, which control how this cache is refreshed and written to, respectively
+
+--------
 
 ## Roadmap
 
 See the [open issues](https://github.com/EOEPCA/um-pep-engine/issues) for a list of proposed features (and known issues).
 
-<!-- CONTRIBUTING -->
 
 ## Contributing
 
@@ -153,14 +200,14 @@ Project Link: [https://github.com/EOEPCA/um-pep-engine](https://github.com/EOEPC
 - README.md is based on [this template](https://github.com/othneildrew/Best-README-Template) by [Othneil Drew](https://github.com/othneildrew).
 
 
-[contributors-shield]: https://img.shields.io/github/contributors/EOEPCA/um-pep-enginesvg?style=flat-square
+[contributors-shield]: https://img.shields.io/github/contributors/EOEPCA/um-pep-engine.svg?style=flat-square
 [contributors-url]: https://github.com/EOEPCA/um-pep-engine/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/EOEPCA/um-pep-enginesvg?style=flat-square
+[forks-shield]: https://img.shields.io/github/forks/EOEPCA/um-pep-engine.svg?style=flat-square
 [forks-url]: https://github.com/EOEPCA/um-pep-engine/network/members
-[stars-shield]: https://img.shields.io/github/stars/EOEPCA/um-pep-enginesvg?style=flat-square
+[stars-shield]: https://img.shields.io/github/stars/EOEPCA/um-pep-engine.svg?style=flat-square
 [stars-url]: https://github.com/EOEPCA/um-pep-engine/stargazers
-[issues-shield]: https://img.shields.io/github/issues/EOEPCA/um-pep-enginesvg?style=flat-square
+[issues-shield]: https://img.shields.io/github/issues/EOEPCA/um-pep-engine.svg?style=flat-square
 [issues-url]: https://github.com/EOEPCA/um-pep-engine/issues
-[license-shield]: https://img.shields.io/github/license/EOEPCA/um-pep-enginesvg?style=flat-square
+[license-shield]: https://img.shields.io/github/license/EOEPCA/um-pep-engine.svg?style=flat-square
 [license-url]: https://github.com/EOEPCA/um-pep-engine/blob/master/LICENSE
-[build-shield]: https://www.travis-ci.com/EOEPCA/um-pep-enginesvg?branch=master
+[build-shield]: https://www.travis-ci.com/EOEPCA/um-pep-engine.svg?branch=master

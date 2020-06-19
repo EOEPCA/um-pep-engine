@@ -1,0 +1,133 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pep-engine-logs-volume-claim
+spec:
+  storageClassName: ""
+  volumeName: pep-engine-logs
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10M
+  selector:
+    matchLabels:
+      pep-engine: logs
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pep-engine-lib-ext-volume-claim
+spec:
+  storageClassName: ""
+  volumeName: pep-engine-lib-ext
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10M
+  selector:
+    matchLabels:
+      pep-engine: lib-ext
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pep-engine-custom-static-volume-claim
+spec:
+  storageClassName: ""
+  volumeName: pep-engine-custom-static
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10M
+  selector:
+    matchLabels:
+      pep-engine: custom-static
+
+---
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pep-engine-custom-pages-volume-claim
+spec:
+  storageClassName: ""
+  volumeName: pep-engine-custom-pages
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10M
+  selector:
+    matchLabels:
+      pep-engine: custom-pages
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pep-engine-logs
+  labels:
+      pep-engine: logs
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+      path: "/data/pep-engine/logs"
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pep-engine-lib-ext
+  labels:
+      pep-engine: lib-ext
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+      path: "/data/pep-engine/custom/libs"
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pep-engine-custom-static
+  labels:
+      pep-engine: custom-static
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+      path: "/data/pep-engine/custom/static"
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pep-engine-custom-pages
+  labels:
+      pep-engine: custom-pages
+spec:
+  capacity:
+    storage: 10M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/data/pep-engine/custom/pages"
