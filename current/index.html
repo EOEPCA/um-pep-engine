@@ -57,6 +57,7 @@
 <li><a href="#_self_authentication_registration">2.5.1. Self Authentication &amp; Registration</a></li>
 <li><a href="#_ticket_generation">2.5.2. Ticket generation</a></li>
 <li><a href="#_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</a></li>
+<li><a href="#_request_forwarding_with_jwt_header">2.5.4. Request Forwarding with JWT header</a></li>
 </ul>
 </li>
 </ul>
@@ -1255,7 +1256,7 @@ This is the only input interface to interact directly with the PEP from outside,
 </div>
 <div class="imageblock text-right">
 <div class="content">
-<img src="./images/PEPflow.png" alt="PEPflow">
+<img src="./images/PEPFlow2.png" alt="PEPFlow2">
 </div>
 </div>
 <div class="sect3">
@@ -1288,6 +1289,15 @@ Ticket generation as per the UMAv2.0 standard, are only valid for that requested
 <div class="paragraph">
 <p>This behaviour, which is analogous to a blacklist approach (we only deny access a priori of a bunch of resources), can be easily switched to a "whitelist" with simple changes in the code.<br>
 On the other hand, this baseline functionality is desirable to allow PEP-chaining, and allows for more complex workflows in the future.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_request_forwarding_with_jwt_header">2.5.4. Request Forwarding with JWT header</h4>
+<div class="paragraph">
+<p>After validating the RPT we proceed to make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.</p>
+</div>
+<div class="paragraph">
+<p>Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1444,7 +1454,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 </div>
 <div class="imageblock text-right">
 <div class="content">
-<img src="./images/PEPflow.png" alt="PEPflow">
+<img src="./images/PEPFlow2.png" alt="PEPFlow2">
 </div>
 </div>
 </div>
@@ -1548,7 +1558,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-07-01 11:35:48 UTC
+Last updated 2020-07-02 10:59:18 UTC
 </div>
 </div>
 </body>
