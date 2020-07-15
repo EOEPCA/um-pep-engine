@@ -82,7 +82,7 @@
 <li><a href="#_resource_respository">3.2. RESOURCE RESPOSITORY</a>
 <ul class="sectlevel3">
 <li><a href="#_overview_and_purpose_2">3.2.1. Overview and Purpose</a></li>
-<li><a href="#_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</a></li>
+<li><a href="#_data_flow_2">3.2.2. Data flow</a></li>
 <li><a href="#_applicable_resources_2">3.2.3. Applicable Resources</a></li>
 </ul>
 </li>
@@ -1457,7 +1457,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <p>The only information the PEP handles are tickets given by the Auth Server, and RPTs which are sent only to the Auth Server.</p>
 </div>
 <div class="paragraph">
-<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into memory, but in the future they will be stored on a separate database to allow large amounts of resources and more complex queries.</p>
+<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into a mongo database, this allows to store large amounts of resources and more complex queries.</p>
 </div>
 <div class="paragraph">
 <p>What follows is an example of the nominal flow for the PEP, and "ADES" is the Resource Server the PEP is protecting:</p>
@@ -1516,7 +1516,10 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <div class="sect3">
 <h4 id="_overview_and_purpose_2">3.2.1. Overview and Purpose</h4>
 <div class="paragraph">
-<p>Included with the PEP there is a script at the source path that performs queries against a Mongo Database. The main purpose of this script is to reduce the usage of RAM when registering a resource and when querying for its content.<br>
+<p>It is the database based on MongoDB where the resources are stored and queried for the PEP pourposes</p>
+</div>
+<div class="paragraph">
+<p>Included with the PEP there is a script at the source path that performs queries against a Mongo Database. The main purpose of this script is to reduce the usage of RAM when registering a resource locally and when querying for its content.<br>
 It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.<br>
 The script defines the following methods:</p>
 </div>
@@ -1526,7 +1529,7 @@ The script defines the following methods:</p>
 <p><strong>insert_in_mongo</strong>: Will generate a document with the resource data recived as input if it alredy exists it will update it. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource_id provided by the login-service, and the reverse_match_url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.</p>
 </li>
 <li>
-<p><strong>get_id_from_uri</strong>: This feature will return the id for the best candidate of the match by a URL given.</p>
+<p><strong>get_id_from_uri</strong>: This feature will return the id for the best candidate of the match by a URI given.</p>
 </li>
 <li>
 <p><strong>delete_resource</strong>: This function will recive a resource id and will find and delete the matched document</p>
@@ -1534,17 +1537,28 @@ The script defines the following methods:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>This script is manipulated by the API which would intercept the request in order to perform GET,PUT,POST and DELETE methods.</p>
+<p>This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.<br>
+The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI<br>
+=== Software Reuse and Dependencies</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</h4>
 <div class="paragraph">
 <p>The script needs the library 'pymongo', to query the database. It will expect a MongoDB service running on the default&#8217;s Mongo port 27017<br>
 In order to simulate database responses for unit tests, is needed to use the python mock library.</p>
 </div>
 <div class="paragraph">
 <p>This class would be called from APIs within the PEP repository. At the moment the usage is mainly for the resource interaction purposes, but this can easily be reused by other agents.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_flow_2">3.2.2. Data flow</h4>
+<div class="paragraph">
+<p>The database will only be accesible by the API or the Proxy.<br>
+The main methods for the interaction with the database are displayed in this dataflow as a summary of its scope:</p>
+</div>
+<div class="imageblock text-right">
+<div class="content">
+<img src="./images/MongoFlow.png" alt="MongoFlow">
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -1568,7 +1582,7 @@ In order to simulate database responses for unit tests, is needed to use the pyt
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-07-14 16:42:03 UTC
+Last updated 2020-07-15 09:35:28 UTC
 </div>
 </div>
 </body>
