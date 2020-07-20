@@ -15,6 +15,7 @@ from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from custom_oidc import OIDCHandler
 from custom_uma import UMA_Handler, resource
 from custom_uma import rpt as class_rpt
+from custom_mongo import Mongo_Handler
 import os
 import sys
 import traceback
@@ -172,16 +173,16 @@ def proxy_request(request, new_header):
         response.content = "Error while redirecting to resource: "+str(e)
         return response
 
-
 @app.route(g_config["proxy_endpoint"], defaults={'path': ''})
 @app.route(g_config["proxy_endpoint"]+"/<path:path>", methods=["GET","POST","PUT","DELETE"])
 def resource_request(path):
     # Check for token
     print("Processing path: '"+path+"'")
+    custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id, scopes = uma_handler.resource_exists("/"+path) # TODO: Request all scopes? How can a user set custom scopes?
-
+    resource_id = custom_mongo.get_id_from_uri(path)
+    scopes = uma_handler.get_resource_scopes(resource_id)
     if rpt:
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
@@ -282,7 +283,11 @@ def resource_operation(resource_id):
 
     rpt = request.headers.get('Authorization')
     # Get resource scopes from resource_id
-    scopes = uma_handler.get_resource_scopes(resource_id)
+    try:
+        scopes = uma_handler.get_resource_scopes(resource_id)
+    except Exception as e:
+        print("Error occured when retrieving resource scopes: " +str(e))
+        scopes = None
     if rpt:
         #Token was found, check for validation
         print("Found rpt in request, validating...")

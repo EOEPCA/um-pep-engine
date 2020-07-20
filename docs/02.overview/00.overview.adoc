@@ -21,8 +21,10 @@ The PEP, when started, follows these steps:
 . If no client is configured at the config file, it will register itself, using the SCIM Client
 .. If the PEP had to register itself, then it will save the client's information on the config file, saving it in case a restart is needed.
 . Create OIDC and UMA clients
-.. The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle. In the future the resources will be stored in a DB instead of just RAM.
-. If it doesn't exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not neeeded.
+.. The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded into a database for the PEP to handle. 
+. If it doesn't exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not needed.
+. When a resource is created the PEP makes a query against an external Mongo database to register as a document the resource data:
+.. `{ "_id" : <mongo_id>, "resource_id" : <Login-Service Resource ID>, "name" : <custom name>, "reverse_match_url" : <macthing URL for PEP> }`
 . Start reverse proxy using Flask and await requests
 
 When launched, the PEP will answer to all requests that start with the configured path. These answers will come in the form of UMA tickets (if there are no RPT provided, or an invalid one is used).

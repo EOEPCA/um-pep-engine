@@ -1,5 +1,5 @@
 PEP_REALM="eoepca"
-PEP_AUTH_SERVER_URL="https://demoexample.gluu.org"
+PEP_AUTH_SERVER_URL="https://test.eoepca.org"
 PEP_PROXY_ENDPOINT="/pep"
 PEP_SERVICE_HOST="0.0.0.0"
 PEP_SERVICE_PORT=5566

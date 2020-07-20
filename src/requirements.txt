@@ -7,3 +7,4 @@ Flask==1.1.2
 pyjwkest==1.4.2
 pycrypto==2.6.1
 pymongo
+mock

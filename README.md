@@ -160,16 +160,13 @@ The PEP uses the following endpoints from a "Well Known Handler", which parses t
 - UMA_V2_PERMISSION_ENDPOINT
 - UMA_V2_INTROSPECTION_ENDPOIN
 
-### Resources cache
+### Resources Repository
 
-The internal UMA handler works with an in-memory list of resources at `self.registered_resources`, and uses that to get it's data.
-
-This can be expanded to a better database, by replacing the functions `update_resources_from_as` and `add_resource_to_cache`, which control how this cache is refreshed and written to, respectively
-
---------
 
 When a resource is registered, the name and id are stored as a document into a Mongodb database as a sidecar container sharing data through a persistent storage volume.
-The pod runs the pep-engine image and the mongo image exposing the default mongo port (27017) where communicates the service and keeps it alive for the pep-engine container to query the database. 
+The pod runs the pep-engine image and the mongo image exposing the default mongo port (27017) where communicates the service and keeps it alive for the pep-engine container to query the database.
+
+A local MongoDB service can be used to test the repo since the main script would listen the port 27017
 
 ## Roadmap
 
