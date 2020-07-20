@@ -79,11 +79,12 @@
 <li><a href="#_applicable_resources">3.1.6. Applicable Resources</a></li>
 </ul>
 </li>
-<li><a href="#_cli">3.2. CLI</a>
+<li><a href="#_resource_respository">3.2. RESOURCE RESPOSITORY</a>
 <ul class="sectlevel3">
 <li><a href="#_overview_and_purpose_2">3.2.1. Overview and Purpose</a></li>
 <li><a href="#_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</a></li>
-<li><a href="#_applicable_resources_2">3.2.3. Applicable Resources</a></li>
+<li><a href="#_data_flow_2">3.2.3. Data flow</a></li>
+<li><a href="#_applicable_resources_2">3.2.4. Applicable Resources</a></li>
 </ul>
 </li>
 </ul>
@@ -970,13 +971,23 @@ OGC 08-068r2,<br>
 <div class="olist loweralpha">
 <ol class="loweralpha" type="a">
 <li>
-<p>The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded in memory for the PEP to handle. In the future the resources will be stored in a DB instead of just RAM.</p>
+<p>The creation of the UMA client implies also that resources' ID are being grabbed from the Auth Server and loaded into a database for the PEP to handle.</p>
 </li>
 </ol>
 </div>
 </li>
 <li>
-<p>If it doesn&#8217;t exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not neeeded.</p>
+<p>If it doesn&#8217;t exist yet, a resource called "ADES Service" will be created. This is intended as a demo registration, and can be safely deleted when not needed.</p>
+</li>
+<li>
+<p>When a resource is created the PEP makes a query against an external Mongo database to register as a document the resource data:</p>
+<div class="olist loweralpha">
+<ol class="loweralpha" type="a">
+<li>
+<p><code>{ "_id" : &lt;mongo_id&gt;, "resource_id" : &lt;Login-Service Resource ID&gt;, "name" : &lt;custom name&gt;, "reverse_match_url" : &lt;macthing URL for PEP&gt; }</code></p>
+</li>
+</ol>
+</div>
 </li>
 <li>
 <p>Start reverse proxy using Flask and await requests</p>
@@ -1447,7 +1458,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <p>The only information the PEP handles are tickets given by the Auth Server, and RPTs which are sent only to the Auth Server.</p>
 </div>
 <div class="paragraph">
-<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into memory, but in the future they will be stored on a separate database to allow large amounts of resources and more complex queries.</p>
+<p>All data is ephimeral at the time of writting, except the data stored at the config file. The resources are loaded into a mongo database, this allows to store large amounts of resources and more complex queries.</p>
 </div>
 <div class="paragraph">
 <p>What follows is an example of the nominal flow for the PEP, and "ADES" is the Resource Server the PEP is protecting:</p>
@@ -1502,47 +1513,63 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 </div>
 </div>
 <div class="sect2">
-<h3 id="_cli">3.2. CLI</h3>
+<h3 id="_resource_respository">3.2. RESOURCE RESPOSITORY</h3>
 <div class="sect3">
 <h4 id="_overview_and_purpose_2">3.2.1. Overview and Purpose</h4>
 <div class="paragraph">
-<p>Included with the PEP there is a folder with scripts at <code>/CLI</code>. These scripts serve as a demo tool, and could be used in testing. For more information on what variables are expected, all scripts incorporate a '-h' help command.</p>
+<p>It is the database based on MongoDB where the resources are stored and queried for the PEP pourposes</p>
 </div>
 <div class="paragraph">
-<p>The files are the following:</p>
+<p>Included with the PEP there is a script at the source path that performs queries against a Mongo Database. The main purpose of this script is to reduce the usage of RAM when registering a resource locally and when querying for its content.<br>
+It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.<br>
+The script defines the following methods:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>authenticate-user.sh</strong>: Takes credentials for a client and a user, and uses them to get an id_token from the Auth Server. This token can be used in other scripts or actions as long as it is valid.</p>
+<p><strong>insert_in_mongo</strong>: Will generate a document with the resource data recived as input if it alredy exists it will update it. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource_id provided by the login-service, and the reverse_match_url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.</p>
 </li>
 <li>
-<p><strong>get-rpt.sh</strong>: Will use a ticket and credentials in the form of an id_token to request an RPT to access a resource.</p>
+<p><strong>get_id_from_uri</strong>: This feature will return the id for the best candidate of the match by a URI given.</p>
 </li>
 <li>
-<p><strong>request-resource.sh</strong>: This script interacts with the PEP, and will make requests to it with the given parameters. It&#8217;s a clean way of composing a correct http request to the PEP.</p>
+<p><strong>delete_resource</strong>: This function will recive a resource id and will find and delete the matched document</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.<br>
+The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_software_reuse_and_dependencies_2">3.2.2. Software Reuse and Dependencies</h4>
 <div class="paragraph">
-<p>The scripts need the library 'WellKnownHandler', to dynamically get the correct endpoints for the auth server, and thus they also need Python 3.6.9 or greater to execute it.</p>
+<p>The script needs the library 'pymongo', to query the database. It will expect a MongoDB service running on the default&#8217;s Mongo port 27017<br>
+In order to simulate database responses for unit tests, is needed to use the python mock library.</p>
 </div>
 <div class="paragraph">
-<p>Other than that, only Bash and Curl are required.</p>
+<p>This class would be called from APIs within the PEP repository. At the moment the usage is mainly for the resource interaction purposes, but this can easily be reused by other agents.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_applicable_resources_2">3.2.3. Applicable Resources</h4>
+<h4 id="_data_flow_2">3.2.3. Data flow</h4>
+<div class="paragraph">
+<p>The database will only be accesible by the API or the Proxy.<br>
+The main methods for the interaction with the database are displayed in this dataflow as a summary of its scope:</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="./images/MongoFlow.png" alt="MongoFlow">
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applicable_resources_2">3.2.4. Applicable Resources</h4>
 <div class="ulist">
 <ul>
 <li>
-<p>UMA 2.0 Specification - <a href="https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html" class="bare">https://docs.kantarainitiative.org/uma/wg/rec-oauth-uma-grant-2.0.html</a></p>
-</li>
-<li>
-<p>EOEPCA&#8217;s Well Known Handler - <a href="https://github.com/EOEPCA/well-known-handler" class="bare">https://github.com/EOEPCA/well-known-handler</a></p>
+<p>MongoDB image from DockerHub - <a href="https://hub.docker.com/_/mongo" class="bare">https://hub.docker.com/_/mongo</a></p>
 </li>
 </ul>
 </div>
@@ -1558,7 +1585,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-07-20 10:50:29 UTC
+Last updated 2020-07-20 11:36:08 UTC
 </div>
 </div>
 </body>
