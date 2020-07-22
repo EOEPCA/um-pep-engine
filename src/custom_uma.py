@@ -37,10 +37,6 @@ class UMA_Handler:
         Updates an existing resource.
         Can throw exceptions
         """
-
-        if self.resource_exists(icon_uri):
-            raise Exception("Resource for URI "+icon_uri+" does not exist")
-
         resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         pat = self.oidch.get_new_pat()
         new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
@@ -52,8 +48,8 @@ class UMA_Handler:
         Deletes an existing resource.
         Can throw exceptions
         """
-
-        if self.resource_exists(icon_uri):
+        id = self.get_resource(resource_id)["_id"]
+        if id is None:
             raise Exception("Resource for ID "+resource_id+" does not exist")
 
         resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
