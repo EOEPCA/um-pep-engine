@@ -103,7 +103,7 @@ uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 # Demo: register a new resource if it doesn't exist
 try:
-    uma_handler.create("ADES Service", ["Authenticated"], description="", icon_uri="/ADES")
+    uma_handler.create("ADES Service", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/ADES")
 except Exception as e:
     if "already exists" in str(e):
         print("Resource already existed, moving on")
@@ -183,6 +183,26 @@ def resource_request(path):
     # Get resource
     resource_id = custom_mongo.get_id_from_uri(path)
     scopes = uma_handler.get_resource_scopes(resource_id)
+
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    #If UUID exists and resource requested has same UUID
+    if uid and custom_mongo.verify_uid(resource_id, uid):
+        print("UID for the user found")
+    else:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
+
     if rpt:
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
@@ -234,6 +254,31 @@ def getResourceList():
     response = Response()
     resourceListToReturn = []
     resourceListToValidate = []
+
+    custom_mongo = Mongo_Handler()
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    found_uid = False
+    for riD_uid in resources:
+        #If UUID exists and resource requested has same UUID
+        if uid and custom_mongo.verify_uid(riD_uid, uid):
+            print("UID for the user found")
+            found_uid = True
+    
+    if found_uid is False:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
+
     if rpt:
         print("Token found: " + rpt)
         rpt = rpt.replace("Bearer ","").strip()
@@ -264,13 +309,33 @@ def resource_operation(resource_id):
     print("Processing " + request.method + " resource request...")
     response = Response()
 
+    custom_mongo = Mongo_Handler()
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
     #add resource is outside of rpt validation, as it only requires a client pat to register a new resource
     try:
         if request.method == "POST":
+            #If UUID exists and resource requested has same UUID
+            if uid:
+                print("UID for the user found")
+            else:
+                response.status_code = 401
+                response.headers["Error"] = 'Could not get the UID for the user'
+                return response
+
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes") and data.get("name") == resource_id:
-                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("icon_uri"))
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data or incorrect resource name passed on URL called for resource creation!"
@@ -282,6 +347,15 @@ def resource_operation(resource_id):
         return response
 
     rpt = request.headers.get('Authorization')
+
+    #If UUID exists and resource requested has same UUID
+    if uid and custom_mongo.verify_uid(resource_id, uid):
+        print("UID for the user found")
+    else:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
+
     # Get resource scopes from resource_id
     try:
         scopes = uma_handler.get_resource_scopes(resource_id)
@@ -303,7 +377,7 @@ def resource_operation(resource_id):
                     if request.is_json:
                         data = request.get_json()
                         if data.get("name") and data.get("resource_scopes"):
-                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("icon_uri"))
+                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
                             response.status_code = 200
                             return response
                 #delete resource
