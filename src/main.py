@@ -335,7 +335,7 @@ def resource_operation(resource_id):
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes") and data.get("name") == resource_id:
-                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data or incorrect resource name passed on URL called for resource creation!"
@@ -347,7 +347,6 @@ def resource_operation(resource_id):
         return response
 
     rpt = request.headers.get('Authorization')
-
     #If UUID exists and resource requested has same UUID
     if uid and custom_mongo.verify_uid(resource_id, uid):
         print("UID for the user found")
@@ -377,7 +376,7 @@ def resource_operation(resource_id):
                     if request.is_json:
                         data = request.get_json()
                         if data.get("name") and data.get("resource_scopes"):
-                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
+                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                             response.status_code = 200
                             return response
                 #delete resource

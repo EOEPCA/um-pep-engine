@@ -2,6 +2,10 @@
 
 from base64 import b64encode
 from WellKnownHandler import TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT, KEY_OIDC_USERINFO_ENDPOINT
+from base64 import b64encode
+import logging
+import base64
+import json
 
 from requests import post
 

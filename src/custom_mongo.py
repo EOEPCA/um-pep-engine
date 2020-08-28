@@ -98,7 +98,7 @@ class Mongo_Handler:
     def verify_uid(self, resource_id, uid):
         col = self.db['resources']
         try:
-            myquery = {"_id": ObjectId(resource_id), "ownership_id": uid }
+            myquery = {"resource_id": resource_id, "ownership_id": uid }
             a= col.find_one(myquery)
             if a:                
                 return True
