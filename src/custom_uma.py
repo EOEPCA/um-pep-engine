@@ -138,17 +138,16 @@ class UMA_Handler:
 
 
     def update_resources_from_as(self):
-            """
-            Updates the cache of resources
-            """
-            # Get a list of the controlled resources
-            pat = self.oidch.get_new_pat()
-            resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-            self.registered_resources = resource.list(pat, resource_reg_endpoint, self.verify)
+        """
+        Updates the cache of resources
+        """
+        # Get a list of the controlled resources
+        pat = self.oidch.get_new_pat()
+        resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+        return resource.list(pat, resource_reg_endpoint, self.verify)
             
     def get_all_resources(self):
         """
         Updates and returns all the registed resources
         """
-        self.update_resources_from_as()
-        return self.registered_resources
+        return self.update_resources_from_as()
