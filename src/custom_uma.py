@@ -12,8 +12,9 @@ class UMA_Handler:
         self.mongo= Mongo_Handler()
         self.oidch = oidc_handler
         self.verify = verify_ssl
+        self.registered_resources = None
         
-    def create(self, name: str, scopes: List[str], description: str, icon_uri: str):
+    def create(self, name: str, scopes: List[str], description: str, ownership_id: str, icon_uri: str):
         """
         Creates a new resource IF A RESOURCE WITH THAT ICON_URI DOESN'T EXIST YET.
         Will throw an exception if it exists
@@ -27,12 +28,12 @@ class UMA_Handler:
         new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
         print("Created resource '"+name+"' with ID :"+new_resource_id)
         # Register resources inside the dbs
-        resp=self.mongo.insert_in_mongo(new_resource_id, name, icon_uri)
+        resp=self.mongo.insert_in_mongo(new_resource_id, name, ownership_id, icon_uri)
         if resp: print('Resource saved in DB succesfully')
        
         return new_resource_id
         
-    def update(self, resource_id: str, name: str, scopes: List[str], description: str, icon_uri: str):
+    def update(self, resource_id: str, name: str, scopes: List[str], description: str, ownership_id: str, icon_uri: str):
         """
         Updates an existing resource.
         Can throw exceptions
@@ -41,7 +42,7 @@ class UMA_Handler:
         resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         pat = self.oidch.get_new_pat()
         new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-        resp=self.mongo.insert_in_mongo(resource_id, name, icon_uri)
+        resp=self.mongo.insert_in_mongo(resource_id, name, ownership_id, icon_uri)
         print("Updated resource '"+name+"' with ID :"+new_resource_id)
         
     def delete(self, resource_id: str):
@@ -134,3 +135,19 @@ class UMA_Handler:
             print(info)
             print("++++++++++++++++")
         print("-----------STATUS END-------")
+
+
+    def update_resources_from_as(self):
+        """
+        Updates the cache of resources
+        """
+        # Get a list of the controlled resources
+        pat = self.oidch.get_new_pat()
+        resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+        return resource.list(pat, resource_reg_endpoint, self.verify)
+            
+    def get_all_resources(self):
+        """
+        Updates and returns all the registed resources
+        """
+        return self.update_resources_from_as()

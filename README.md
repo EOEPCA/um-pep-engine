@@ -140,6 +140,16 @@ Examples, given the example values of:
 
 ## Developer documentation
 
+The API will expose an endpoint to interact with the resources.
+The main endpoints for the resource operations exposed by the API are now secured with OAuth/OIDC, it would accept both OAuth and JWT in order to authorize the user and both are expected on the header.
+This check will retrieve the UUID for the user and insert it on the data model of the resource storage, so when any call is made against a resource, the API will double check if the UUID of the requester matches the one associated to the resource in order to operate against it.
+
+--------
+
+Testing and Demo for the validation with OAuth/OIDC:
+
+Execute the `test_validation_token.py` in `um-pep-engine/tests/`
+
 ### Demo functionality
 
 At the moment, the PEP will auto register a resource for the sake of demoing it's capabilities, using the `create` function of the UMA handler. This can be deleted if unwanted, or expanded to dinamically register resources. Note that the UMA library used allows for full control over resources (create, delete, etc) and could be used to help in that functionality expansion.
