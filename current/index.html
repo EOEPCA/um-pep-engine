@@ -44,6 +44,7 @@
 <li><a href="#_uma_to_login_service">2.2.3. UMA (to Login Service)</a></li>
 <li><a href="#_oidc_to_login_service">2.2.4. OIDC (to Login Service)</a></li>
 <li><a href="#_scim_to_login_service">2.2.5. SCIM (to Login Service)</a></li>
+<li><a href="#_resource_ownership_enforcement">2.2.6. Resource Ownership Enforcement</a></li>
 </ul>
 </li>
 <li><a href="#_required_resources">2.3. Required resources</a>
@@ -1159,6 +1160,30 @@ This is the only input interface to interact directly with the PEP from outside,
 </ul>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_resource_ownership_enforcement">2.2.6. Resource Ownership Enforcement</h4>
+<div class="paragraph">
+<p>The Resource API Endpoints offered by the PEP component are protected based on the unique identifier of the Resource Owner that is adding/removing/editing resources.<br>
+The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these tokens:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter)</p>
+</li>
+<li>
+<p>OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>The UUID of the End-User will be included as attribute of the Resource description document (extending the data model) upon resource creation (with an “ownership_id” field).<br>
+Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 check, cross-checking against the “ownership_id” before performing actions and answering back with a 401 Unauthorized if there is no match.</p>
+</div>
+<div class="paragraph">
+<p>To test this execute: <code>tests/test_validation_token.py</code></p>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_required_resources">2.3. Required resources</h3>
@@ -1585,7 +1610,7 @@ The main methods for the interaction with the database are displayed in this dat
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-08-31 12:46:04 UTC
+Last updated 2020-09-01 11:04:41 UTC
 </div>
 </div>
 </body>
