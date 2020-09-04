@@ -86,20 +86,20 @@ The design of the PEP allows for further improvements if need be. For example:
 * Flask - https://github.com/pallets/flask
 
 
-== RESOURCE RESPOSITORY
+== RESOURCE REPOSITORY
 === Overview and Purpose
 It is the database based on MongoDB where the resources are stored and queried for the PEP pourposes
 
 Included with the PEP there is a script at the source path that performs queries against a Mongo Database. The main purpose of this script is to reduce the usage of RAM when registering a resource locally and when querying for its content.
 It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.
-The script defines the following methods:
+The script defines methods to:
 
-* **insert_in_mongo**: Will generate a document with the resource data recived as input if it alredy exists it will update it. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource_id provided by the login-service, and the reverse_match_url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.
-* **get_id_from_uri**: This feature will return the id for the best candidate of the match by a URI given.
-* **delete_resource**: This function will recive a resource id and will find and delete the matched document
+* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.
+* **Get the ID from a URI**: Returns the id for the best candidate of the match by a given URI.
+* **Delete resources**: Receives a resource id and will find and delete the matched document
 
 This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.
-The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI
+The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.
 
 === Software Reuse and Dependencies
 
