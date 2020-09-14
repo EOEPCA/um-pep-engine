@@ -1,5 +1,7 @@
 [[mainComponents]]
-= Building Block Design
+= Design
+
+== Building Block Design
 
 [NOTE]
 .Content Description
@@ -30,8 +32,10 @@ The most important are:
 
 * **EOEPCA-SCIM**: Used to auto-register itself as a client to the Auth. Server upon startup
 * **EOEPCA-UMA**: Used as the backbone of the PEP, allows for generation of tickets, verification of RPTs, and any other UMA-related action.
+* **EOEPCA-OIDC**: Used to generate PAT tokens, validate OAuth tokens and JWTs.
 * **WellKnownHandler**: Used to dynamically check the configuration of the Authorization Server on each execution. For example, it can get the needed endpoints for any API the PEP needs, such as the token request for OIDC.
 * **Flask**: External to EOEPCA's project, this library allows the PEP to create the actual reverse proxy, sending and recieving custom requests.
+* **MongoDB**: Used to store the resources and user identifications
 
 === Interfaces
 
@@ -73,7 +77,7 @@ image::../images/PEPFlow2.png[top=5%, align=right, pdfwidth=6.5in]
 
 The design of the PEP allows for further improvements if need be. For example:
 
-- The resource management in memory could be expanded to a full on DB, by changing how `custom_uma.py` works internally.
+- The resource management in memory could be expanded to a full on DB, by changing how the UMA handler works internally.
 - The UMA library used allows for quick implementations for resource managing, such as creation, deleting and editing.
 - The proxy can be expanded to parse further parameters on top of the HTTP protocol, allowing for any kind of plugin or complex mechanism desired.
 
@@ -86,27 +90,20 @@ The design of the PEP allows for further improvements if need be. For example:
 * Flask - https://github.com/pallets/flask
 
 
-== RESOURCE RESPOSITORY
+== Resource Repository
 === Overview and Purpose
 It is the database based on MongoDB where the resources are stored and queried for the PEP pourposes
 
 Included with the PEP there is a script at the source path that performs queries against a Mongo Database. The main purpose of this script is to reduce the usage of RAM when registering a resource locally and when querying for its content.
 It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.
-The script defines the following methods:
+The script defines methods to:
 
-* **insert_in_mongo**: Will generate a document with the resource data recived as input if it alredy exists it will update it. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource_id provided by the login-service, and the reverse_match_url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.
-* **get_id_from_uri**: This feature will return the id for the best candidate of the match by a URI given.
-* **delete_resource**: This function will recive a resource id and will find and delete the matched document
+* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.
+* **Get the ID from a URI**: Returns the id for the best candidate of the match by a given URI.
+* **Delete resources**: Receives a resource id and will find and delete the matched document
 
 This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.
-The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI
-
-=== Software Reuse and Dependencies
-
-The script needs the library 'pymongo', to query the database. It will expect a MongoDB service running on the default's Mongo port 27017
-In order to simulate database responses for unit tests, is needed to use the python mock library.
-
-This class would be called from APIs within the PEP repository. At the moment the usage is mainly for the resource interaction purposes, but this can easily be reused by other agents.
+The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.
 
 === Data flow
 
