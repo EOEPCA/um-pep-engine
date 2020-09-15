@@ -4,7 +4,7 @@
 #GLUU_SECRET_ADAPTER="kubernetes"
 #ADMIN_PW="admin_Abcd1234#"
 #EMAIL="support@gluu.org"
-DOMAIN="eoepca-dev.deimos-space.com"
+DOMAIN="test.eoepca.org"
 ##ORG_NAME="Deimos"
 #COUNTRY_CODE="PT"
 #STATE="NA"

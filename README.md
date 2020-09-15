@@ -140,6 +140,16 @@ Examples, given the example values of:
 
 ## Developer documentation
 
+The API will expose an endpoint to interact with the resources.
+The main endpoints for the resource operations exposed by the API are now secured with OAuth/OIDC, it would accept both OAuth and JWT in order to authorize the user and both are expected on the header.
+This check will retrieve the UUID for the user and insert it on the data model of the resource storage, so when any call is made against a resource, the API will double check if the UUID of the requester matches the one associated to the resource in order to operate against it.
+
+--------
+
+Testing and Demo for the validation with OAuth/OIDC:
+
+Execute the `test_validation_token.py` in `um-pep-engine/tests/`
+
 ### Demo functionality
 
 At the moment, the PEP will auto register a resource for the sake of demoing it's capabilities, using the `create` function of the UMA handler. This can be deleted if unwanted, or expanded to dinamically register resources. Note that the UMA library used allows for full control over resources (create, delete, etc) and could be used to help in that functionality expansion.
@@ -160,13 +170,13 @@ The PEP uses the following endpoints from a "Well Known Handler", which parses t
 - UMA_V2_PERMISSION_ENDPOINT
 - UMA_V2_INTROSPECTION_ENDPOIN
 
-### Resources cache
+### Resources Repository
 
-The internal UMA handler works with an in-memory list of resources at `self.registered_resources`, and uses that to get it's data.
 
-This can be expanded to a better database, by replacing the functions `update_resources_from_as` and `add_resource_to_cache`, which control how this cache is refreshed and written to, respectively
+When a resource is registered, the name and id are stored as a document into a Mongodb database as a sidecar container sharing data through a persistent storage volume.
+The pod runs the pep-engine image and the mongo image exposing the default mongo port (27017) where communicates the service and keeps it alive for the pep-engine container to query the database.
 
---------
+A local MongoDB service can be used to test the repo since the main script would listen the port 27017
 
 ## Roadmap
 

@@ -14,3 +14,4 @@ sleep 15 # wait until the container is running
 
 # INSERT BELOW THE ACCEPTANCE TEST:
 #curl -s http://localhost:$2/search # trivial smoke test
+#python3 -m unittest discover -s ../tests/ -p 'testPEPResource*'

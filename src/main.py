@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 from WellKnownHandler import WellKnownHandler
+from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 
 from flask import Flask, request, Response
+from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
 from requests import get, post, put, delete
@@ -11,11 +13,17 @@ import json
 from config import load_config, save_config
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from custom_oidc import OIDCHandler
-from custom_uma import UMA_Handler
+from custom_uma import UMA_Handler, resource
+from custom_uma import rpt as class_rpt
+from custom_mongo import Mongo_Handler
 import os
 import sys
 import traceback
 
+from jwkest.jws import JWS
+from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
+from jwkest.jwk import load_jwks
+from Crypto.PublicKey import RSA
 ### INITIAL SETUP
 
 env_vars = [
@@ -28,7 +36,8 @@ env_vars = [
 "PEP_CHECK_SSL_CERTS",
 "PEP_USE_THREADS",
 "PEP_DEBUG_MODE",
-"PEP_RESOURCE_SERVER_ENDPOINT"]
+"PEP_RESOURCE_SERVER_ENDPOINT",
+"PEP_API_RPT_UMA_VALIDATION"]
 
 use_env_var = True
 
@@ -53,6 +62,11 @@ else:
 
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
+
+# Global setting to validate RPTs received at endpoints
+api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
+if api_rpt_uma_validation: print("UMA RPT validation is ON.")
+else: print("UMA RPT validation is OFF.")
 
 # Generate client dynamically if one is not configured.
 if "client_id" not in g_config or "client_secret" not in g_config:
@@ -89,7 +103,7 @@ uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 # Demo: register a new resource if it doesn't exist
 try:
-    uma_handler.create("ADES Service", ["Authenticated"], description="", icon_uri="/ADES")
+    uma_handler.create("ADES Service", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/ADES")
 except Exception as e:
     if "already exists" in str(e):
         print("Resource already existed, moving on")
@@ -98,17 +112,52 @@ except Exception as e:
 app = Flask(__name__)
 app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
+def generateRSAKeyPair():
+    _rsakey = RSA.generate(2048)
+    private_key = _rsakey.exportKey()
+    public_key = _rsakey.publickey().exportKey()
 
-def proxy_request(request):
+    file_out = open("config/private.pem", "wb+")
+    file_out.write(private_key)
+    file_out.close()
+
+    file_out = open("config/public.pem", "wb+")
+    file_out.write(public_key)
+    file_out.close()
+
+    return private_key, public_key
+
+private_key, public_key = generateRSAKeyPair()
+
+def create_jwt(payload, p_key):
+    rsajwk = RSAKey(kid="RSA1", key=import_rsa_key(p_key))
+    jws = JWS(payload, alg="RS256")
+    return jws.sign_compact(keys=[rsajwk])
+
+def split_headers(headers):
+    headers_tmp = headers.splitlines()
+    d = {}
+
+    for h in headers_tmp:
+        h = h.split(': ')
+        if len(h) < 2:
+            continue
+        field=h[0]
+        value= h[1]
+        d[field] = value
+
+    return d
+
+def proxy_request(request, new_header):
     try:
         if request.method == 'POST':
-            res = post(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=request.headers, data=request.data, stream=False)           
+            res = post(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'GET':
-            res = get(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=request.headers, stream=False)
+            res = get(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
         elif request.method == 'PUT':
-            res = put(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=request.headers, data=request.data, stream=False)           
+            res = put(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'DELETE':
-            res = delete(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=request.headers, stream=False)
+            res = delete(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
         else:
             response = Response()
             response.status_code = 501
@@ -124,24 +173,55 @@ def proxy_request(request):
         response.content = "Error while redirecting to resource: "+str(e)
         return response
 
-
 @app.route(g_config["proxy_endpoint"], defaults={'path': ''})
 @app.route(g_config["proxy_endpoint"]+"/<path:path>", methods=["GET","POST","PUT","DELETE"])
 def resource_request(path):
     # Check for token
     print("Processing path: '"+path+"'")
+    custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id, scopes = uma_handler.resource_exists("/"+path) # TODO: Request all scopes? How can a user set custom scopes?
+    resource_id = custom_mongo.get_id_from_uri(path)
+    scopes = uma_handler.get_resource_scopes(resource_id)
+
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    #If UUID exists and resource requested has same UUID
+    if uid and custom_mongo.verify_uid(resource_id, uid):
+        print("UID for the user found")
+    else:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
 
     if rpt:
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
         # Validate for a specific resource
-        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"])):
+        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"])) or not api_rpt_uma_validation:
             print("RPT valid, accesing ")
+            introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
+            pat = oidc_client.get_new_pat()
+            rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+            jwt_rpt_response = create_jwt(rpt_class, private_key)
+
+            headers_splitted = split_headers(str(request.headers))
+            headers_splitted['Authorization'] = "Bearer "+str(jwt_rpt_response)
+
+            new_header = Headers()
+            for key, value in headers_splitted.items():
+                new_header.add(key, value)
             # redirect to resource
-            return proxy_request(request)
+            return proxy_request(request, new_header)
         print("Invalid RPT!, sending ticket")
         # In any other case, we have an invalid RPT, so send a ticket.
         # Fallthrough intentional
@@ -165,6 +245,167 @@ def resource_request(path):
             print("Error while redirecting to resource: "+str(e))
             response.status_code = 500
             return response
+            
+@app.route("/resources", methods=["GET"])
+def getResourceList():
+    print("Retrieving all registed resources...")
+    resources = uma_handler.get_all_resources()
+    rpt = request.headers.get('Authorization')
+    response = Response()
+    resourceListToReturn = []
+    resourceListToValidate = []
+
+    custom_mongo = Mongo_Handler()
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    found_uid = False
+    for riD_uid in resources:
+        #If UUID exists and resource requested has same UUID
+        if uid and custom_mongo.verify_uid(riD_uid, uid):
+            print("UID for the user found")
+            found_uid = True
+    
+    if found_uid is False:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
+
+    if rpt:
+        print("Token found: " + rpt)
+        rpt = rpt.replace("Bearer ","").strip()
+        #Token was found, check for validation
+        for rID in resources:
+            #In here we will use the loop for 2 goals: build the resource list to validate (all of them) and the potential reply list of resources, to avoid a second loop
+            scopes = uma_handler.get_resource_scopes(rID)
+            resourceListToValidate.append({"resource_id": rID, "resource_scopes": scopes })
+            r = uma_handler.get_resource(rID)
+            entry = {'_id': r["_id"], 'name': r["name"]}
+            resourceListToReturn.append(entry)
+        if uma_handler.validate_rpt(rpt, resourceListToValidate, g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
+            return json.dumps(resourceListToReturn)
+    print("No auth token, or auth token is invalid")
+    if resourceListToValidate:
+        # Generate ticket if token is not present
+        ticket = uma_handler.request_access_ticket(resourceListToValidate)
+
+        # Return ticket
+        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
+        response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
+        return response
+    response.status_code = 500
+    return response
+
+@app.route("/resources/<resource_id>", methods=["GET", "PUT", "POST", "DELETE"])
+def resource_operation(resource_id):
+    print("Processing " + request.method + " resource request...")
+    response = Response()
+
+    custom_mongo = Mongo_Handler()
+    uid = None
+    try:
+        head_protected = str(request.headers)
+        headers_protected = head_protected.split()
+        uid = oidc_client.verify_uid_headers(headers_protected)
+    except Exception as e:
+        print("Error While passing the token: "+str(uid))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    #add resource is outside of rpt validation, as it only requires a client pat to register a new resource
+    try:
+        if request.method == "POST":
+            #If UUID exists and resource requested has same UUID
+            if uid:
+                print("UID for the user found")
+            else:
+                response.status_code = 401
+                response.headers["Error"] = 'Could not get the UID for the user'
+                return response
+
+            if request.is_json:
+                data = request.get_json()
+                if data.get("name") and data.get("resource_scopes") and data.get("name") == resource_id:
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                else:
+                    response.status_code = 500
+                    response.headers["Error"] = "Invalid data or incorrect resource name passed on URL called for resource creation!"
+                    return response
+    except Exception as e:
+        print("Error while creating resource: "+str(e))
+        response.status_code = 500
+        response.headers["Error"] = str(e)
+        return response
+
+    rpt = request.headers.get('Authorization')
+    #If UUID exists and resource requested has same UUID
+    if uid and custom_mongo.verify_uid(resource_id, uid):
+        print("UID for the user found")
+    else:
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response
+
+    # Get resource scopes from resource_id
+    try:
+        scopes = uma_handler.get_resource_scopes(resource_id)
+    except Exception as e:
+        print("Error occured when retrieving resource scopes: " +str(e))
+        scopes = None
+    if rpt:
+        #Token was found, check for validation
+        print("Found rpt in request, validating...")
+        rpt = rpt.replace("Bearer ","").strip()
+        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
+            print("RPT valid, proceding...")
+            try:
+                #retrieve resource
+                if request.method == "GET":
+                    return uma_handler.get_resource(resource_id)
+                #update resource
+                elif request.method == "PUT":
+                    if request.is_json:
+                        data = request.get_json()
+                        if data.get("name") and data.get("resource_scopes"):
+                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                            response.status_code = 200
+                            return response
+                #delete resource
+                elif request.method == "DELETE":
+                    uma_handler.delete(resource_id)
+                    response.status_code = 204
+                    return response
+            except Exception as e:
+                print("Error while redirecting to resource: "+str(e))
+                response.status_code = 500
+                return response
+        
+    print("No auth token, or auth token is invalid")
+    #Scopes have already been queried at this time, so if they are not None, we know the resource has been found. This is to avoid a second query.
+    if scopes is not None:
+        print("Matched resource: "+str(resource_id))
+        # Generate ticket if token is not present
+        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+
+        # Return ticket
+        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
+        response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
+        return response
+    else:
+        print("Error, resource not found!")
+        response.status_code = 500
+        return response
+    
+
 
 # Start reverse proxy for x endpoint
 app.run(

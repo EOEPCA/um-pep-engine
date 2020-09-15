@@ -1,6 +1,5 @@
 language: python
 python: 3.6.9
-
 env:
   DOCKER_COMPOSE_VERSION: 1.25.4
 services:
@@ -8,6 +7,10 @@ services:
 
 jobs:
   include:
+    - stage: Testing
+      install: pip3 install -r src/requirements.txt
+      script: python3 -m unittest tests/testMongo.py
+    
     - stage: container creation and publishing
       install: skip
       script: travis/containerCreation.sh um-pep-engine
@@ -30,5 +33,5 @@ notifications:
 #    recipients:
 #      - a.person@acme.com
 #      - a.n.other@acme.com
-  on_success: change
-  on_failure: always
+  on_success: always
+  on_failure: never
