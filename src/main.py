@@ -191,16 +191,6 @@ def resource_request(path):
         scopes = uma_handler.get_resource_scopes(resource_id)
     
     uid = None
-    try:
-        head_protected = str(request.headers)
-        headers_protected = head_protected.split()
-        uid = oidc_client.verify_uid_headers(headers_protected)
-    except Exception as e:
-        print("Error While passing the token: "+str(uid))
-        response.status_code = 500 
-        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-        return response
     
     #If UUID exists and resource requested has same UUID
    
