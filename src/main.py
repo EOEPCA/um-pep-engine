@@ -24,6 +24,8 @@ from jwkest.jws import JWS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
+import logging
+logging.getLogger().setLevel(logging.INFO)
 ### INITIAL SETUP
 
 env_vars = [
@@ -103,7 +105,8 @@ uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 # Demo: register a new resource if it doesn't exist
 try:
-    uma_handler.create("ADES Service", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/ADES")
+    pass
+    #uma_handler.create("ADES", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/pep/ADES")
 except Exception as e:
     if "already exists" in str(e):
         print("Resource already existed, moving on")
@@ -181,9 +184,12 @@ def resource_request(path):
     custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id = custom_mongo.get_id_from_uri(path)
-    scopes = uma_handler.get_resource_scopes(resource_id)
-
+    resource_id = custom_mongo.get_id_from_uri("/"+path)
+    
+    scopes= None
+    if resource_id:
+        scopes = uma_handler.get_resource_scopes(resource_id)
+    
     uid = None
     try:
         head_protected = str(request.headers)
@@ -191,18 +197,13 @@ def resource_request(path):
         uid = oidc_client.verify_uid_headers(headers_protected)
     except Exception as e:
         print("Error While passing the token: "+str(uid))
-        response.status_code = 500
-        response.headers["Error"] = str(e)
+        response.status_code = 500 
+        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
         return response
-
+    
     #If UUID exists and resource requested has same UUID
-    if uid and custom_mongo.verify_uid(resource_id, uid):
-        print("UID for the user found")
-    else:
-        response.status_code = 401
-        response.headers["Error"] = 'Could not get the UID for the user'
-        return response
-
+   
     if rpt:
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
@@ -229,7 +230,7 @@ def resource_request(path):
     response = Response()
     if resource_id is not None:
         print("Matched resource: "+str(resource_id))
-        # Generate ticket if token is not present
+        # Generate ticket if token is not present        
         ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
         # Return ticket
         response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
@@ -275,7 +276,11 @@ def getResourceList():
             found_uid = True
     
     if found_uid is False:
+        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+        # Return ticket
+        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
         response.status_code = 401
+
         response.headers["Error"] = 'Could not get the UID for the user'
         return response
 
@@ -308,7 +313,6 @@ def getResourceList():
 def resource_operation(resource_id):
     print("Processing " + request.method + " resource request...")
     response = Response()
-
     custom_mongo = Mongo_Handler()
     uid = None
     try:
@@ -328,13 +332,16 @@ def resource_operation(resource_id):
             if uid:
                 print("UID for the user found")
             else:
+                ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+                # Return ticket
+                response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
                 response.status_code = 401
                 response.headers["Error"] = 'Could not get the UID for the user'
                 return response
 
             if request.is_json:
                 data = request.get_json()
-                if data.get("name") and data.get("resource_scopes") and data.get("name") == resource_id:
+                if data.get("name") and data.get("resource_scopes"):
                     return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:
                     response.status_code = 500
@@ -354,7 +361,6 @@ def resource_operation(resource_id):
         response.status_code = 401
         response.headers["Error"] = 'Could not get the UID for the user'
         return response
-
     # Get resource scopes from resource_id
     try:
         scopes = uma_handler.get_resource_scopes(resource_id)
