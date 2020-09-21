@@ -251,7 +251,7 @@ def getResourceList():
     try:
         head_protected = str(request.headers)
         headers_protected = head_protected.split()
-        uid = oidc_client.verify_uid_headers(headers_protected)
+        uid = oidc_client.verify_uid_headers(headers_protected, "sub")
     except Exception as e:
         print("Error While passing the token: "+str(uid))
         response.status_code = 500
@@ -266,6 +266,7 @@ def getResourceList():
             found_uid = True
     
     if found_uid is False:
+        #FIXME this WILL lead to an exception, as variable scopes is not defined
         ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
         # Return ticket
         response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
@@ -308,7 +309,7 @@ def resource_operation(resource_id):
     try:
         head_protected = str(request.headers)
         headers_protected = head_protected.split()
-        uid = oidc_client.verify_uid_headers(headers_protected)
+        uid = oidc_client.verify_uid_headers(headers_protected, "sub")
     except Exception as e:
         print("Error While passing the token: "+str(uid))
         response.status_code = 500
@@ -322,6 +323,7 @@ def resource_operation(resource_id):
             if uid:
                 print("UID for the user found")
             else:
+                #FIXME this WILL lead to an exception, as variable scopes is not defined
                 ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
                 # Return ticket
                 response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
@@ -335,7 +337,7 @@ def resource_operation(resource_id):
                     return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:
                     response.status_code = 500
-                    response.headers["Error"] = "Invalid data or incorrect resource name passed on URL called for resource creation!"
+                    response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
                     return response
     except Exception as e:
         print("Error while creating resource: "+str(e))

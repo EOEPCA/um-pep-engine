@@ -36,34 +36,29 @@ class OIDCHandler:
         
         return access_token
 
-    def verify_JWT_token(self, token):
+    def verify_JWT_token(self, token, key):
         try:
             payload = str(token).split(".")[1]
             paddedPayload = payload + '=' * (4 - len(payload) % 4)
             decoded = base64.b64decode(paddedPayload)
-            userInum = json.loads(decoded)["sub"]
-            return userInum
+            user_value = json.loads(decoded)[key]
+            return user_value
         except:
             print("Authenticated RPT Resource. No Valid JWT id token passed!")
-            return False
+            return None
 
-    def verify_OAuth_token(self, token):
+    def verify_OAuth_token(self, token, key):
         headers = { 'content-type': "application/json", 'Authorization' : 'Bearer '+token}
-        msg = "Host unreachable"
-        status = 401
         url = self.wkh.get(TYPE_OIDC, KEY_OIDC_USERINFO_ENDPOINT )
         try:
             res = get(url, headers=headers, verify=False)
-            status = res.status_code
-            msg = res.text
             user = (res.json())
-            return user['sub']
+            return user[key]
         except:
-            print("OIDC Handler: Get User Unique Identifier: Exception occured!")
-            status = 500
-            return status, {}
+            print("OIDC Handler: Get User "+key+": Exception occured!")
+            return None
 
-    def verify_uid_headers(self, headers_protected):
+    def verify_uid_headers(self, headers_protected, key):
         uid = None
         #Retrieve the token from the headers
         for i in headers_protected:
@@ -74,9 +69,9 @@ class OIDCHandler:
         if token_protected:
             #Compares between JWT id_token and OAuth access token to retrieve the UUID
             if len(str(token_protected))>40:
-                uid=self.verify_JWT_token(token_protected)
+                uid=self.verify_JWT_token(token_protected, key)
             else:
-                uid=self.verify_OAuth_token(token_protected)
+                uid=self.verify_OAuth_token(token_protected, key)
 
             return uid
         else:
