@@ -86,25 +86,42 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             response.status_code = 500
             response.headers["Error"] = str(e)
             return response
+        
+        #If UUID does not exist
+        if not uid:
+            print("UID for the user not found")
+            response.status_code = 401
+            response.headers["Error"] = 'Could not get the UID for the user'
+            return response
 
         #add resource is outside of rpt validation, as it only requires a client pat to register a new resource
         if request.method == "POST":
             return create_resource(uid, request, uma_handler, response)
 
-        rpt = request.headers.get('Authorization')
-        #If UUID exists and resource requested has same UUID
-        if uid and custom_mongo.verify_uid(resource_id, uid):
-            print("UID for the user found")
+        #Is this user the resource's owner?
+        is_owner = custom_mongo.verify_uid(resource_id, uid)
+        #Is this user an operator?
+        is_operator = oidc_client.verify_uid_headers(headers_protected, "operator")
+        #Above query returns a None in case of Exception, following condition asserts False for that case
+        if not is_operator:
+            is_operator = False
+
+        #If UUID exists and the user has sufficient access privileges
+        if uid and (is_owner or is_operator):
+            print("UID for the user found and is authorized")
         else:
             response.status_code = 401
-            response.headers["Error"] = 'Could not get the UID for the user'
+            response.headers["Error"] = 'No resource found for that ID or lack of access privilege'
             return response
+        
         # Get resource scopes from resource_id
         try:
             scopes = uma_handler.get_resource_scopes(resource_id)
         except Exception as e:
             print("Error occured when retrieving resource scopes: " +str(e))
             scopes = None
+
+        rpt = request.headers.get('Authorization')
         if rpt:
             #Token was found, check for validation
             print("Found rpt in request, validating...")
@@ -114,20 +131,19 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
                 try:
                     #retrieve resource
                     if request.method == "GET":
-                        return uma_handler.get_resource(resource_id)
+                        return get_resource(custom_mongo, resource_id)
                     #update resource
                     elif request.method == "PUT":
-                        if request.is_json:
-                            data = request.get_json()
-                            if data.get("name") and data.get("resource_scopes"):
-                                uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
-                                response.status_code = 200
-                                return response
+                        if is_owner or is_operator:
+                            return update_resource(request, resource_id, uid, response)
+                        else:
+                            return user_not_authorized(response)
                     #delete resource
                     elif request.method == "DELETE":
-                        uma_handler.delete(resource_id)
-                        response.status_code = 204
-                        return response
+                        if is_owner or is_operator:
+                            return delete_resource(uma_handler, resource_id, response)
+                        else:
+                            return user_not_authorized(response)
                 except Exception as e:
                     print("Error while redirecting to resource: "+str(e))
                     response.status_code = 500
@@ -151,13 +167,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
 
     def create_resource(uid, request, uma_handler, response):
         try:
-            #If UUID does not exist
-            if not uid:
-                print("UID for the user not found")
-                response.status_code = 401
-                response.headers["Error"] = 'Could not get the UID for the user'
-                return response
-
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes"):
@@ -173,23 +182,25 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             return response
 
     #TODO
-    def update_resource():
-        return
+    def update_resource(request, resource_id, uid, response):
+        if request.is_json:
+            data = request.get_json()
+            if data.get("name") and data.get("resource_scopes"):
+                uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                response.status_code = 200
+                return response
 
-    #TODO
-    def delete_resource():
-        return
+    def delete_resource(uma_handler, resource_id, response):
+        uma_handler.delete(resource_id)
+        response.status_code = 204
+        return response
 
-    #TODO
-    def get_resource():
-        return
+    def get_resource(custom_mongo, resource_id):
+        return custom_mongo.get_resource(resource_id)
 
-    #TODO
-    def is_user_authorized():
-        is_operator = False
-        is_owner = False
-        is_authorized = False
-        #TODO
-        return is_authorized
+    def user_not_authorized(response):
+        response.status_code = 403
+        response.headers["Error"] = 'User lacking sufficient access privileges'
+        return response
 
     return resources_bp
