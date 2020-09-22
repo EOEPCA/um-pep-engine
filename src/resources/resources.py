@@ -12,6 +12,7 @@ from utils import ClassEncoder
 def construct_blueprint(oidc_client, uma_handler, g_config):
     policy_bp = Blueprint('resources_bp', __name__)
 
+    #TODO switch to getting resources from DB instead of UMA queries
     @resources_bp.route("/resources", methods=["GET"])
     def get_resource_list():
         print("Retrieving all registed resources...")
@@ -129,21 +130,18 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
                 print("RPT valid, proceding...")
                 try:
-                    #retrieve resource
-                    if request.method == "GET":
-                        return get_resource(custom_mongo, resource_id)
-                    #update resource
-                    elif request.method == "PUT":
-                        if is_owner or is_operator:
+                    if is_owner or is_operator:
+                        #retrieve resource
+                        if request.method == "GET":
+                            return get_resource(custom_mongo, resource_id)
+                        #update resource
+                        elif request.method == "PUT":
                             return update_resource(request, resource_id, uid, response)
-                        else:
-                            return user_not_authorized(response)
-                    #delete resource
-                    elif request.method == "DELETE":
-                        if is_owner or is_operator:
+                        #delete resource
+                        elif request.method == "DELETE":
                             return delete_resource(uma_handler, resource_id, response)
-                        else:
-                            return user_not_authorized(response)
+                    else:
+                        return user_not_authorized(response)
                 except Exception as e:
                     print("Error while redirecting to resource: "+str(e))
                     response.status_code = 500
@@ -181,11 +179,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             response.headers["Error"] = str(e)
             return response
 
-    #TODO
     def update_resource(request, resource_id, uid, response):
         if request.is_json:
             data = request.get_json()
             if data.get("name") and data.get("resource_scopes"):
+                #TODO determine how the ownership is changed
                 uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 response.status_code = 200
                 return response
