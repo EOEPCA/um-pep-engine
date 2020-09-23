@@ -32,7 +32,8 @@ class Mongo_Handler:
                 k.append(found['resource_id'])
         if len(k)>0:
             return k[-1]
-        else: return None
+        else: 
+            return None
 
     def resource_exists(self, resource_id):
         '''
@@ -84,12 +85,12 @@ class Mongo_Handler:
         myquery = { "resource_id": resource_id }
         return col.find_one(myquery)
 
-    #TODO
     def get_all_resources(self):
         '''
             Gets all existing resources in database
         '''
-        return
+        col = self.db['resources']
+        return col.find()
 
     def delete_resource(self, resource_id):
         '''
