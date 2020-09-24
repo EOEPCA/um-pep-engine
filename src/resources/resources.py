@@ -77,10 +77,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             response.headers["Error"] = 'Could not get the UID for the user'
             return response
 
-        #add resource is outside of rpt validation, as it only requires a client pat to register a new resource
+        #add resource is outside of any extra validations, so it is called now
         if request.method == "POST":
             return create_resource(uid, request, uma_handler, response)
 
+        #otherwise continue with validations
         #Is this user the resource's owner?
         is_owner = custom_mongo.verify_uid(resource_id, uid)
         #Is this user an operator?
@@ -89,61 +90,24 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         if not is_operator:
             is_operator = False
 
-        #If UUID exists and the user has sufficient access privileges
-        if uid and (is_owner or is_operator):
-            print("UID for the user found and is authorized")
-        else:
-            response.status_code = 401
-            response.headers["Error"] = 'No resource found for that ID or lack of access privilege'
-            return response
-        
-        # Get resource scopes from resource_id
+        #Process the remainder GET/PUT(Update)/DELETE scenarios
         try:
-            scopes = uma_handler.get_resource_scopes(resource_id)
+            #retrieve resource
+            #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
+            if request.method == "GET":
+                return get_resource(custom_mongo, resource_id, response)
+            #Update/Delete requests should only be done by resource owners or operators
+            if is_owner or is_operator:
+                #update resource
+                elif request.method == "PUT":
+                    return update_resource(request, resource_id, uid, response)
+                #delete resource
+                elif request.method == "DELETE":
+                    return delete_resource(uma_handler, resource_id, response)
+            else:
+                return user_not_authorized(response)
         except Exception as e:
-            print("Error occured when retrieving resource scopes: " +str(e))
-            scopes = None
-
-        rpt = request.headers.get('Authorization')
-        if rpt:
-            #Token was found, check for validation
-            print("Found rpt in request, validating...")
-            rpt = rpt.replace("Bearer ","").strip()
-            if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
-                print("RPT valid, proceding...")
-                try:
-                    #retrieve resource
-                    #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
-                    if request.method == "GET":
-                        return get_resource(custom_mongo, resource_id)
-                    #Update/Delete requests should only be done by resource owners or operators
-                    if is_owner or is_operator:
-                        #update resource
-                        elif request.method == "PUT":
-                            return update_resource(request, resource_id, uid, response)
-                        #delete resource
-                        elif request.method == "DELETE":
-                            return delete_resource(uma_handler, resource_id, response)
-                    else:
-                        return user_not_authorized(response)
-                except Exception as e:
-                    print("Error while redirecting to resource: "+str(e))
-                    response.status_code = 500
-                    return response
-            
-        print("No auth token, or auth token is invalid")
-        #Scopes have already been queried at this time, so if they are not None, we know the resource has been found. This is to avoid a second query.
-        if scopes is not None:
-            print("Matched resource: "+str(resource_id))
-            # Generate ticket if token is not present
-            ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-
-            # Return ticket
-            response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-            response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-            return response
-        else:
-            print("Error, resource not found!")
+            print("Error while redirecting to resource: "+str(e))
             response.status_code = 500
             return response
 
@@ -210,15 +174,23 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         response.status_code = 204
         return response
 
-    def get_resource(custom_mongo, resource_id):
+    def get_resource(custom_mongo, resource_id, response):
     '''
         Gets an existing resource from local database.
         :param resource_id: unique resource ID
         :type resource_id: str
         :param custom_mongo: Custom handler for Mongo DB operations
         :type custom_mongo: Object of Class custom_mongo
+        :param response: response object
+        :type response: Response
     '''    
-        return custom_mongo.get_resource(resource_id)
+        resource = custom_mongo.get_resource(resource_id)
+        #If no resource was found, return a 404 Error
+        if not resource:
+            response.status_code = 404
+            response.headers["Error"] = "Resource not found"
+            return response
+        return resource
 
     def user_not_authorized(response):
     '''
