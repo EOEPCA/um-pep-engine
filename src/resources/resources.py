@@ -14,7 +14,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
 
     @resources_bp.route("/resources", methods=["GET"])
     def get_resource_list():
-        print("Retrieving all registed resources...")
+        print("Retrieving all registered resources...")
         #gets all resources registered on local DB
         custom_mongo = Mongo_Handler()
         resources = custom_mongo.get_all_resources()
@@ -22,7 +22,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         rpt = request.headers.get('Authorization')
         response = Response()
         resourceListToReturn = []
-        resourceListToValidate = []
 
         uid = None
         try:
@@ -35,30 +34,24 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             response.headers["Error"] = str(e)
             return response
 
-        if rpt:
-            print("Token found: " + rpt)
-            rpt = rpt.replace("Bearer ","").strip()
-            #Token was found, check for validation
-            for rsrc in resources:
-                #In here we will use the loop for 2 goals: build the resource list to validate (all of them) and the potential reply list of resources, to avoid a second loop
-                scopes = uma_handler.get_resource_scopes(rsrc["resource_id"])
-                resourceListToValidate.append({"resource_id": rsrc["resource_id"], "resource_scopes": scopes })
-                r = uma_handler.get_resource(rsrc["resource_id"])
-                entry = {'_id': r["_id"], 'name': r["name"]}
-                resourceListToReturn.append(entry)
-            if uma_handler.validate_rpt(rpt, resourceListToValidate, g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
-                return json.dumps(resourceListToReturn)
-        print("No auth token, or auth token is invalid")
-        if resourceListToValidate:
-            # Generate ticket if token is not present
-            ticket = uma_handler.request_access_ticket(resourceListToValidate)
-
-            # Return ticket
-            response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-            response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-            return response
-        response.status_code = 500
+        found_uid = False
+        #We will search for any resources that are owned by the user that is making this call
+        for rsrc in resources:
+            #If UUID exists and owns the requested resource
+            if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
+                print("Matching owned-resource found!")
+                #Add resource to return list
+                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"]})
+                found_uid = True
+        
+        #If user-owned resources were found, return the list
+        if found_uid:
+            return json.dumps(resourceListToReturn)
+        #Otherwise
+        response.status_code = 404
+        response.headers["Error"] = "No user-owned resources found!"
         return response
+
 
     @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "POST", "DELETE"])
     def resource_operation(resource_id):
