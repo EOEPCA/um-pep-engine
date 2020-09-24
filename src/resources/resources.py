@@ -91,7 +91,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         #Is this user the resource's owner?
         is_owner = custom_mongo.verify_uid(resource_id, uid)
         #Is this user an operator?
-        is_operator = oidc_client.verify_uid_headers(headers_protected, "operator")
+        is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
         #Above query returns a None in case of Exception, following condition asserts False for that case
         if not is_operator:
             is_operator = False
