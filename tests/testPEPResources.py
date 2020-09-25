@@ -46,7 +46,8 @@ class PEPResourceTest(unittest.TestCase):
                     "sub": cls.g_config["client_id"],
                     "aud": cls.__TOKEN_ENDPOINT,
                     "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600
+                    "exp": int(time.time())+3600,
+                    "isOperator": True
                 }
         _jws = JWS(_payload, alg="RS256")
         cls.jwt = _jws.sign_compact(keys=[_rsajwk])
@@ -79,7 +80,7 @@ class PEPResourceTest(unittest.TestCase):
             return 404, res.headers["Error"]
         if res.status_code == 200:
             return 200, res.json()
-        return 500, res.headers["Error"]
+        return 500, None
 
     def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
@@ -98,7 +99,7 @@ class PEPResourceTest(unittest.TestCase):
             return 200, res.json()
         if res.status_code == 404:
             return 404, res.headers["Error"]
-        return 500, res.headers["Error"]
+        return 500, None
 
     def deleteResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
@@ -107,7 +108,7 @@ class PEPResourceTest(unittest.TestCase):
             return 401, res.headers["Error"]
         if res.status_code == 204:
             return 204, None
-        return 500, res.headers["Error"]
+        return 500, None
 
     def updateResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
@@ -117,7 +118,7 @@ class PEPResourceTest(unittest.TestCase):
             return 401, res.headers["Error"]
         if res.status_code == 200:
             return 200, None
-        return 500, res.headers["Error"]
+        return 500, None
 
     #Monolithic test to avoid jumping through hoops to implement ordered tests
     #This test case assumes v0.3 of the PEP engine
@@ -141,7 +142,7 @@ class PEPResourceTest(unittest.TestCase):
         self.assertEqual(reply["_id"], self.resourceID)
         print("Get resource: Resource found.")
         print(reply)
-        del status, reply, id_token
+        del status, reply
         print("=======================")
         print("")
 
@@ -156,7 +157,7 @@ class PEPResourceTest(unittest.TestCase):
         self.assertTrue(found)
         print("Get resource list: Resource found on Internal List.")
         print(reply)
-        del status, reply, id_token
+        del status, reply
         print("=======================")
         print("")
         
@@ -167,10 +168,10 @@ class PEPResourceTest(unittest.TestCase):
         #Get resource to check if modification actually was successfull
         status, reply = self.getResource(id_token)
         self.assertEqual(reply["_id"], self.resourceID)
-        self.assertEqual(reply["name"], self.resourceName+"Mod")
+        self.assertEqual(reply["_name"], self.resourceName+"Mod")
         print("Update resource: Resource properly modified.")
         print(reply)
-        del status, reply, id_token
+        del status, reply
         print("=======================")
         print("")
 
@@ -178,7 +179,7 @@ class PEPResourceTest(unittest.TestCase):
         status, reply = self.deleteResource(id_token)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")
-        del status, reply, id_token
+        del status, reply
         print("=======================")
         print("")
 
@@ -192,14 +193,9 @@ class PEPResourceTest(unittest.TestCase):
 
         #Get resource list to make sure the resource was removed from internal cache
         status, reply = self.getResourceList(id_token)
-
-        found = False
-        for r in reply:
-            if r["_id"] == self.resourceID: found = True
-        self.assertFalse(found)
+        self.assertEqual(status, 404)
         print("Get resource list: Resource correctly removed from Internal List.")
-        print(reply)
-        del status, reply, id_token, found
+        del status, reply, id_token
         print("=======================")
         print("")
 

@@ -45,8 +45,8 @@ class OIDCHandler:
             decoded = decoded.decode('utf-8')
             user_value = json.loads(decoded)[key]
             return user_value
-        except:
-            print("Authenticated RPT Resource. No Valid JWT id token passed!")
+        except Exception as e:
+            print("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
             return None
 
     def verify_OAuth_token(self, token, key):

@@ -84,14 +84,19 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         if request.method == "POST":
             return create_resource(uid, request, uma_handler, response)
 
-        #otherwise continue with validations
-        #Is this user the resource's owner?
-        is_owner = custom_mongo.verify_uid(resource_id, uid)
-        #Is this user an operator?
-        is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
-        #Above query returns a None in case of Exception, following condition asserts False for that case
-        if not is_operator:
-            is_operator = False
+        try:
+            #otherwise continue with validations
+            #Is this user the resource's owner?
+            is_owner = custom_mongo.verify_uid(resource_id, uid)
+            #Is this user an operator?
+            is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
+            #Above query returns a None in case of Exception, following condition asserts False for that case
+            if not is_operator:
+                is_operator = False
+        except Exception as e:
+            print("Error while reading token: "+str(e))
+            response.status_code = 500
+            return response
 
         #Process the remainder GET/PUT(Update)/DELETE scenarios
         try:
@@ -188,11 +193,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :type response: Response
         '''    
         resource = custom_mongo.get_resource(resource_id)
+        
         #If no resource was found, return a 404 Error
         if not resource:
             response.status_code = 404
             response.headers["Error"] = "Resource not found"
             return response
+            
+        #We only want to return resource_id (as "_id") and name, so we prune the other entries
+        resource = {"_id": resource["resource_id"], "_name": resource["name"]}
         return resource
 
     def user_not_authorized(response):
