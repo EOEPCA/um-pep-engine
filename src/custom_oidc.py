@@ -41,6 +41,8 @@ class OIDCHandler:
             payload = str(token).split(".")[1]
             paddedPayload = payload + '=' * (4 - len(payload) % 4)
             decoded = base64.b64decode(paddedPayload)
+            #to remove byte-code
+            decoded = decoded.decode('utf-8')
             user_value = json.loads(decoded)[key]
             return user_value
         except:

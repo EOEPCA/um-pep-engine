@@ -6,11 +6,8 @@ from custom_uma import UMA_Handler, resource
 from custom_uma import rpt as class_rpt
 from custom_mongo import Mongo_Handler
 
-from xacml import parser, decision
-from utils import ClassEncoder
-
 def construct_blueprint(oidc_client, uma_handler, g_config):
-    policy_bp = Blueprint('resources_bp', __name__)
+    resources_bp = Blueprint('resources_bp', __name__)
 
     @resources_bp.route("/resources", methods=["GET"])
     def get_resource_list():
@@ -34,6 +31,12 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             response.headers["Error"] = str(e)
             return response
 
+        if not uid:
+            print("UID for the user not found")
+            response.status_code = 401
+            response.headers["Error"] = 'Could not get the UID for the user'
+            return response
+        
         found_uid = False
         #We will search for any resources that are owned by the user that is making this call
         for rsrc in resources:
@@ -99,7 +102,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
-                elif request.method == "PUT":
+                if request.method == "PUT":
                     return update_resource(request, resource_id, uid, response)
                 #delete resource
                 elif request.method == "DELETE":
@@ -112,7 +115,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             return response
 
     def create_resource(uid, request, uma_handler, response):
-    '''
+        '''
         Creates a new resource. Returns either the full resource data, or an error response
         :param uid: unique user ID used to register as owner of the resource
         :type uid: str
@@ -122,7 +125,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :type uma_handler: Object of Class custom_uma
         :param response: response object
         :type response: Response
-    '''
+        '''
         try:
             if request.is_json:
                 data = request.get_json()
@@ -139,7 +142,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             return response
 
     def update_resource(request, resource_id, uid, response):
-    '''
+        '''
         Updates an existing resource. Returns a 200 OK, or nothing (in order to trigger a ticket generation)
         :param uid: unique user ID used to register as owner of the resource
         :type uid: str
@@ -149,7 +152,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :type request: Dictionary
         :param response: response object
         :type response: Response
-    '''
+        '''
         if request.is_json:
             data = request.get_json()
             if data.get("name") and data.get("resource_scopes"):
@@ -161,7 +164,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
                 return response
 
     def delete_resource(uma_handler, resource_id, response):
-    '''
+        '''
         Deletes an existing resource.
         :param resource_id: unique resource ID
         :type resource_id: str
@@ -169,13 +172,13 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :type uma_handler: Object of Class custom_uma
         :param response: response object
         :type response: Response
-    '''
+        '''
         uma_handler.delete(resource_id)
         response.status_code = 204
         return response
 
     def get_resource(custom_mongo, resource_id, response):
-    '''
+        '''
         Gets an existing resource from local database.
         :param resource_id: unique resource ID
         :type resource_id: str
@@ -183,7 +186,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :type custom_mongo: Object of Class custom_mongo
         :param response: response object
         :type response: Response
-    '''    
+        '''    
         resource = custom_mongo.get_resource(resource_id)
         #If no resource was found, return a 404 Error
         if not resource:
@@ -193,11 +196,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         return resource
 
     def user_not_authorized(response):
-    '''
+        '''
         Method to generate error response when user does not have sufficient edit/delete privileges.
         :param response: response object
         :type response: Response
-    '''  
+        '''  
         response.status_code = 403
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
