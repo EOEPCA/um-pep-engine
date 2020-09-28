@@ -17,7 +17,7 @@ from Crypto.PublicKey import RSA
 from WellKnownHandler import WellKnownHandler, TYPE_SCIM, TYPE_OIDC, KEY_SCIM_USER_ENDPOINT, KEY_OIDC_TOKEN_ENDPOINT, KEY_OIDC_REGISTRATION_ENDPOINT, KEY_OIDC_SUPPORTED_AUTH_METHODS_TOKEN_ENDPOINT, TYPE_UMA_V2, KEY_UMA_V2_PERMISSION_ENDPOINT
 from eoepca_uma import rpt, resource
 
-class PEPResourceTest(unittest.TestCase):
+class ROChangeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.g_config = {}
@@ -40,6 +40,7 @@ class PEPResourceTest(unittest.TestCase):
         file_out.write(_public_key)
         file_out.close()
 
+        #Admin JWT
         _rsajwk = RSAKey(kid='RSA1', key=import_rsa_key(_private_key))
         _payload = { 
                     "iss": cls.g_config["client_id"],
@@ -50,9 +51,22 @@ class PEPResourceTest(unittest.TestCase):
                     "isOperator": True
                 }
         _jws = JWS(_payload, alg="RS256")
-        cls.jwt = _jws.sign_compact(keys=[_rsajwk])
+        cls.jwt_admin = _jws.sign_compact(keys=[_rsajwk])
+
+        #ROTest user JWT
+        _payload = { 
+                    "iss": cls.g_config["client_id"],
+                    "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
+                    "aud": cls.__TOKEN_ENDPOINT,
+                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                    "exp": int(time.time())+3600,
+                    "isOperator": False
+                }
+        _jws = JWS(_payload, alg="RS256")
+        cls.jwt_rotest = _jws.sign_compact(keys=[_rsajwk])
+
         cls.scopes = 'public_access'
-        cls.resourceName = "TestResourcePEP"
+        cls.resourceName = "TestROChangePEP"
         cls.PEP_HOST = "http://localhost:5566"
     
     @classmethod
@@ -60,19 +74,11 @@ class PEPResourceTest(unittest.TestCase):
         os.remove("private.pem")
         os.remove("public.pem")
 
-    def getJWT(self):
-        return self.jwt
+    def getJWTAdmin(self):
+        return self.jwt_admin
 
-    def getResourceList(self, id_token="filler"):
-        headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token)}
-        res = requests.get(self.PEP_HOST+"/resources", headers=headers, verify=False)
-        if res.status_code == 401:
-            return 401, res.headers["Error"]
-        if res.status_code == 404:
-            return 404, res.headers["Error"]
-        if res.status_code == 200:
-            return 200, res.json()
-        return 500, None
+    def getJWTROTest(self):
+        return self.jwt_rotest
 
     def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
@@ -98,16 +104,20 @@ class PEPResourceTest(unittest.TestCase):
         res = requests.delete(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
+        if res.status_code == 403:
+            return 403, res.headers["Error"]
         if res.status_code == 204:
             return 204, None
         return 500, None
 
     def updateResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        payload = { "resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod" }
+        payload = {"resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName, "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
         res = requests.put(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
+        if res.status_code == 403:
+            return 403, res.headers["Error"]
         if res.status_code == 200:
             return 200, None
         return 500, None
@@ -116,80 +126,43 @@ class PEPResourceTest(unittest.TestCase):
     #This test case assumes v0.3 of the PEP engine
     def test_resource(self):
         #Use a JWT token as id_token
-        id_token = self.getJWT()
+        id_token_admin = self.getJWTAdmin()
+        id_token_rotest = self.getJWTROTest()
 
-        #Create resource
-        status, self.resourceID = self.createTestResource(id_token)
+        #Create resource with owner ADMIN
+        status, self.resourceID = self.createTestResource(id_token_admin)
         self.assertEqual(status, 200)
         print("Create resource: Resource created with id: "+self.resourceID)
         del status
         print("=======================")
         print("")
 
-        #Get created resource
-        status, reply = self.getResource(id_token)
-        self.assertEqual(status, 200)
-        #And we check if the returned id matches the id we got on creation
-        #The reply message is in JSON format
-        self.assertEqual(reply["_id"], self.resourceID)
-        print("Get resource: Resource found.")
-        print(reply)
-        del status, reply
+        #self.resourceID = "7dec4bd4-e6c2-4b4e-9425-3d720cc8b33d"
+
+        #Change ownership with user ROTEST - should fail
+        status, _ = self.updateResource(id_token_rotest)
+        self.assertEqual(status, 403)
+        del status
+        print("Invalid Ownership Change request successfully denied")
         print("=======================")
         print("")
 
-        #Get resource list
-        status, reply = self.getResourceList(id_token)
+        #Change ownership with user ADMIN - should succeed
+        status, _ = self.updateResource(id_token_admin)
         self.assertEqual(status, 200)
-        #And we finally check if the returned list contains our created resource
-        #The reply message is a list of resources in JSON format
-        found = False
-        for r in reply:
-            if r["_id"] == self.resourceID: found = True
-        self.assertTrue(found)
-        print("Get resource list: Resource found on Internal List.")
-        print(reply)
-        del status, reply
-        print("=======================")
-        print("")
-        
-        #Modify created resource
-        #This will simply test if we can modify the pre-determined resource name with "Mod" at the end
-        status, _ = self.updateResource(id_token)
-        self.assertEqual(status, 200)
-        #Get resource to check if modification actually was successfull
-        status, reply = self.getResource(id_token)
-        self.assertEqual(reply["_id"], self.resourceID)
-        self.assertEqual(reply["_name"], self.resourceName+"Mod")
-        print("Update resource: Resource properly modified.")
-        print(reply)
-        del status, reply
+        del status
+        print("Valid Ownership Change request successfull")
         print("=======================")
         print("")
 
         #Delete created resource
-        status, reply = self.deleteResource(id_token)
+        status, reply = self.deleteResource(id_token_admin)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")
         del status, reply
         print("=======================")
         print("")
 
-        #Get resource to make sure it was deleted
-        status, _ = self.getResource(id_token)
-        self.assertEqual(status, 404)
-        print("Get resource: Resource correctly not found.")
-        del status
-        print("=======================")
-        print("")
-
-        #Get resource list to make sure the resource was removed from internal cache
-        status, reply = self.getResourceList(id_token)
-        self.assertEqual(status, 404)
-        print("Get resource list: Resource correctly removed from Internal List.")
-        del status, reply, id_token
-        print("=======================")
-        print("")
 
 if __name__ == '__main__':
     unittest.main()

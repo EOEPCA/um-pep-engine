@@ -76,11 +76,11 @@ if "client_id" not in g_config or "client_secret" not in g_config:
     print ("NOTICE: Client not found, generating one... ")
     scim_client = EOEPCA_Scim(g_config["auth_server_url"])
     new_client = scim_client.registerClient("PEP Dynamic Client",
-                                grantTypes = ["client_credentials"],
+                                grantTypes = ["client_credentials", "password"],
                                 redirectURIs = [""],
                                 logoutURI = "", 
                                 responseTypes = ["code","token","id_token"],
-                                scopes = ['openid', 'uma_protection', 'permission'],
+                                scopes = ['openid', 'uma_protection', 'permission', 'profile', 'is_operator'],
                                 token_endpoint_auth_method = ENDPOINT_AUTH_CLIENT_POST)
     print("NEW CLIENT created with ID '"+new_client["client_id"]+"', since no client config was found on config.json or environment")
 
@@ -105,13 +105,13 @@ oidc_client = OIDCHandler(g_wkh,
 uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 # Demo: register a new resource if it doesn't exist
-try:
-    pass
-    #uma_handler.create("ADES", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/pep/ADES")
-except Exception as e:
-    if "already exists" in str(e):
-        print("Resource already existed, moving on")
-    else: raise e
+# try:
+#     pass
+#     #uma_handler.create("ADES", ["Authenticated"], description="", ownership_id= '55b8f51f-4634-4bb0-a1dd-070ec5869d70', icon_uri="/pep/ADES")
+# except Exception as e:
+#     if "already exists" in str(e):
+#         print("Resource already existed, moving on")
+#     else: raise e
 
 app = Flask(__name__)
 app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key

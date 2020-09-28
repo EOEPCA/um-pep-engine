@@ -97,7 +97,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             print("Error while reading token: "+str(e))
             response.status_code = 500
             return response
-
+        
         #Process the remainder GET/PUT(Update)/DELETE scenarios
         try:
             #retrieve resource
@@ -166,6 +166,10 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
                 else:
                     uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 response.status_code = 200
+                return response
+            else:
+                response.status_code = 500
+                response.headers["Error"] = "Invalid request"
                 return response
 
     def delete_resource(uma_handler, resource_id, response):
