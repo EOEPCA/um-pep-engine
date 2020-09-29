@@ -32,7 +32,8 @@ class Mongo_Handler:
                 k.append(found['resource_id'])
         if len(k)>0:
             return k[-1]
-        else: return None
+        else: 
+            return None
 
     def resource_exists(self, resource_id):
         '''
@@ -41,8 +42,10 @@ class Mongo_Handler:
         '''
         col = self.db['resources']  
         myquery = { "resource_id": resource_id }
-        if col.find_one(myquery): return True
-        else: return False
+        if col.find_one(myquery):
+            return True
+        else:
+            return False
 
     def insert_in_mongo(self, resource_id: str, name: str, ownership_id: str, reverse_match_url: str):   
         '''
@@ -74,6 +77,21 @@ class Mongo_Handler:
             x = col.insert_one(myres)
             return x
 
+    def get_resource(self, resource_id):
+        '''
+            Gets an existing resource from the database, or None if not found
+        '''
+        col = self.db['resources']
+        myquery = { "resource_id": resource_id }
+        return col.find_one(myquery)
+
+    def get_all_resources(self):
+        '''
+            Gets all existing resources in database
+        '''
+        col = self.db['resources']
+        return col.find()
+
     def delete_resource(self, resource_id):
         '''
             Check the existence of the resource inside the database
@@ -102,7 +120,8 @@ class Mongo_Handler:
             a= col.find_one(myquery)
             if a:                
                 return True
-            else: return False
+            else:
+                return False
         except:
             print('no resource with that UID associated')
             return False
