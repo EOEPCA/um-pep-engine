@@ -48,7 +48,7 @@ class ROChangeTest(unittest.TestCase):
                     "aud": cls.__TOKEN_ENDPOINT,
                     "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
                     "exp": int(time.time())+3600,
-                    "isOperator": True
+                    "isOperator": False
                 }
         _jws = JWS(_payload, alg="RS256")
         cls.jwt_admin = _jws.sign_compact(keys=[_rsajwk])
@@ -156,7 +156,7 @@ class ROChangeTest(unittest.TestCase):
         print("")
 
         #Delete created resource
-        status, reply = self.deleteResource(id_token_admin)
+        status, reply = self.deleteResource(id_token_rotest)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")
         del status, reply
