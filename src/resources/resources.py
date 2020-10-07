@@ -13,7 +13,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
     def get_resource_list():
         print("Retrieving all registered resources...")
         #gets all resources registered on local DB
-        custom_mongo = Mongo_Handler()
+        custom_mongo = Mongo_Handler("resource_db", "resources")
         resources = custom_mongo.get_all_resources()
 
         rpt = request.headers.get('Authorization')
@@ -60,7 +60,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
     def resource_operation(resource_id):
         print("Processing " + request.method + " resource request...")
         response = Response()
-        custom_mongo = Mongo_Handler()
+        custom_mongo = Mongo_Handler("resource_db", "resources")
         uid = None
         #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
@@ -196,7 +196,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         :param response: response object
         :type response: Response
         '''    
-        resource = custom_mongo.get_resource(resource_id)
+        resource = custom_mongo.get_from_mongo("resource_id", resource_id)
         
         #If no resource was found, return a 404 Error
         if not resource:
