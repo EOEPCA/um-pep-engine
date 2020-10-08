@@ -37,8 +37,9 @@
 - [Usage & functionality](#usage--functionality)
 - [Developer documentation](#developer-documentation)
   - [Demo functionality](#demo-functionality)
+  - [Test functionality](#test-functionality)
   - [Endpoints](#endpoints)
-  - [Resources cache](#resources-cache)
+  - [Resources Repository](#resources-repository)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -104,6 +105,7 @@ The parameters that are accepted, and their meaning, are as follows:
 - **use_threads**: Toggle on/off (bool) the usage of threads for the proxy. Recommended to be left as True.
 - **debug_mode**: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.
 - **resource_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
+- **rpt_limit_uses**: Number of uses for each of the RPTs.
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 - **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 
