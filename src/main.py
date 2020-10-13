@@ -40,7 +40,8 @@ env_vars = [
 "PEP_USE_THREADS",
 "PEP_DEBUG_MODE",
 "PEP_RESOURCE_SERVER_ENDPOINT",
-"PEP_API_RPT_UMA_VALIDATION"]
+"PEP_API_RPT_UMA_VALIDATION",
+"PEP_RPT_LIMIT_USES"]
 
 use_env_var = True
 
@@ -185,11 +186,10 @@ def proxy_request(request, new_header):
 def resource_request(path):
     # Check for token
     print("Processing path: '"+path+"'")
-    custom_mongo = Mongo_Handler()
+    custom_mongo = Mongo_Handler("resource_db", "resources")
     rpt = request.headers.get('Authorization')
     # Get resource
     resource_id = custom_mongo.get_id_from_uri("/"+path)
-    
     scopes= None
     if resource_id:
         scopes = uma_handler.get_resource_scopes(resource_id)
@@ -202,7 +202,7 @@ def resource_request(path):
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
         # Validate for a specific resource
-        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"])) or not api_rpt_uma_validation:
+        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"])) or not api_rpt_uma_validation:
             print("RPT valid, accesing ")
             introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
             pat = oidc_client.get_new_pat()

@@ -55,6 +55,7 @@ The parameters that are accepted, and their meaning, are as follows:
 - **service_host**: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces
 - **service_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
 - **s_margin_rpt_valid**: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using **5** will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.
+- **rpt_limit_uses**: Number of uses for each of the RPTs.
 - **check_ssl_certs**: Toggle on/off (bool) to check certificates in all requests. This should be forced to True in a production environment
 - **use_threads**: Toggle on/off (bool) the usage of threads for the proxy. Recommended to be left as True.
 - **debug_mode**: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.
