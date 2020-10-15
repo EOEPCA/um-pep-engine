@@ -16,6 +16,7 @@ from custom_oidc import OIDCHandler
 from custom_uma import UMA_Handler, resource
 from custom_uma import rpt as class_rpt
 from custom_mongo import Mongo_Handler
+from handlers.policy_handler import policy_handler
 import resources.resources as resources
 import os
 import sys
@@ -41,7 +42,10 @@ env_vars = [
 "PEP_DEBUG_MODE",
 "PEP_RESOURCE_SERVER_ENDPOINT",
 "PEP_API_RPT_UMA_VALIDATION",
-"PEP_RPT_LIMIT_USES"]
+"PEP_RPT_LIMIT_USES",
+"PEP_PDP_URL",
+"PEP_PDP_PORT",
+"PEP_PDP_POLICY_ENDPOINT"]
 
 use_env_var = True
 
@@ -114,11 +118,14 @@ uma_handler.status()
 #         print("Resource already existed, moving on")
 #     else: raise e
 
+#PDP Policy Handler
+pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
+
 app = Flask(__name__)
 app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
 # Register api blueprints (module endpoints)
-app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, g_config))
+app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
 
 def generateRSAKeyPair():
     _rsakey = RSA.generate(2048)

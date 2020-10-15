@@ -5,8 +5,9 @@ from custom_oidc import OIDCHandler
 from custom_uma import UMA_Handler, resource
 from custom_uma import rpt as class_rpt
 from custom_mongo import Mongo_Handler
+from handlers.policy_handler import policy_handler
 
-def construct_blueprint(oidc_client, uma_handler, g_config):
+def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
 
     @resources_bp.route("/resources", methods=["GET"])
@@ -87,7 +88,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             #Here we register a default ownership policy to the new resource, with the PDP
             if not resource_reply.status_code:
                 resource_id = resource_reply
-                policy_reply = #TODO call to policy_handler class
+                policy_reply = pdp_policy_handler.create_policy(get_default_ownership_policy_body(resource_id, uid), #TODO extract jwt)
                 if policy_reply.status_code == 200:
                     return resource_id
                 response.status_code = policy_reply.status_code
