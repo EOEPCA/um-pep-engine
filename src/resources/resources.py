@@ -82,7 +82,18 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
 
         #add resource is outside of any extra validations, so it is called now
         if request.method == "POST":
-            return create_resource(uid, request, uma_handler, response)
+            resource_reply = create_resource(uid, request, uma_handler, response)
+            #If the reply does not contain a status_code, the creation was successful
+            #Here we register a default ownership policy to the new resource, with the PDP
+            if not resource_reply.status_code:
+                resource_id = resource_reply
+                policy_reply = #TODO call to policy_handler class
+                if policy_reply.status_code == 200:
+                    return resource_id
+                response.status_code = policy_reply.status_code
+                response.headers["Error"] = "Error when registering resource ownership policy!"
+                return response
+            return resource_reply
 
         try:
             #otherwise continue with validations
@@ -217,5 +228,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         response.status_code = 403
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
+
+    def get_default_ownership_policy_cfg(resource_id, user_name):
+        return { "resource_id": resource_id, "rules": [{ "AND": [ {"EQUAL": {"user_name" : user_name } }] }] }
+
+    def get_default_ownership_policy_body(resource_id, user_name):
+        name = "Default Ownership Policy"
+        description = "This is the default ownership policy for created resources through PEP"
+        policy_cfg = get_default_ownership_policy_cfg(resource_id, user_name)
+        scopes = ["Authenticated"]
+        return {"name": name, "description": description, "policy_cfg": policy_cfg, "scopes": scopes}
 
     return resources_bp
