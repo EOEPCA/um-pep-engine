@@ -230,7 +230,7 @@ def resource_request(path):
         print("No matched resource, passing through to resource server to handle")
         # In this case, the PEP doesn't have that resource handled, and just redirects to it.
         try:
-            cont = get(g_config["resource_server_endpoint"]+"/"+path, headers=request.headers).content
+            cont = get(g_config["resource_server_endpoint"]+request.full_path, headers=request.headers).content
             return cont
         except Exception as e:
             print("Error while redirecting to resource: "+str(e))
