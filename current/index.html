@@ -1302,7 +1302,7 @@ Ticket generation as per the UMA 2.0 standard, are only valid for that requested
 <div class="sect3">
 <h4 id="_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</h4>
 <div class="paragraph">
-<p>The PEP when presented with an RPT in an <code>Authorization</code> HTTP header, will check the validity of this token for the requested resource. This token is valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker. The validation of the rpt token was extended by including a new parameter that allows to establish the number of uses of the rpt. To store the rpts that will be used will be stored in the database with the number of uses that the rpt has.</p>
+<p>The PEP when presented with an RPT in an <code>Authorization</code> HTTP header, will check the validity of this token for the requested resource. This token is only valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker.</p>
 </div>
 <div class="paragraph">
 <p>The PEP will only protect the resources that it recognizes as such. This means that, even without an RPT, the PEP will alllow a client to pass-through directly to the resource server if there is no identified resource that matches what the client is requesting.</p>
@@ -1451,9 +1451,6 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <p><strong>s_margin_rpt_valid</strong>: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using <strong>5</strong> will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.</p>
 </li>
 <li>
-<p><strong>rpt_limit_uses</strong>: Number of uses for each of the RPTs.</p>
-</li>
-<li>
 <p><strong>check_ssl_certs</strong>: Toggle on/off (bool) to check certificates in all requests. This should be forced to True in a production environment</p>
 </li>
 <li>
@@ -1597,7 +1594,7 @@ The main methods for the interaction with the database are displayed in this dat
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-10-21 11:03:35 UTC
+Last updated 2020-10-22 16:41:53 UTC
 </div>
 </div>
 </body>
