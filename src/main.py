@@ -194,7 +194,7 @@ def resource_request(path):
     custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id = custom_mongo.get_id_from_uri("/"+path)
+    resource_id = custom_mongo.get_id_from_uri(g_config["proxy_endpoint"]+"/"+path)
     
     scopes= None
     if resource_id:
