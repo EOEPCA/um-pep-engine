@@ -62,6 +62,15 @@ else:
         else:
             g_config[env_var_config.lower()] = os.environ[env_var].replace('"', '')
 
+# Sanitize proxy endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
+proxy_endpoint_reject_list = ["/", "/resources", "resources"]
+if g_config["proxy_endpoint"] in proxy_endpoint_reject_list:
+    raise Exception("PROXY_ENDPOINT value contains on of invalid values: " + str(proxy_endpoint_reject_list))
+if g_config["proxy_endpoint"][0] is not "/":
+    g_config["proxy_endpoint"] = "/" + g_config["proxy_endpoint"]
+if g_config["proxy_endpoint"][-1] is "/":
+    g_config["proxy_endpoint"] = g_config["proxy_endpoint"][:-1]
+
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
 
@@ -153,14 +162,15 @@ def split_headers(headers):
 
 def proxy_request(request, new_header):
     try:
+        endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
         if request.method == 'POST':
-            res = post(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
+            res = post(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'GET':
-            res = get(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
+            res = get(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
         elif request.method == 'PUT':
-            res = put(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
+            res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'DELETE':
-            res = delete(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
+            res = delete(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
         else:
             response = Response()
             response.status_code = 501
@@ -184,7 +194,7 @@ def resource_request(path):
     custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id = custom_mongo.get_id_from_uri("/"+path)
+    resource_id = custom_mongo.get_id_from_uri(g_config["proxy_endpoint"]+"/"+path)
     
     scopes= None
     if resource_id:
@@ -230,7 +240,9 @@ def resource_request(path):
         print("No matched resource, passing through to resource server to handle")
         # In this case, the PEP doesn't have that resource handled, and just redirects to it.
         try:
-            cont = get(g_config["resource_server_endpoint"]+request.full_path, headers=request.headers).content
+            #Takes the full path, which contains query parameters, and removes the proxy_endpoint at the start
+            endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
+            cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
             return cont
         except Exception as e:
             print("Error while redirecting to resource: "+str(e))
@@ -244,7 +256,6 @@ def getResourceList():
     rpt = request.headers.get('Authorization')
     response = Response()
     resourceListToReturn = []
-    resourceListToValidate = []
 
     custom_mongo = Mongo_Handler()
     uid = None
@@ -258,44 +269,21 @@ def getResourceList():
         response.headers["Error"] = str(e)
         return response
 
-    found_uid = False
-    for riD_uid in resources:
-        #If UUID exists and resource requested has same UUID
-        if uid and custom_mongo.verify_uid(riD_uid, uid):
-            print("UID for the user found")
-            found_uid = True
-    
-    if found_uid is False:
-        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-        # Return ticket
-        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
+    if not uid:
+        print("UID for the user not found")
         response.status_code = 401
-
         response.headers["Error"] = 'Could not get the UID for the user'
         return response
 
-    if rpt:
-        print("Token found: " + rpt)
-        rpt = rpt.replace("Bearer ","").strip()
-        #Token was found, check for validation
-        for rID in resources:
-            #In here we will use the loop for 2 goals: build the resource list to validate (all of them) and the potential reply list of resources, to avoid a second loop
+    for rID in resources:
+        if custom_mongo.verify_uid(rID, uid):
             scopes = uma_handler.get_resource_scopes(rID)
-            resourceListToValidate.append({"resource_id": rID, "resource_scopes": scopes })
             r = uma_handler.get_resource(rID)
             entry = {'_id': r["_id"], 'name': r["name"]}
             resourceListToReturn.append(entry)
-        if uma_handler.validate_rpt(rpt, resourceListToValidate, g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
-            return json.dumps(resourceListToReturn)
-    print("No auth token, or auth token is invalid")
-    if resourceListToValidate:
-        # Generate ticket if token is not present
-        ticket = uma_handler.request_access_ticket(resourceListToValidate)
 
-        # Return ticket
-        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-        response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-        return response
+    if resourceListToReturn:
+        return json.dumps(resourceListToReturn)
     response.status_code = 500
     return response
 
@@ -315,20 +303,16 @@ def resource_operation(resource_id):
         response.headers["Error"] = str(e)
         return response
 
+    #If UUID does not exist
+    if not uid:
+        print("UID for the user not found")
+        response.status_code = 401
+        response.headers["Error"] = 'Could not get the UID for the user'
+        return response   
+
     #add resource is outside of rpt validation, as it only requires a client pat to register a new resource
     try:
         if request.method == "POST":
-            #If UUID exists and resource requested has same UUID
-            if uid:
-                print("UID for the user found")
-            else:
-                ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-                # Return ticket
-                response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-                response.status_code = 401
-                response.headers["Error"] = 'Could not get the UID for the user'
-                return response
-
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes"):
@@ -357,50 +341,31 @@ def resource_operation(resource_id):
     except Exception as e:
         print("Error occured when retrieving resource scopes: " +str(e))
         scopes = None
-    if rpt:
-        #Token was found, check for validation
-        print("Found rpt in request, validating...")
-        rpt = rpt.replace("Bearer ","").strip()
-        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], g_config["s_margin_rpt_valid"]) or not api_rpt_uma_validation:
-            print("RPT valid, proceding...")
-            try:
-                #retrieve resource
-                if request.method == "GET":
-                    return uma_handler.get_resource(resource_id)
-                #update resource
-                elif request.method == "PUT":
-                    if request.is_json:
-                        data = request.get_json()
-                        if data.get("name") and data.get("resource_scopes"):
-                            uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
-                            response.status_code = 200
-                            return response
-                #delete resource
-                elif request.method == "DELETE":
-                    uma_handler.delete(resource_id)
-                    response.status_code = 204
+    try:
+        #retrieve resource
+        if request.method == "GET":
+            return uma_handler.get_resource(resource_id)
+        #update resource
+        elif request.method == "PUT":
+            if request.is_json:
+                data = request.get_json()
+                if data.get("name") and data.get("resource_scopes"):
+                    uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    response.status_code = 200
                     return response
-            except Exception as e:
-                print("Error while redirecting to resource: "+str(e))
-                response.status_code = 500
-                return response
-        
-    print("No auth token, or auth token is invalid")
-    #Scopes have already been queried at this time, so if they are not None, we know the resource has been found. This is to avoid a second query.
-    if scopes is not None:
-        print("Matched resource: "+str(resource_id))
-        # Generate ticket if token is not present
-        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-
-        # Return ticket
-        response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-        response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-        return response
-    else:
-        print("Error, resource not found!")
+        #delete resource
+        elif request.method == "DELETE":
+            uma_handler.delete(resource_id)
+            response.status_code = 204
+            return response
+    except Exception as e:
+        print("Error while redirecting to resource: "+str(e))
         response.status_code = 500
         return response
-    
+        
+    print("Error, resource not found!")
+    response.status_code = 500
+    return response
 
 
 # Start reverse proxy for x endpoint
