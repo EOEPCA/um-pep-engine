@@ -194,7 +194,7 @@ def resource_request(path):
     custom_mongo = Mongo_Handler()
     rpt = request.headers.get('Authorization')
     # Get resource
-    resource_id = custom_mongo.get_id_from_uri(g_config["proxy_endpoint"]+"/"+path)
+    resource_id = custom_mongo.get_id_from_uri("/"+path)
     
     scopes= None
     if resource_id:
@@ -316,7 +316,11 @@ def resource_operation(resource_id):
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes"):
-                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    #Re-issue v0.2.3: ensure registered path does NOT contain proxy endpoint prefix
+                    icon_uri_path = data.get("icon_uri")
+                    if icon_uri_path.startswith(g_config["proxy_endpoint"]):
+                        icon_uri_path = icon_uri_path.replace(g_config["proxy_endpoint"], '', 1)
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, icon_uri_path)
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data or incorrect resource name passed on URL called for resource creation!"
