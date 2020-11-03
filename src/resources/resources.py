@@ -1,10 +1,10 @@
 from flask import Blueprint, request, Response, jsonify
 import json
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
-from custom_oidc import OIDCHandler
-from custom_uma import UMA_Handler, resource
-from custom_uma import rpt as class_rpt
-from custom_mongo import Mongo_Handler
+from handlers.oidc_handler import OIDCHandler
+from handlers.uma_handler import UMA_Handler, resource
+from handlers.uma_handler import rpt as class_rpt
+from handlers.mongo_handler import Mongo_Handler
 from handlers.policy_handler import policy_handler
 
 def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
@@ -88,7 +88,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #Here we register a default ownership policy to the new resource, with the PDP
             if not resource_reply.status_code:
                 resource_id = resource_reply
-                policy_reply = pdp_policy_handler.create_policy(get_default_ownership_policy_body(resource_id, uid), #TODO extract jwt)
+                policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
                 if policy_reply.status_code == 200:
                     return resource_id
                 response.status_code = policy_reply.status_code

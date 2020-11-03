@@ -20,7 +20,7 @@ class policy_handler:
 
         Returns: HTTP reply from PDP Policy Endpoint
     '''
-    def create_policy(self, policy_body, jwt):
-        headers = { 'content-type': "application/json", 'Authorization': 'Bearer '+str(jwt)}
+    def create_policy(self, policy_body, input_headers):
+        headers = input_headers
         data = policy_body
         return post(self.url+':'+self.port+self.endpoint, headers=headers, data=data)

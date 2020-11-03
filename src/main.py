@@ -12,10 +12,10 @@ import json
 
 from config import load_config, save_config
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
-from custom_oidc import OIDCHandler
-from custom_uma import UMA_Handler, resource
-from custom_uma import rpt as class_rpt
-from custom_mongo import Mongo_Handler
+from handlers.oidc_handler import OIDCHandler
+from handlers.uma_handler import UMA_Handler, resource
+from handlers.uma_handler import rpt as class_rpt
+from handlers.mongo_handler import Mongo_Handler
 from handlers.policy_handler import policy_handler
 import resources.resources as resources
 import os
