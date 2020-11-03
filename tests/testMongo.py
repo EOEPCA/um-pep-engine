@@ -55,7 +55,7 @@ class Mongo_Unit_Test(unittest.TestCase):
         if raise_for_status:
             mock_resp.raise_for_status.side_effect = raise_for_status
         mongo = Mongo_Handler("resource_db", "resources")
-        self.assertEqual(str(mongo)[:-16], '<src.custom_mongo.Mongo_Handler object at')
+        self.assertEqual(str(mongo)[:-16], '<src.handlers.mongo_handler.Mongo_Handler object at')
     
    
     @mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
@@ -69,7 +69,7 @@ class Mongo_Unit_Test(unittest.TestCase):
 
    
     #@mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
-    @mock.patch('src.custom_mongo.Mongo_Handler.insert_resource_in_mongo', side_effect=mocked_insert_mongo)
+    @mock.patch('src.handlers.mongo_handler.Mongo_Handler.insert_resource_in_mongo', side_effect=mocked_insert_mongo)
     @mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
     def test_insert_mongo(self, mock_insert_test,raise_for_status=None):
         mock_resp = mock.Mock()
