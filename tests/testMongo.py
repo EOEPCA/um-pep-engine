@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pymongo
 from pymongo import MongoClient
-from handlers.mongo_handler import Mongo_Handler
+from src.handlers.mongo_handler import Mongo_Handler
 import pytest
 import unittest
 import mock
