@@ -135,7 +135,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             if request.is_json:
                 data = request.get_json()
                 if data.get("name") and data.get("resource_scopes"):
-                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    #Re-issue v0.2.3: ensure registered path does NOT contain proxy endpoint prefix
+                    icon_uri_path = data.get("icon_uri")
+                    if icon_uri_path.startswith(g_config["proxy_endpoint"]):
+                        icon_uri_path = icon_uri_path.replace(g_config["proxy_endpoint"], '', 1)
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, icon_uri_path)
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
