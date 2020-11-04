@@ -71,11 +71,17 @@ else:
 # Sanitize proxy endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
 proxy_endpoint_reject_list = ["/", "/resources", "resources"]
 if g_config["proxy_endpoint"] in proxy_endpoint_reject_list:
-    raise Exception("PROXY_ENDPOINT value contains on of invalid values: " + str(proxy_endpoint_reject_list))
+    raise Exception("PROXY_ENDPOINT value contains one of invalid values: " + str(proxy_endpoint_reject_list))
 if g_config["proxy_endpoint"][0] is not "/":
     g_config["proxy_endpoint"] = "/" + g_config["proxy_endpoint"]
 if g_config["proxy_endpoint"][-1] is "/":
     g_config["proxy_endpoint"] = g_config["proxy_endpoint"][:-1]
+
+# Sanitize PDP "policy" endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
+if g_config["pdp_policy_endpoint"][0] is not "/":
+    g_config["pdp_policy_endpoint"] = "/" + g_config["pdp_policy_endpoint"]
+if g_config["pdp_policy_endpoint"][-1] is not "/":
+    g_config["pdp_policy_endpoint"] = "/" + g_config["pdp_policy_endpoint"]
 
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
