@@ -23,4 +23,4 @@ class policy_handler:
     def create_policy(self, policy_body, input_headers):
         headers = input_headers
         data = policy_body
-        return post(self.url+':'+self.port+self.endpoint, headers=headers, data=data)
+        return post(self.url+':'+str(self.port)+self.endpoint, headers=headers, data=data)

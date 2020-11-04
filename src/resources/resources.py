@@ -84,9 +84,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #add resource is outside of any extra validations, so it is called now
         if request.method == "POST":
             resource_reply = create_resource(uid, request, uma_handler, response)
-            #If the reply does not contain a status_code, the creation was successful
+            #If the reply is not of type Response, the creation was successful
             #Here we register a default ownership policy to the new resource, with the PDP
-            if not resource_reply.status_code:
+            if not isinstance(resource_reply, Response):
                 resource_id = resource_reply
                 policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
                 if policy_reply.status_code == 200:
