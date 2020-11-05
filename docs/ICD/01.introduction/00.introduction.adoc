@@ -1,0 +1,6 @@
+
+= Introduction
+
+== Purpose and Scope
+
+This document presents the {component-name} Interfaces for the Common Architecture. It servers as a complementary document to its corresponding Software Design Document.
