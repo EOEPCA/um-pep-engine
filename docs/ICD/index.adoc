@@ -3,8 +3,8 @@
 :email: <Eoepca.SystemTeam@telespazio.com>
 :project: EOEPCA
 :project-name: EO Exploitation Platform Common Architecture
-:component-name: Login Service
-:component-github-name: um-login-service
+:component-name: Policy Enforcement Point
+:component-github-name: um-pep-engine
 :doc-title: {component-name} Interface Control Document
 :doc-num: {project}.ICD.xxx
 :revnumber: 1.0
