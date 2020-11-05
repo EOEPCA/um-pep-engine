@@ -1,9 +1,8 @@
-[[Interfaces]]
-= Login Service Interfaces
+= Policy Enforcement Point Interfaces
 
 [abstract]
 .Abstract
-OpenID Connect Provider (OP) & UMA Authorization Server (AS)
+This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. <br> <br> Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. <br> <br> As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters.
 
 
 // markup not found, no include::{specDir}intro.adoc[opts=optional]
@@ -13,1739 +12,23 @@ OpenID Connect Provider (OP) & UMA Authorization Server (AS)
 == Endpoints
 
 
-[.Authentication]
-=== OIDC - Authentication
+[.PolicyEnforcement]
+=== PolicyEnforcement
 
 
-[.endSession]
-==== endSession
+[.proxyPathDelete]
+==== Proxy DELETE
     
-`GET /end_session`
+`DELETE /proxy/{path}`
 
-End current session.
+Request to Back-End Service
 
 ===== Description 
 
-End current session.
+This operation propagates all headers
 
 
-// markup not found, no include::{specDir}end_session/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-====== Query Parametersa
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required 
-
-| id_token_hint 
-| Previously issued ID Token (id_token) passed to the logout endpoint as a hint about the End-User&#39;s current authenticated session with the Client. This is used as an indication of the identity of the End-User that the RP is requesting be logged out by the OP. The OP need not be listed as an audience of the ID Token when it is used as an id_token_hint value.  
-| - 
- 
-
-| post_logout_redirect_uri 
-| URL to which the RP is requesting that the End-User&#39;s User Agent be redirected after a logout has been performed. The value MUST have been previously registered with the OP, either using the post_logout_redirect_uris Registration parameter or via another mechanism. If supplied, the OP SHOULD honor this request following the logout.  
-| - 
- 
-
-| state 
-| Opaque value used by the RP to maintain state between the logout request and the callback to the endpoint specified by the post_logout_redirect_uri parameter. If included in the logout request, the OP passes this value back to the RP using the state query parameter when redirecting the User Agent back to the RP.  
-| - 
- 
-
-| session_id 
-| Session Id  
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK - User redirected to logout page
-|  <<>>
-
-
-| 302
-| Resource Found.
-|  <<>>
-
-
-| 400
-| Error codes for end session endpoint.
-|  <<EndSessionError>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}end_session/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}end_session/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :end_session/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}end_session/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getAuthorize]
-==== GET Authorize
-    
-`GET /authorize`
-
-The Authorization Endpoint performs Authentication of the End-User.
-
-===== Description 
-
-End-User Authentication and Authorization done by sending the User Agent to the Authorization Endpoint using request parameters defined by OAuth 2.0 and OpenID Connect.
-
-
-// markup not found, no include::{specDir}authorize/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| scope 
-| OpenID Connect requests MUST contain the openid scope value. If the openid scope value is not present, the behavior is entirely unspecified. Other scope values MAY be present.  
-| X 
- 
-
-| response_type 
-| OAuth 2.0 Response Type value that determines the authorization processing flow to be used, including what parameters are returned from the endpoints used.  
-| X 
- 
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server.  
-| X 
- 
-
-| redirect_uri 
-| Redirection URI to which the response will be sent. This URI MUST exactly match one of the Redirection URI values for the Client pre-registered at the OpenID Provider.  
-| X 
- 
-
-| state 
-| Opaque value used to maintain state between the request and the callback.  
-| - 
- 
-
-| response_mode 
-| Informs the Authorization Server of the mechanism to be used for returning parameters from the Authorization Endpoint.  
-| - 
- 
-
-| nonce 
-| String value used to associate a Client session with an ID Token, and to mitigate replay attacks.  
-| - 
- 
-
-| display 
-| ASCII string value that specifies how the Authorization Server displays the authentication and consent user interface pages to the End-User.  
-| - 
- 
-
-| prompt 
-| Space delimited, case sensitive list of ASCII string values that specifies whether the Authorization Server prompts the End-User for reauthentication and consent. The defined values are - none, login, consent, select_account.  
-| - 
- 
-
-| max_age 
-| Maximum Authentication Age. Specifies the allowable elapsed time in seconds since the last time the End-User was actively authenticated by the OP.  
-| - 
- 
-
-| ui_locales 
-| End-User&#39;s preferred languages and scripts for the user interface, represented as a space-separated list of BCP47 [RFC5646] language tag values, ordered by preference.  
-| - 
- 
-
-| id_token_hint 
-| ID Token previously issued by the Authorization Server being passed as a hint about the End-User&#39;s current or past authenticated session with the Client. If the End-User identified by the ID Token is logged in or is logged in by the request, then the Authorization Server returns a positive response.  
-| - 
- 
-
-| login_hint 
-| Hint to the Authorization Server about the login identifier the End-User might use to log in (if necessary).  
-| - 
- 
-
-| acr_values 
-| Requested Authentication Context Class Reference values. Space-separated string that specifies the acr values that the Authorization Server is being requested to use for processing this Authentication Request, with the values appearing in order of preference.  
-| - 
- 
-
-| amr_values 
-| AMR Values.  
-| - 
- 
-
-| request 
-| This parameter enables OpenID Connect requests to be passed in a single, self-contained parameter and to be optionally signed and/or encrypted. The parameter value is a Request Object value. It represents the request as a JWT whose Claims are the request parameters.  
-| - 
- 
-
-| request_uri 
-| This parameter enables OpenID Connect requests to be passed by reference, rather than by value. The request_uri value is a URL using the https scheme referencing a resource containing a Request Object value, which is a JWT containing the request parameters.  
-| - 
- 
-
-| request_session_id 
-| Request session id.  
-| - 
- 
-
-| session_id 
-| Session id of this call.  
-| - 
- 
-
-| origin_headers 
-| Origin headers. Used in custom workflows.  
-| - 
- 
-
-| code_challenge 
-| PKCE code challenge.  
-| - 
- 
-
-| code_challenge_method 
-| PKCE code challenge method.  
-| - 
- 
-
-| custom_response_headers 
-| Custom Response Headers.  
-| - 
- 
-
-| claims 
-| Requested Claims.  
-| - 
- 
-
-| auth_req_id 
-| CIBA authentication request Id.  
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<>>
-
-
-| 302
-| Error codes for authorization endpoint.
-|  <<AuthorizeError>>
-
-
-| 400
-| Invalid parameters are provided to endpoint.
-|  <<ErrorResponse>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}authorize/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}authorize/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :authorize/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}authorize/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getClientinfo]
-==== GET Clientinfo
-    
-`GET /clientinfo`
-
-To get Claims details about the registered client.
-
-===== Description 
-
-The ClientInfo Endpoint is an OAuth 2.0 Protected Resource that returns Claims about the registered client.
-
-
-// markup not found, no include::{specDir}clientinfo/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-|   
-| - 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| access_token 
-|   
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-<<ClientInfoResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<ClientInfoResponse>>
-
-
-| 400
-| Invalid Request are provided to endpoint.
-|  <<inline_response_400>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}clientinfo/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}clientinfo/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :clientinfo/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}clientinfo/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getIntrospection]
-==== GET Introspection
-    
-`GET /introspection`
-
-The Introspection OAuth 2 Endpoint.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint.
-
-
-// markup not found, no include::{specDir}introspection/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-|   
-| X 
- 
-
-| token_type_hint 
-| ID Token previously issued by the Authorization Server being passed as a hint about the End-User.  
-| - 
- 
-
-| response_as_jwt 
-| OPTIONAL. Boolean value with default value false. If true, returns introspection response as JWT (signed based on client configuration used for authentication to Introspection Endpoint).  
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-<<IntrospectionResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<IntrospectionResponse>>
-
-
-| 400
-| Error codes for introspection endpoint.
-|  <<AuthorizeError>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}introspection/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}introspection/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :introspection/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}introspection/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getUserinfo]
-==== GET Userinfo
-    
-`GET /userinfo`
-
-Returns Claims about the authenticated End-User.
-
-===== Description 
-
-Returns Claims about the authenticated End-User.
-
-
-// markup not found, no include::{specDir}userinfo/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-|   
-| - 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| access_token 
-| OAuth 2.0 Access Token.  
-| X 
- 
-
-|===         
-
-
-===== Return Type
-
-
-<<Object>>
-
-
-===== Content Type
-
-* application/jwt
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<Object>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_6>>
-
-
-| 401
-| Invalid parameters provided to endpoint.
-|  <<inline_response_401>>
-
-
-| 403
-| Invalid parameters provided to endpoint.
-|  <<inline_response_403>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}userinfo/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}userinfo/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :userinfo/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}userinfo/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.jwks]
-==== jwks
-    
-`GET /jwks`
-
-A JSON Web Key (JWK) used by server. JWK is a JSON data structure that represents a set of public keys as a JSON object [RFC4627].
-
-===== Description 
-
-Provides list of JWK used by server.
-
-
-// markup not found, no include::{specDir}jwks/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-<<WebKeysConfiguration>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<WebKeysConfiguration>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}jwks/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}jwks/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :jwks/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}jwks/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postAuthorize]
-==== POST Authorize
-    
-`POST /authorize`
-
-The Authorization Endpoint performs Authentication of the End-User.
-
-===== Description 
-
-End-User Authentication and Authorization done by sending the User Agent to the Authorization Endpoint using request parameters defined by OAuth 2.0 and OpenID Connect.
-
-
-// markup not found, no include::{specDir}authorize/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| scope 
-| OpenID Connect requests MUST contain the openid scope value. If the openid scope value is not present, the behavior is entirely unspecified. Other scope values MAY be present. <<string>> 
-| X 
- 
-
-| response_type 
-| OAuth 2.0 Response Type value that determines the authorization processing flow to be used, including what parameters are returned from the endpoints used. <<string>> 
-| X 
- 
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server. <<string>> 
-| X 
- 
-
-| redirect_uri 
-| Redirection URI to which the response will be sent. This URI MUST exactly match one of the Redirection URI values for the Client pre-registered at the OpenID Provider. <<string>> 
-| X 
- 
-
-| state 
-| Opaque value used to maintain state between the request and the callback. <<string>> 
-| - 
- 
-
-| response_mode 
-| Informs the Authorization Server of the mechanism to be used for returning parameters from the Authorization Endpoint. <<string>> 
-| - 
- 
-
-| nonce 
-| String value used to associate a Client session with an ID Token, and to mitigate replay attacks. <<string>> 
-| - 
- 
-
-| display 
-| ASCII string value that specifies how the Authorization Server displays the authentication and consent user interface pages to the End-User. <<string>> 
-| - 
- 
-
-| prompt 
-| Space delimited, case sensitive list of ASCII string values that specifies whether the Authorization Server prompts the End-User for reauthentication and consent. <<string>> 
-| - 
- 
-
-| max_age 
-| Maximum Authentication Age. Specifies the allowable elapsed time in seconds since the last time the End-User was actively authenticated by the OP. <<integer>> 
-| - 
- 
-
-| ui_locales 
-| End-User&#39;s preferred languages and scripts for the user interface, represented as a space-separated list of BCP47 [RFC5646] language tag values, ordered by preference. <<string>> 
-| - 
- 
-
-| id_token_hint 
-| ID Token previously issued by the Authorization Server being passed as a hint about the End-User&#39;s current or past authenticated session with the Client. If the End-User identified by the ID Token is logged in or is logged in by the request, then the Authorization Server returns a positive response. <<string>> 
-| - 
- 
-
-| login_hint 
-| Hint to the Authorization Server about the login identifier the End-User might use to log in (if necessary). <<string>> 
-| - 
- 
-
-| acr_values 
-| Requested Authentication Context Class Reference values. Space-separated string that specifies the acr values that the Authorization Server is being requested to use for processing this Authentication Request, with the values appearing in order of preference. <<string>> 
-| - 
- 
-
-| amr_values 
-| AMR Values. <<string>> 
-| - 
- 
-
-| request 
-| This parameter enables OpenID Connect requests to be passed in a single, self-contained parameter and to be optionally signed and/or encrypted. The parameter value is a Request Object value. It represents the request as a JWT whose Claims are the request parameters. <<string>> 
-| - 
- 
-
-| request_uri 
-| This parameter enables OpenID Connect requests to be passed by reference, rather than by value. The request_uri value is a URL using the https scheme referencing a resource containing a Request Object value, which is a JWT containing the request parameters. <<string>> 
-| - 
- 
-
-| request_session_id 
-| Request session id. <<string>> 
-| - 
- 
-
-| session_id 
-| Session id of this call. <<string>> 
-| - 
- 
-
-| origin_headers 
-| Origin headers. Used in custom workflows. <<string>> 
-| - 
- 
-
-| code_challenge 
-| PKCE code challenge. <<string>> 
-| - 
- 
-
-| code_challenge_method 
-| PKCE code challenge method. <<string>> 
-| - 
- 
-
-| custom_response_headers 
-| Custom Response Headers. <<string>> 
-| - 
- 
-
-| claims 
-| Requested Claims. <<string>> 
-| - 
- 
-
-|===         
-
-
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<>>
-
-
-| 302
-| Error codes for authorization endpoint.
-|  <<AuthorizeError>>
-
-
-| 400
-| Invalid parameters are provided to endpoint.
-|  <<ErrorResponse>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}authorize/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}authorize/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :authorize/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}authorize/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postClientinfo]
-==== POST Clientinfo
-    
-`POST /clientinfo`
-
-To get Claims details about the registered client.
-
-===== Description 
-
-The ClientInfo Endpoint is an OAuth 2.0 Protected Resource that returns Claims about the registered client.
-
-
-// markup not found, no include::{specDir}clientinfo/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| access_token 
-| Client-specific access token. <<string>> 
-| X 
- 
-
-|===         
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-|   
-| - 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<ClientInfoResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<ClientInfoResponse>>
-
-
-| 400
-| Invalid Request are provided to endpoint.
-|  <<inline_response_400>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}clientinfo/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}clientinfo/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :clientinfo/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}clientinfo/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postIntrospection]
-==== POST Introspection
-    
-`POST /introspection`
-
-The Introspection OAuth 2 Endpoint.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint.
-
-
-// markup not found, no include::{specDir}introspection/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-| Client access token. <<string>> 
-| X 
- 
-
-|===         
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<IntrospectionResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<IntrospectionResponse>>
-
-
-| 400
-| Error codes for introspection endpoint.
-|  <<AuthorizeError>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}introspection/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}introspection/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :introspection/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}introspection/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postToken]
-==== POST Token
-    
-`POST /token`
-
-To obtain an Access Token, an ID Token, and optionally a Refresh Token, the RP (Client).
-
-===== Description 
-
-To obtain an Access Token, an ID Token, and optionally a Refresh Token, the RP (Client).
-
-
-// markup not found, no include::{specDir}token/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| grant_type 
-| Provide a list of the OAuth 2.0 grant types that the Client is declaring that it will restrict itself to using. <<String>> 
-| X 
- 
-
-| code 
-| Code which is returned by authorization endpoint. (For grant_type\=authorization_code) <<string>> 
-| - 
- 
-
-| redirect_uri 
-| Redirection URI to which the response will be sent. This URI MUST exactly match one of the Redirection URI values for the Client pre-registered at the OpenID Provider. <<string>> 
-| - 
- 
-
-| username 
-| End-User username. <<string>> 
-| - 
- 
-
-| password 
-| End-User password. <<string>> 
-| - 
- 
-
-| scope 
-| OpenID Connect requests MUST contain the openid scope value. If the openid scope value is not present, the behavior is entirely unspecified. Other scope values MAY be present. Scope values used that are not understood by an implementation SHOULD be ignored. <<String>> 
-| - 
- 
-
-| assertion 
-| Assertion. <<string>> 
-| - 
- 
-
-| refresh_token 
-| Refresh token. <<string>> 
-| - 
- 
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server. <<string>> 
-| - 
- 
-
-| client_secret 
-| The client secret.  The client MAY omit the parameter if the client secret is an empty string. <<string>> 
-| - 
- 
-
-| code_verifier 
-| The client&#39;s PKCE code verifier. <<string>> 
-| - 
- 
-
-| ticket 
-|  <<string>> 
-| - 
- 
-
-| claim_token 
-|  <<string>> 
-| - 
- 
-
-| claim_token_format 
-|  <<string>> 
-| - 
- 
-
-| pct 
-|  <<string>> 
-| - 
- 
-
-| rpt 
-|  <<string>> 
-| - 
- 
-
-|===         
-
-
-
-
-===== Return Type
-
-<<inline_response_200>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<inline_response_200>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_2>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 403
-| Invalid details provided hence access denied.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}token/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}token/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :token/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}token/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postUserinfo]
-==== POST Userinfo
-    
-`POST /userinfo`
-
-Returns Claims about the authenticated End-User.
-
-===== Description 
-
-Returns Claims about the authenticated End-User.
-
-
-// markup not found, no include::{specDir}userinfo/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| access_token 
-| OAuth 2.0 Access Token. <<string>> 
-| X 
- 
-
-|===         
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| - 
- 
-
-|===         
-
-
-
-===== Return Type
-
-
-<<Object>>
-
-
-===== Content Type
-
-* application/jwt
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<Object>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_6>>
-
-
-| 401
-| Invalid parameters provided to endpoint.
-|  <<inline_response_401>>
-
-
-| 403
-| Invalid parameters provided to endpoint.
-|  <<inline_response_403>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}userinfo/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}userinfo/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :userinfo/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}userinfo/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.revoke]
-==== revoke
-    
-`POST /revoke`
-
-Revoke an Access Token or a Refresh Token, the RP (Client).
-
-===== Description 
-
-Revoke an Access Token or a Refresh Token, the RP (Client).
-
-
-// markup not found, no include::{specDir}revoke/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-| The token that the client wants to get revoked. <<string>> 
-| X 
- 
-
-| token_type_hint 
-| A hint about the type of the token submitted for revocation. <<string>> 
-| - 
- 
-
-|===         
-
-
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* content
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_4>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}revoke/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}revoke/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :revoke/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}revoke/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.revokeSession]
-==== revokeSession
-    
-`POST /revoke_session`
-
-Revoke all sessions for user.
-
-===== Description 
-
-Revoke all sessions for user (requires revoke_session scope).
-
-
-// markup not found, no include::{specDir}revoke_session/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| user_criterion_key 
-| user criterion key (e.g. uid) <<string>> 
-| X 
- 
-
-| user_criterion_value 
-| user criterion value (e.g. chris) <<string>> 
-| X 
- 
-
-|===         
-
-
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK - Returned if request was processed successfully. Means it will return in case sessions are found as well as in case sessions are not found (error is not returned to not disclose internal information).
-|  <<>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}revoke_session/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}revoke_session/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :revoke_session/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}revoke_session/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.sessionStatus]
-==== sessionStatus
-    
-`GET /session_status`
-
-Determine current sesion status.
-
-===== Description 
-
-Determine current sesion status.
-
-
-// markup not found, no include::{specDir}session_status/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-<<SessionStateObject>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<SessionStateObject>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}session_status/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}session_status/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :session_status/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}session_status/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.Authorization]
-=== UMA - Authorization
-
-
-[.deleteHostRsrcResourceSet]
-==== DELETE HostRsrcResourceSet
-    
-`DELETE /host/rsrc/resource_set/{rsid}`
-
-Deletes a previously registered resource.
-
-===== Description 
-
-Deletes a previously registered resource.
-
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/DELETE/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}proxy/\{path\}/DELETE/spec.adoc[opts=optional]
 
 
 
@@ -1757,8 +40,8 @@ Deletes a previously registered resource.
 |===         
 |Name| Description| Required
 
-| rsid 
-| Resource ID  
+| path 
+| Path to the Back-End Service  
 | X 
  
 
@@ -1773,8 +56,8 @@ Deletes a previously registered resource.
 |Name| Description| Required
 
 | Authorization 
-|   
-| X 
+| RPT Token generated through UMA Flow  
+| - 
  
 
 |===         
@@ -1787,108 +70,6 @@ Deletes a previously registered resource.
 
 -
 
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 204
-| OK
-|  <<>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/DELETE/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/DELETE/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :host/rsrc/resource_set/{rsid}/DELETE/DELETE.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/DELETE/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getHostRsrcResourceSet]
-==== GET HostRsrcResourceSet
-    
-`GET /host/rsrc/resource_set`
-
-Lists all previously registered resource.
-
-===== Description 
-
-Lists all previously registered resource.
-
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-|   
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| scope 
-| Scope uri.  
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-
-<<List>>
-
-
-===== Content Type
-
-* application/json
 
 ===== Responses
 
@@ -1900,50 +81,50 @@ Lists all previously registered resource.
 
 | 200
 | OK
-| List[<<string>>] 
+|  <<>>
 
 
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
+| 401
+| Unauthorized access request.
+|  <<>>
 
 |===         
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/GET/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}proxy/\{path\}/DELETE/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/GET/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}proxy/\{path\}/DELETE/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :host/rsrc/resource_set/GET/GET.json[]
+// file not found, no * wiremock data link :proxy/{path}/DELETE/DELETE.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}host/rsrc/resource_set/GET/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}proxy/\{path\}/DELETE/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.getHostRsrcResourceSet/{rsid}]
-==== GET HostRsrcResourceSet/{rsid}
+[.proxyPathGet]
+==== Proxy GET
     
-`GET /host/rsrc/resource_set/{rsid}`
+`GET /proxy/{path}`
 
-Reads a previously registered resource.
+Request to Back-End Service
 
 ===== Description 
 
-Reads a previously registered resource.
+This operation propagates all headers and query parameters
 
 
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/GET/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}proxy/\{path\}/GET/spec.adoc[opts=optional]
 
 
 
@@ -1955,8 +136,8 @@ Reads a previously registered resource.
 |===         
 |Name| Description| Required
 
-| rsid 
-| Resource description ID.  
+| path 
+| Path to the Back-End Service  
 | X 
  
 
@@ -1971,349 +152,12 @@ Reads a previously registered resource.
 |Name| Description| Required
 
 | Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<UmaResourceWithId>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<UmaResourceWithId>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :host/rsrc/resource_set/{rsid}/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getIntrospection]
-==== GET Introspection
-    
-`GET /introspection`
-
-The Introspection OAuth 2 Endpoint.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint.
-
-
-// markup not found, no include::{specDir}introspection/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-|   
-| X 
- 
-
-| token_type_hint 
-| ID Token previously issued by the Authorization Server being passed as a hint about the End-User.  
-| - 
- 
-
-| response_as_jwt 
-| OPTIONAL. Boolean value with default value false. If true, returns introspection response as JWT (signed based on client configuration used for authentication to Introspection Endpoint).  
+| RPT Token generated through UMA Flow  
 | - 
  
 
 |===         
 
-
-===== Return Type
-
-<<IntrospectionResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<IntrospectionResponse>>
-
-
-| 400
-| Error codes for introspection endpoint.
-|  <<AuthorizeError>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}introspection/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}introspection/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :introspection/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}introspection/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getRptStatus]
-==== GET RptStatus
-    
-`GET /rpt/status`
-
-The Introspection OAuth 2 Endpoint for RPT.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint for RPT.
-
-
-// markup not found, no include::{specDir}rpt/status/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-|   
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-|   
-| X 
- 
-
-| token_type_hint 
-|   
-| - 
- 
-
-|===         
-
-
-===== Return Type
-
-<<RptIntrospectionResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<RptIntrospectionResponse>>
-
-
-| 405
-| Introspection of RPT is not allowed.
-|  <<ErrorResponse>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}rpt/status/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}rpt/status/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :rpt/status/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}rpt/status/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getUmaGatherClaims]
-==== GET UmaGatherClaims
-    
-`GET /uma/gather_claims`
-
-UMA Claims Gathering Endpoint.
-
-===== Description 
-
-UMA Claims Gathering Endpoint.
-
-
-// markup not found, no include::{specDir}uma/gather_claims/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server.  
-| - 
- 
-
-| ticket 
-|   
-| - 
- 
-
-| claims_redirect_uri 
-|   
-| - 
- 
-
-| state 
-|   
-| - 
- 
-
-| reset 
-|   
-| - 
- 
-
-| authentication 
-|   
-| - 
- 
-
-|===         
 
 
 ===== Return Type
@@ -2322,6 +166,285 @@ UMA Claims Gathering Endpoint.
 
 -
 
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.proxyPathPost]
+==== Proxy POST
+    
+`POST /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.proxyPathPut]
+==== Proxy PUT
+    
+`PUT /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/PUT/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PUT/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PUT/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/PUT/PUT.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.Resources]
+=== Resources
+
+
+[.resourcesGet]
+==== Resources GET
+    
+`GET /resources`
+
+List all owned resources
+
+===== Description 
+
+This operation lists all resources filtered by ownership ID. Ownership ID is extracted from the OpenID Connect Token
+
+
+// markup not found, no include::{specDir}resources/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+array[<<resource>>]
+
+
 ===== Content Type
 
 * application/json
@@ -2334,253 +457,169 @@ UMA Claims Gathering Endpoint.
 | Code | Message | Datatype 
 
 
-| 302
-| Resource Found.
-|  <<>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_5>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
+| 200
+| OK
+| List[<<resource>>] 
 
 |===         
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}uma/gather_claims/GET/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/GET/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}uma/gather_claims/GET/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/GET/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :uma/gather_claims/GET/GET.json[]
+// file not found, no * wiremock data link :resources/GET/GET.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}uma/gather_claims/GET/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/GET/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.hostRsrcPr]
-==== hostRsrcPr
+[.resourcesPost]
+==== Resources POST
     
-`POST /host/rsrc_pr`
+`POST /resources`
 
-Registers permission.
+Creates a new Resource reference in the Platform
 
 ===== Description 
 
-Registers permission.
+This operation generates a new resource reference object that can be protected. Ownership ID is set to the unique ID of the End-User
 
 
-// markup not found, no include::{specDir}host/rsrc_pr/POST/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/POST/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
 
+===== Body Parameter
 
-===== Form Parameter
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| NewResource 
+|  <<NewResource>> 
+| X 
+|  
+|  
+
+|===         
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+<<resource>>
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<resource>>
+
+
+| 401
+| UNAUTHORIZED
+|  <<>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.resourcesResourceIdDelete]
+==== Resources DELETE
+    
+`DELETE /resources/{resource_id}`
+
+Deletes an owned Resource Reference from the Platform
+
+===== Description 
+
+This operation removes an existing Resource reference owned by the user.
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
 
 [cols="2,3,1"]
 |===         
 |Name| Description| Required
 
 | resource_id 
-| The identifier for a resource to which this client is seeking access. The identifier MUST correspond to a resource that was previously registered. <<string>> 
-| X 
- 
-
-| resource_scopes 
-| An array referencing zero or more strings representing scopes to which access was granted for this resource. Each string MUST correspond to a scope that was registered by this resource server for the referenced resource. <<String>> 
+| Unique Resource ID  
 | X 
  
 
 |===         
 
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-array[<<inline_response_201>>]
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 201
-| OK
-| List[<<inline_response_201>>] 
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}host/rsrc_pr/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}host/rsrc_pr/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :host/rsrc_pr/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}host/rsrc_pr/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.jwks]
-==== jwks
-    
-`GET /jwks`
-
-A JSON Web Key (JWK) used by server. JWK is a JSON data structure that represents a set of public keys as a JSON object [RFC4627].
-
-===== Description 
-
-Provides list of JWK used by server.
-
-
-// markup not found, no include::{specDir}jwks/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-<<WebKeysConfiguration>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<WebKeysConfiguration>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}jwks/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}jwks/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :jwks/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}jwks/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postHostRsrcResourceSet]
-==== POST HostRsrcResourceSet
-    
-`POST /host/rsrc/resource_set`
-
-Adds a new resource description.
-
-===== Description 
-
-Adds a new resource description.
-
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-===== Body Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| UmaResource 
-|  <<UmaResource>> 
-| - 
-|  
-|  
-
-|===         
 
 
 ====== Header Parameters
@@ -2590,514 +629,11 @@ Adds a new resource description.
 |Name| Description| Required
 
 | Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<UmaResourceResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 201
-| OK
-|  <<UmaResourceResponse>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :host/rsrc/resource_set/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}host/rsrc/resource_set/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postIntrospection]
-==== POST Introspection
-    
-`POST /introspection`
-
-The Introspection OAuth 2 Endpoint.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint.
-
-
-// markup not found, no include::{specDir}introspection/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-| Client access token. <<string>> 
-| X 
- 
-
-|===         
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<IntrospectionResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<IntrospectionResponse>>
-
-
-| 400
-| Error codes for introspection endpoint.
-|  <<AuthorizeError>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}introspection/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}introspection/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :introspection/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}introspection/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postRptStatus]
-==== POST RptStatus
-    
-`POST /rpt/status`
-
-The Introspection OAuth 2 Endpoint for RPT.
-
-===== Description 
-
-The Introspection OAuth 2 Endpoint for RPT.
-
-
-// markup not found, no include::{specDir}rpt/status/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| token 
-| Client access token. <<string>> 
-| X 
- 
-
-| token_type_hint 
-| ID Token previously issued by the Authorization Server being passed as a hint about the End-User. <<string>> 
+| JWT or Bearer Token  
 | - 
  
 
 |===         
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Client Authorization details that contains the access token along with other details.  
-| X 
- 
-
-|===         
-
-
-
-===== Return Type
-
-<<RptIntrospectionResponse_1>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<RptIntrospectionResponse_1>>
-
-
-| 405
-| Introspection of RPT is not allowed.
-|  <<ErrorResponse>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}rpt/status/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}rpt/status/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :rpt/status/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}rpt/status/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postToken]
-==== POST Token
-    
-`POST /token`
-
-To obtain an Access Token, an ID Token, and optionally a Refresh Token, the RP (Client).
-
-===== Description 
-
-To obtain an Access Token, an ID Token, and optionally a Refresh Token, the RP (Client).
-
-
-// markup not found, no include::{specDir}token/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| grant_type 
-| Provide a list of the OAuth 2.0 grant types that the Client is declaring that it will restrict itself to using. <<String>> 
-| X 
- 
-
-| code 
-| Code which is returned by authorization endpoint. (For grant_type\=authorization_code) <<string>> 
-| - 
- 
-
-| redirect_uri 
-| Redirection URI to which the response will be sent. This URI MUST exactly match one of the Redirection URI values for the Client pre-registered at the OpenID Provider. <<string>> 
-| - 
- 
-
-| username 
-| End-User username. <<string>> 
-| - 
- 
-
-| password 
-| End-User password. <<string>> 
-| - 
- 
-
-| scope 
-| OpenID Connect requests MUST contain the openid scope value. If the openid scope value is not present, the behavior is entirely unspecified. Other scope values MAY be present. Scope values used that are not understood by an implementation SHOULD be ignored. <<String>> 
-| - 
- 
-
-| assertion 
-| Assertion. <<string>> 
-| - 
- 
-
-| refresh_token 
-| Refresh token. <<string>> 
-| - 
- 
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server. <<string>> 
-| - 
- 
-
-| client_secret 
-| The client secret.  The client MAY omit the parameter if the client secret is an empty string. <<string>> 
-| - 
- 
-
-| code_verifier 
-| The client&#39;s PKCE code verifier. <<string>> 
-| - 
- 
-
-| ticket 
-|  <<string>> 
-| - 
- 
-
-| claim_token 
-|  <<string>> 
-| - 
- 
-
-| claim_token_format 
-|  <<string>> 
-| - 
- 
-
-| pct 
-|  <<string>> 
-| - 
- 
-
-| rpt 
-|  <<string>> 
-| - 
- 
-
-|===         
-
-
-
-
-===== Return Type
-
-<<inline_response_200>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<inline_response_200>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_2>>
-
-
-| 401
-| Unauthorized access request.
-|  <<ErrorResponse>>
-
-
-| 403
-| Invalid details provided hence access denied.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}token/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}token/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :token/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}token/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postUmaGatherClaims]
-==== POST UmaGatherClaims
-    
-`POST /uma/gather_claims`
-
-UMA Claims Gathering Endpoint
-
-===== Description 
-
-UMA Claims Gathering Endpoint
-
-
-// markup not found, no include::{specDir}uma/gather_claims/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-===== Form Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| client_id 
-| OAuth 2.0 Client Identifier valid at the Authorization Server. <<string>> 
-| - 
- 
-
-| ticket 
-|  <<string>> 
-| - 
- 
-
-| claims_redirect_uri 
-|  <<string>> 
-| - 
- 
-
-| state 
-|  <<string>> 
-| - 
- 
-
-| reset 
-|  <<boolean>> 
-| - 
- 
-
-| authentication 
-|  <<boolean>> 
-| - 
- 
-
-|===         
-
 
 
 
@@ -3107,9 +643,6 @@ UMA Claims Gathering Endpoint
 
 -
 
-===== Content Type
-
-* application/json
 
 ===== Responses
 
@@ -3119,57 +652,57 @@ UMA Claims Gathering Endpoint
 | Code | Message | Datatype 
 
 
-| 302
-| Resource Found.
+| 200
+| OK
 |  <<>>
 
 
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_5>>
+| 401
+| UNAUTHORIZED
+|  <<>>
 
 
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
+| 404
+| NOT FOUND
+|  <<>>
 
 |===         
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}uma/gather_claims/POST/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/DELETE/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}uma/gather_claims/POST/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/DELETE/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :uma/gather_claims/POST/POST.json[]
+// file not found, no * wiremock data link :resources/{resource_id}/DELETE/DELETE.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}uma/gather_claims/POST/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/\{resource_id\}/DELETE/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.putHostRsrcResourceSet{rsid}]
-==== PUT HostRsrcResourceSet{rsid}
+[.resourcesResourceIdGet]
+==== Resource GET (ID)
     
-`PUT /host/rsrc/resource_set/{rsid}`
+`GET /resources/{resource_id}`
 
-Updates a previously registered resource.
+Retrieve a specific owned resource
 
 ===== Description 
 
-Updates a previously registered resource.
+This operation retrieves information about an owned resource.
 
 
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/PUT/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/\{resource_id\}/GET/spec.adoc[opts=optional]
 
 
 
@@ -3181,26 +714,13 @@ Updates a previously registered resource.
 |===         
 |Name| Description| Required
 
-| rsid 
-| Resource ID.  
+| resource_id 
+| Unique Resource ID  
 | X 
  
 
 |===         
 
-===== Body Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| UmaResource1 
-|  <<UmaResource1>> 
-| - 
-|  
-|  
-
-|===         
 
 
 ====== Header Parameters
@@ -3210,8 +730,8 @@ Updates a previously registered resource.
 |Name| Description| Required
 
 | Authorization 
-|   
-| X 
+| JWT or Bearer Token  
+| - 
  
 
 |===         
@@ -3220,7 +740,7 @@ Updates a previously registered resource.
 
 ===== Return Type
 
-<<UmaResourceResponse>>
+<<resource>>
 
 
 ===== Content Type
@@ -3237,80 +757,95 @@ Updates a previously registered resource.
 
 | 200
 | OK
-|  <<UmaResourceResponse>>
+|  <<resource>>
 
 
 | 404
-| Invalid parameters provided to endpoint.
-|  <<inline_response_404>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
+| NOT FOUND
+|  <<>>
 
 |===         
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/PUT/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/GET/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}host/rsrc/resource_set/\{rsid\}/PUT/http-response.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/GET/http-response.adoc[opts=optional]
 
 
 
-// file not found, no * wiremock data link :host/rsrc/resource_set/{rsid}/PUT/PUT.json[]
+// file not found, no * wiremock data link :resources/{resource_id}/GET/GET.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}host/rsrc/resource_set/\{rsid\}/PUT/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/\{resource_id\}/GET/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
 
 
-[.revoke]
-==== revoke
+[.resourcesResourceIdPut]
+==== Resource PUT (ID)
     
-`POST /revoke`
+`PUT /resources/{resource_id}`
 
-Revoke an Access Token or a Refresh Token, the RP (Client).
+Updates an existing Resource reference in the Platform
 
 ===== Description 
 
-Revoke an Access Token or a Refresh Token, the RP (Client).
+This operation updates an existing 'owned' resource reference. 
 
 
-// markup not found, no include::{specDir}revoke/POST/spec.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/\{resource_id\}/PUT/spec.adoc[opts=optional]
 
 
 
 ===== Parameters
 
-
-
-===== Form Parameter
+====== Path Parameters
 
 [cols="2,3,1"]
 |===         
 |Name| Description| Required
 
-| token 
-| The token that the client wants to get revoked. <<string>> 
+| resource_id 
+| Unique Resource ID  
 | X 
- 
-
-| token_type_hint 
-| A hint about the type of the token submitted for revocation. <<string>> 
-| - 
  
 
 |===         
 
+===== Body Parameter
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Resource 
+|  <<Resource>> 
+| X 
+|  
+|  
+
+|===         
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
 
 
 
@@ -3320,10 +855,6 @@ Revoke an Access Token or a Refresh Token, the RP (Client).
 
 -
 
-===== Content Type
-
-* content
-* application/json
 
 ===== Responses
 
@@ -3338,532 +869,34 @@ Revoke an Access Token or a Refresh Token, the RP (Client).
 |  <<>>
 
 
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_4>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}revoke/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}revoke/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :revoke/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}revoke/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.uma2Configuration]
-==== uma2Configuration
-    
-`GET /uma2-configuration`
-
-Gets UMA configuration data.
-
-===== Description 
-
-Gets UMA configuration data.
-
-
-// markup not found, no include::{specDir}uma2-configuration/GET/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-
-
-
-===== Return Type
-
-<<inline_response_200_1>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<inline_response_200_1>>
-
-
-| 500
-| Invalid parameters provided to endpoint.
-|  <<inline_response_500>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}uma2-configuration/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}uma2-configuration/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :uma2-configuration/GET/GET.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}uma2-configuration/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.Registration]
-=== Registration
-
-
-[.deleteRegister]
-==== DELETE Register
-    
-`DELETE /register`
-
-Deletes the client info for a previously registered client.
-
-===== Description 
-
-The Client Registration Endpoint removes the Client Metadata for a previously registered client.
-
-
-// markup not found, no include::{specDir}register/DELETE/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Authorization header carrying \\\&quot;registration_access_token\\\&quot; issued before as a Bearer token  
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| client_id 
-| Client ID that identifies client.  
-| X 
- 
-
-|===         
-
-
-===== Return Type
-
-
-
--
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 204
-| OK
+| 401
+| UNAUTHORIZED
 |  <<>>
 
 
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_1>>
-
-
-| 401
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_1>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
+| 404
+| NOT FOUND
+|  <<>>
 
 |===         
 
 ===== Samples
 
 
-// markup not found, no include::{snippetDir}register/DELETE/http-request.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PUT/http-request.adoc[opts=optional]
 
 
-// markup not found, no include::{snippetDir}register/DELETE/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :register/DELETE/DELETE.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}register/DELETE/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.getRegister]
-==== GET Register
-    
-`GET /register`
-
-Get client information for a previously registered client.
-
-===== Description 
-
-Get client information for a previously registered client.
-
-
-// markup not found, no include::{specDir}register/GET/spec.adoc[opts=optional]
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PUT/http-response.adoc[opts=optional]
 
 
 
-===== Parameters
-
-
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Authorization header carrying \\\&quot;registration_access_token\\\&quot; issued before as a Bearer token  
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| client_id 
-| Client ID that identifies client.  
-| X 
- 
-
-|===         
-
-
-===== Return Type
-
-<<ClientResponse>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<ClientResponse>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_1>>
-
-
-| 401
-| Invalid parameters are provided to endpoint.
-|  <<ErrorResponse>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}register/GET/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}register/GET/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :register/GET/GET.json[]
+// file not found, no * wiremock data link :resources/{resource_id}/PUT/PUT.json[]
 
 
 ifdef::internal-generation[]
 ===== Implementation
 
-// markup not found, no include::{specDir}register/GET/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.postRegister]
-==== POST Register
-    
-`POST /register`
-
-Registers new client dynamically.
-
-===== Description 
-
-The Client Registration Endpoint is an OAuth 2.0 Protected Resource through which a new Client registration can be requested.
-
-
-// markup not found, no include::{specDir}register/POST/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-===== Body Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| RegisterParams1 
-|  <<RegisterParams1>> 
-| - 
-|  
-|  
-
-|===         
-
-
-
-
-
-===== Return Type
-
-<<RegisterResponseParam>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<RegisterResponseParam>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_3>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}register/POST/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}register/POST/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :register/POST/POST.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}register/POST/implementation.adoc[opts=optional]
-
-
-endif::internal-generation[]
-
-
-[.putRegister]
-==== PUT Register
-    
-`PUT /register`
-
-Updates Client Metadata for a registered client.
-
-===== Description 
-
-Updates Client Metadata for a registered client.
-
-
-// markup not found, no include::{specDir}register/PUT/spec.adoc[opts=optional]
-
-
-
-===== Parameters
-
-
-===== Body Parameter
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| RegisterParams 
-|  <<RegisterParams>> 
-| - 
-|  
-|  
-
-|===         
-
-
-====== Header Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| Authorization 
-| Authorization header carrying \\\&quot;registration_access_token\\\&quot; issued before as a Bearer token  
-| X 
- 
-
-|===         
-
-====== Query Parameters
-
-[cols="2,3,1"]
-|===         
-|Name| Description| Required
-
-| client_id 
-| Client ID that identifies client that must be updated by this request.  
-| X 
- 
-
-|===         
-
-
-===== Return Type
-
-<<RegisterResponseParam>>
-
-
-===== Content Type
-
-* application/json
-
-===== Responses
-
-.http response codes
-[cols="2,3,1"]
-|===         
-| Code | Message | Datatype 
-
-
-| 200
-| OK
-|  <<RegisterResponseParam>>
-
-
-| 400
-| Invalid parameters provided to endpoint.
-|  <<inline_response_400_2>>
-
-
-| 500
-| Internal error occured. Please check log file for details.
-|  <<ErrorResponse>>
-
-|===         
-
-===== Samples
-
-
-// markup not found, no include::{snippetDir}register/PUT/http-request.adoc[opts=optional]
-
-
-// markup not found, no include::{snippetDir}register/PUT/http-response.adoc[opts=optional]
-
-
-
-// file not found, no * wiremock data link :register/PUT/PUT.json[]
-
-
-ifdef::internal-generation[]
-===== Implementation
-
-// markup not found, no include::{specDir}register/PUT/implementation.adoc[opts=optional]
+// markup not found, no include::{specDir}resources/\{resource_id\}/PUT/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -3873,2195 +906,12 @@ endif::internal-generation[]
 == Models
 
 
-[#AuthorizeError]
-=== _AuthorizeError_ 
+[#NewResource]
+=== _NewResource_ 
 
 
 
-[.fields-AuthorizeError]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#ClientInfoResponse]
-=== _ClientInfoResponse_ 
-
-Client details in response.
-
-[.fields-ClientInfoResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| displayName 
-|  
-| String  
-| 
-|  
-
-| inum 
-|  
-| String  
-| XRI i-number
-|  
-
-| oxAuthAppType 
-|  
-| String  
-| oxAuth Appication type
-|  
-
-| oxAuthIdTokenSignedResponseAlg 
-|  
-| String  
-| oxAuth ID Token Signed Response Algorithm
-|  
-
-| oxAuthRedirectURI 
-|  
-| List  of <<string>> 
-| Array of redirect URIs values used in the Authorization
-|  
-
-| oxId 
-|  
-| String  
-| oxAuth Attribute Scope Id
-|  
-
-| custom_attributes 
-|  
-| List  of <<string>> 
-| 
-|  
-
-|===
-
-
-[#ClientResponse]
-=== _ClientResponse_ 
-
-
-
-[.fields-ClientResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| redirect_uris 
-|  
-| List  of <<string>> 
-| Redirection URI values used by the Client. One of these registered Redirection URI values must exactly match the redirect_uri parameter value used in each Authorization Request
-|  
-
-| claims_redirect_uri 
-|  
-| List  of <<string>> 
-| Array of The Claims Redirect URIs to which the client wishes the authorization server to direct the requesting party&#39;s user agent after completing its interaction.
-|  
-
-| response_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 response_type values that the Client is declaring that it will restrict itself to using. If omitted, the default is that the Client will use only the code Response Type. Allowed values are code, token, id_token.
-|  
-
-| grant_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 Grant Types that the Client is declaring that it will restrict itself to using.
-|  
-
-| contacts 
-|  
-| List  of <<string>> 
-| e-mail addresses of people responsible for this Client.
-|  
-
-| client_name 
-|  
-| String  
-| Name of the Client to be presented to the user.
-|  
-
-| logo_uri 
-|  
-| String  
-| URL that references a logo for the Client application
-|  
-
-| client_uri 
-|  
-| String  
-| URL of the home page of the Client. The value of this field must point to a valid Web page.
-|  
-
-| policy_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the how the profile data will be used.
-|  
-
-| tos_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the Relying Party&#39;s terms of service.
-|  
-
-| jwks_uri 
-|  
-| String  
-| URL for the Client&#39;s JSON Web Key Set (JWK) document containing key(s) that are used for signing requests to the OP. The JWK Set may also contain the Client&#39;s encryption keys(s) that are used by the OP to encrypt the responses to the Client. When both signing and encryption keys are made available, a use (Key Use) parameter value is required for all keys in the document to indicate each key&#39;s intended usage .
-|  
-
-| jwks 
-|  
-| String  
-| Client&#39;s JSON Web Key Set (JWK) document, passed by value. The semantics of the jwks parameter are the same as the jwks_uri parameter, other than that the JWK Set is passed by value, rather than by reference. This parameter is intended only to be used by Clients that, for some reason, are unable to use the jwks_uri parameter, for instance, by native applications that might not have a location to host the contents of the JWK Set. If a Client can use jwks_uri, it must not use jwks. One significant downside of jwks is that it does not enable key rotation. The jwks_uri and jwks parameters must not be used together.
-|  
-
-| sector_identifier_uri 
-|  
-| String  
-| URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP.
-|  
-
-| subject_type 
-|  
-| String  
-| Subject type requested for the Client ID. Valid types include pairwise and public.
-|  
-
-| rpt_as_jwt 
-|  
-| Boolean  
-| Specifies whether RPT should be return as signed JWT.
-|  
-
-| access_token_as_jwt 
-|  
-| Boolean  
-| Specifies whether access token as signed JWT.
-|  
-
-| access_token_signing_alg 
-|  
-| String  
-| Specifies signing algorithm that has to be used during JWT signing. If it&#39;s not specified, then the default OP signing algorithm will be used .
-|  
-
-| id_token_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| userinfo_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| request_object_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing Request Objects sent to the OP.
-|  
-
-| request_object_encryption_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| request_object_encryption_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| token_endpoint_auth_method 
-|  
-| String  
-| Requested Client Authentication method for the Token Endpoint.
-|  
-
-| token_endpoint_auth_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing the JWT used to authenticate the Client at the Token Endpoint for the private_key_jwt and client_secret_jwt authentication methods.
-|  
-
-| default_max_age 
-|  
-| Integer  
-| Specifies the Default Maximum Authentication Age.
-|  
-
-| require_auth_time 
-|  
-| Boolean  
-| Boolean value specifying whether the auth_time Claim in the ID Token is required. It is required when the value is true.
-|  
-
-| default_acr_values 
-|  
-| List  of <<string>> 
-| Array of default requested Authentication Context Class Reference values that the Authorization Server must use for processing requests from the Client.
-|  
-
-| initiate_login_uri 
-|  
-| String  
-| Specifies the URI using the https scheme that the authorization server can call to initiate a login at the client.
-|  
-
-| post_logout_redirect_uris 
-|  
-| List  of <<string>> 
-| Provide the URLs supplied by the RP to request that the user be redirected to this location after a logout has been performed.
-|  
-
-| frontchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when rendered in an iframe by the OP.
-|  
-
-| frontchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID query parameter be included to identify the RP session at the OP when the logout_uri is used. If omitted, the default value is false.
-|  
-
-| backchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when sent a Logout Token by the OP.
-|  
-
-| backchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID Claim be included in the Logout Token to identify the RP session with the OP when the backchannel_logout_uri is used. If omitted, the default value is false.
-|  
-
-| request_uris 
-|  
-| List  of <<string>> 
-| Provide a list of request_uri values that are pre-registered by the Client for use at the Authorization Server.
-|  
-
-| scopes 
-|  
-| String  
-| This param will be removed in a future version because the correct is &#39;scope&#39; not &#39;scopes&#39;, see (rfc7591).
-|  
-
-| claims 
-|  
-| String  
-| String containing a space-separated list of claims that can be requested individually.
-|  
-
-| id_token_token_binding_cnf 
-|  
-| String  
-| Specifies the JWT Confirmation Method member name (e.g. tbh) that the Relying Party expects when receiving Token Bound ID Tokens. The presence of this parameter indicates that the Relying Party supports Token Binding of ID Tokens. If omitted, the default is that the Relying Party does not support Token Binding of ID Tokens.
-|  
-
-| tls_client_auth_subject_dn 
-|  
-| String  
-| An string representation of the expected subject distinguished name of the certificate, which the OAuth client will use in mutual TLS authentication.
-|  
-
-| allow_spontaneous_scopes 
-|  
-| Boolean  
-| Specifies whether to allow spontaneous scopes for client. The default value is false.
-|  
-
-| spontaneous_scopes 
-|  
-| List  of <<string>> 
-| List of spontaneous scopes
-|  
-
-| run_introspection_script_before_access_token_as_jwt_creation_and_include_claims 
-|  
-| Boolean  
-| Boolean value with default value false. If true and access_token_as_jwt\=true then run introspection script and transfer claims into JWT.
-|  
-
-| keep_client_authorization_after_expiration 
-|  
-| Boolean  
-| Boolean value indicating if the client authorization will not be removed afer expiration (expiration date is same as client&#39;s expiration that created it). The default value is false.
-|  
-
-| scope 
-|  
-| List  of <<string>> 
-| Provide list of scope which are used during authentication to authorize access to resource.
-|  
-
-| authorized_origins 
-|  
-| List  of <<string>> 
-| specifies authorized JavaScript origins.
-|  
-
-| access_token_lifetime 
-|  
-| Integer  
-| Specifies the Client-specific access token expiration.
-|  
-
-| software_id 
-|  
-| String  
-| Specifies a unique identifier string (UUID) assigned by the client developer or software publisher used by registration endpoints to identify the client software to be dynamically registered.
-|  
-
-| software_version 
-|  
-| String  
-| Specifies a version identifier string for the client software identified by &#39;software_id&#39;. The value of the &#39;software_version&#39; should change on any update to the client software identified by the same &#39;software_id&#39;.
-|  
-
-| software_statement 
-|  
-| String  
-| specifies a software statement containing client metadata values about the client software as claims. This is a string value containing the entire signed JWT.
-|  
-
-| backchannel_token_delivery_mode 
-|  
-| String  
-| specifies how backchannel token will be deliveried.
-|  
-
-| backchannel_client_notification_endpoint 
-|  
-| String  
-| Client Initiated Backchannel Authentication (CIBA) enables a Client to initiate the authentication of an end-user by means of out-of-band mechanisms. Upon receipt of the notification, the Client makes a request to the token endpoint to obtain the tokens.
-|  
-
-| backchannel_authentication_request_signing_alg 
-|  
-| String  
-| The JWS algorithm alg value that the Client will use for signing authentication request, as described in Section 7.1.1. of OAuth 2.0 [RFC6749]. When omitted, the Client will not send signed authentication requests.
-|  
-
-| backchannel_user_code_parameter 
-|  
-| Boolean  
-| Boolean value specifying whether the Client supports the user_code parameter. If omitted, the default value is false.
-|  
-
-|===
-
-
-[#EndSessionError]
-=== _EndSessionError_ 
-
-
-
-[.fields-EndSessionError]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#ErrorResponse]
-=== _ErrorResponse_ 
-
-
-
-[.fields-ErrorResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-|  
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse200]
-=== _InlineResponse200_ 
-
-AccessTokenResponse.
-
-[.fields-InlineResponse200]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| access_token 
-| X 
-| String  
-| The access token issued by the authorization server.
-|  
-
-| token_type 
-| X 
-| String  
-| The access token type provides the client with the information required to successfully utilize the access token to make a protected resource request (along with type-specific attributes).
-|  
-
-| expires_in 
-|  
-| Integer  
-| The lifetime in seconds of the access token. For example, the value \\\&quot;3600\\\&quot; denotes that the access token will expire in one hour from the time the response was generated.
-|  
-
-| refresh_token 
-|  
-| String  
-| The refresh token, which can be used to obtain new access tokens using the same authorization grant
-|  
-
-| scope 
-|  
-| List  of <<string>> 
-| 
-|  
-
-| id_token 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse2001]
-=== _InlineResponse2001_ 
-
-UmaMetadata
-
-[.fields-InlineResponse2001]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| issuer 
-| X 
-| String  
-| The authorization server's issuer identifier
-|  
-
-| authorization_endpoint 
-| X 
-| String  
-| URL of the authorization server
-|  
-
-| uma_profiles_supported 
-|  
-| List  of <<string>> 
-| UMA profiles supported by this authorization server. The value is an array of string values, where each string value is a URI identifying an UMA profile
-|  
-
-| permission_endpoint 
-|  
-| String  
-| The endpoint URI at which the resource server requests permissions on the client&#39;s behalf.
-|  
-
-| resource_registration_endpoint 
-|  
-| String  
-| The endpoint URI at which the resource server registers resources to put them under authorization manager protection.
-|  
-
-| scope_endpoint 
-|  
-| String  
-| The Scope endpoint URI.
-|  
-
-|===
-
-
-[#InlineResponse201]
-=== _InlineResponse201_ 
-
-
-
-[.fields-InlineResponse201]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| resource_id 
-| X 
-| String  
-| The identifier for a resource to which this client is seeking access. The identifier MUST correspond to a resource that was previously registered.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| An array referencing zero or more strings representing scopes to which access was granted for this resource. Each string MUST correspond to a scope that was registered by this resource server for the referenced resource.
-|  
-
-| params 
-|  
-| Map  of <<string>> 
-| A key/value map that can contain custom parameters.
-|  
-
-| exp 
-|  
-| Long  
-| Number of seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-|===
-
-
-[#InlineResponse400]
-=== _InlineResponse400_ 
-
-
-
-[.fields-InlineResponse400]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4001]
-=== _InlineResponse4001_ 
-
-
-
-[.fields-InlineResponse4001]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4002]
-=== _InlineResponse4002_ 
-
-
-
-[.fields-InlineResponse4002]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4003]
-=== _InlineResponse4003_ 
-
-
-
-[.fields-InlineResponse4003]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4004]
-=== _InlineResponse4004_ 
-
-
-
-[.fields-InlineResponse4004]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4005]
-=== _InlineResponse4005_ 
-
-
-
-[.fields-InlineResponse4005]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse4006]
-=== _InlineResponse4006_ 
-
-
-
-[.fields-InlineResponse4006]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse401]
-=== _InlineResponse401_ 
-
-
-
-[.fields-InlineResponse401]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse403]
-=== _InlineResponse403_ 
-
-
-
-[.fields-InlineResponse403]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse404]
-=== _InlineResponse404_ 
-
-
-
-[.fields-InlineResponse404]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#InlineResponse500]
-=== _InlineResponse500_ 
-
-
-
-[.fields-InlineResponse500]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| error 
-| X 
-| String  
-| 
-| enum 
-
-| error_description 
-| X 
-| String  
-| 
-|  
-
-| details 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#IntrospectionResponse]
-=== _IntrospectionResponse_ 
-
-meta-information about token
-
-[.fields-IntrospectionResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| active 
-| X 
-| Boolean  
-| Boolean indicator of whether or not the presented token is currently active.
-|  
-
-| scope 
-|  
-| List  of <<string>> 
-| Provide list of scopes to which access was granted for this resource.
-|  
-
-| client_id 
-|  
-| String  
-| Client identifier for the OAuth 2.0 client that requested this token.
-|  
-
-| username 
-|  
-| String  
-| Human-readable identifier for the resource owner who authorized this token.
-|  
-
-| token_type 
-|  
-| String  
-| Type of the token as defined in Section 5.1 of OAuth 2.0 [RFC6749].
-|  
-
-| exp 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this permission will expire.
-|  
-
-| iat 
-|  
-| Integer  
-| 
-|  
-
-| sub 
-|  
-| String  
-| Subject of the token, as defined in JWT [RFC7519].
-|  
-
-| aud 
-|  
-| String  
-| Service-specific string identifier or list of string identifiers representing the intended audience for this token, as defined in JWT [RFC7519].
-|  
-
-| iss 
-|  
-| String  
-| String representing the issuer of this token, as defined in JWT [RFC7519].
-|  
-
-| acr_values 
-|  
-| String  
-| Authentication Context Class Reference values.
-|  
-
-| jti 
-|  
-| String  
-| String identifier for the token, as defined in JWT.
-|  
-
-|===
-
-
-[#JsonWebKey]
-=== _JsonWebKey_ 
-
-
-
-[.fields-JsonWebKey]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| kid 
-| X 
-| String  
-| 
-|  
-
-| kty 
-| X 
-| String  
-| 
-|  
-
-| use 
-| X 
-| String  
-| 
-|  
-
-| alg 
-| X 
-| String  
-| 
-|  
-
-| crv 
-|  
-| String  
-| 
-|  
-
-| exp 
-| X 
-| Long  
-| 
-| int64 
-
-| x5c 
-| X 
-| List  of <<string>> 
-| 
-|  
-
-| n 
-|  
-| String  
-| 
-|  
-
-| e 
-|  
-| String  
-| 
-|  
-
-| x 
-|  
-| String  
-| 
-|  
-
-| y 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#RegisterParams]
-=== _RegisterParams_ RegisterParams
-
-
-
-[.fields-RegisterParams]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| redirect_uris 
-| X 
-| List  of <<string>> 
-| Redirection URI values used by the Client. One of these registered Redirection URI values must exactly match the redirect_uri parameter value used in each Authorization Request
-|  
-
-| claims_redirect_uri 
-|  
-| List  of <<string>> 
-| Array of The Claims Redirect URIs to which the client wishes the authorization server to direct the requesting party&#39;s user agent after completing its interaction.
-|  
-
-| response_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 response_type values that the Client is declaring that it will restrict itself to using. If omitted, the default is that the Client will use only the code Response Type. Allowed values are code, token, id_token.
-|  
-
-| grant_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 Grant Types that the Client is declaring that it will restrict itself to using.
-|  
-
-| contacts 
-|  
-| List  of <<string>> 
-| e-mail addresses of people responsible for this Client.
-|  
-
-| client_name 
-|  
-| String  
-| Name of the Client to be presented to the user.
-|  
-
-| logo_uri 
-|  
-| String  
-| URL that references a logo for the Client application
-|  
-
-| client_uri 
-|  
-| String  
-| URL of the home page of the Client. The value of this field must point to a valid Web page.
-|  
-
-| policy_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the how the profile data will be used.
-|  
-
-| tos_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the Relying Party&#39;s terms of service.
-|  
-
-| jwks_uri 
-|  
-| String  
-| URL for the Client&#39;s JSON Web Key Set (JWK) document containing key(s) that are used for signing requests to the OP. The JWK Set may also contain the Client&#39;s encryption keys(s) that are used by the OP to encrypt the responses to the Client. When both signing and encryption keys are made available, a use (Key Use) parameter value is required for all keys in the document to indicate each key&#39;s intended usage .
-|  
-
-| jwks 
-|  
-| List  of <<JsonWebKey>> 
-| List of JSON Web Key (JWK) - A JSON object that represents a cryptographic key. The members of the object represent properties of the key, including its value.
-|  
-
-| sector_identifier_uri 
-|  
-| String  
-| URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP.
-|  
-
-| subject_type 
-|  
-| String  
-| Subject type requested for the Client ID. Valid types include pairwise and public.
-|  
-
-| rpt_as_jwt 
-|  
-| Boolean  
-| Specifies whether RPT should be return as signed JWT.
-|  
-
-| access_token_as_jwt 
-|  
-| Boolean  
-| Specifies whether access token as signed JWT.
-|  
-
-| access_token_signing_alg 
-|  
-| String  
-| Specifies signing algorithm that has to be used during JWT signing. If it&#39;s not specified, then the default OP signing algorithm will be used .
-|  
-
-| id_token_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| userinfo_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| request_object_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing Request Objects sent to the OP.
-|  
-
-| request_object_encryption_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| request_object_encryption_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| token_endpoint_auth_method 
-|  
-| String  
-| Requested Client Authentication method for the Token Endpoint.
-|  
-
-| token_endpoint_auth_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing the JWT used to authenticate the Client at the Token Endpoint for the private_key_jwt and client_secret_jwt authentication methods.
-|  
-
-| default_max_age 
-|  
-| Integer  
-| Specifies the Default Maximum Authentication Age.
-|  
-
-| require_auth_time 
-|  
-| Boolean  
-| Boolean value specifying whether the auth_time Claim in the ID Token is required. It is required when the value is true.
-|  
-
-| default_acr_values 
-|  
-| List  of <<string>> 
-| Array of default requested Authentication Context Class Reference values that the Authorization Server must use for processing requests from the Client.
-|  
-
-| initiate_login_uri 
-|  
-| String  
-| Specifies the URI using the https scheme that the authorization server can call to initiate a login at the client.
-|  
-
-| post_logout_redirect_uris 
-|  
-| List  of <<string>> 
-| Provide the URLs supplied by the RP to request that the user be redirected to this location after a logout has been performed.
-|  
-
-| frontchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when rendered in an iframe by the OP.
-|  
-
-| frontchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID query parameter be included to identify the RP session at the OP when the logout_uri is used. If omitted, the default value is false.
-|  
-
-| backchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when sent a Logout Token by the OP.
-|  
-
-| backchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID Claim be included in the Logout Token to identify the RP session with the OP when the backchannel_logout_uri is used. If omitted, the default value is false.
-|  
-
-| request_uris 
-|  
-| List  of <<string>> 
-| Provide a list of request_uri values that are pre-registered by the Client for use at the Authorization Server.
-|  
-
-| scopes 
-|  
-| String  
-| This param will be removed in a future version because the correct is &#39;scope&#39; not &#39;scopes&#39;, see (rfc7591).
-|  
-
-| claims 
-|  
-| String  
-| String containing a space-separated list of claims that can be requested individually.
-|  
-
-| id_token_token_binding_cnf 
-|  
-| String  
-| Specifies the JWT Confirmation Method member name (e.g. tbh) that the Relying Party expects when receiving Token Bound ID Tokens. The presence of this parameter indicates that the Relying Party supports Token Binding of ID Tokens. If omitted, the default is that the Relying Party does not support Token Binding of ID Tokens.
-|  
-
-| tls_client_auth_subject_dn 
-|  
-| String  
-| An string representation of the expected subject distinguished name of the certificate, which the OAuth client will use in mutual TLS authentication.
-|  
-
-| allow_spontaneous_scopes 
-|  
-| Boolean  
-| Specifies whether to allow spontaneous scopes for client. The default value is false.
-|  
-
-| spontaneous_scopes 
-|  
-| List  of <<string>> 
-| List of spontaneous scopes
-|  
-
-| run_introspection_script_before_access_token_as_jwt_creation_and_include_claims 
-|  
-| Boolean  
-| Boolean value with default value false. If true and access_token_as_jwt\=true then run introspection script and transfer claims into JWT.
-|  
-
-| keep_client_authorization_after_expiration 
-|  
-| Boolean  
-| Boolean value indicating if the client authorization will not be removed afer expiration (expiration date is same as client&#39;s expiration that created it). The default value is false.
-|  
-
-| scope 
-|  
-| List  of <<string>> 
-| Provide list of scope which are used during authentication to authorize access to resource.
-|  
-
-| authorized_origins 
-|  
-| List  of <<string>> 
-| specifies authorized JavaScript origins.
-|  
-
-| access_token_lifetime 
-|  
-| Integer  
-| Specifies the Client-specific access token expiration.
-|  
-
-| software_id 
-|  
-| String  
-| Specifies a unique identifier string (UUID) assigned by the client developer or software publisher used by registration endpoints to identify the client software to be dynamically registered.
-|  
-
-| software_version 
-|  
-| String  
-| Specifies a version identifier string for the client software identified by &#39;software_id&#39;. The value of the &#39;software_version&#39; should change on any update to the client software identified by the same &#39;software_id&#39;.
-|  
-
-| software_statement 
-|  
-| String  
-| specifies a software statement containing client metadata values about the client software as claims. This is a string value containing the entire signed JWT.
-|  
-
-| backchannel_token_delivery_mode 
-|  
-| String  
-| specifies how backchannel token will be deliveried.
-|  
-
-| backchannel_client_notification_endpoint 
-|  
-| String  
-| Client Initiated Backchannel Authentication (CIBA) enables a Client to initiate the authentication of an end-user by means of out-of-band mechanisms. Upon receipt of the notification, the Client makes a request to the token endpoint to obtain the tokens.
-|  
-
-| backchannel_authentication_request_signing_alg 
-|  
-| String  
-| The JWS algorithm alg value that the Client will use for signing authentication request, as described in Section 7.1.1. of OAuth 2.0 [RFC6749]. When omitted, the Client will not send signed authentication requests.
-|  
-
-| backchannel_user_code_parameter 
-|  
-| Boolean  
-| Boolean value specifying whether the Client supports the user_code parameter. If omitted, the default value is false.
-|  
-
-| additional_audience 
-|  
-| List  of <<string>> 
-| Additional audiences.
-|  
-
-|===
-
-
-[#RegisterParams1]
-=== _RegisterParams1_ RegisterParams
-
-
-
-[.fields-RegisterParams1]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| redirect_uris 
-| X 
-| List  of <<string>> 
-| Redirection URI values used by the Client. One of these registered Redirection URI values must exactly match the redirect_uri parameter value used in each Authorization Request
-|  
-
-| claims_redirect_uri 
-|  
-| List  of <<string>> 
-| Array of The Claims Redirect URIs to which the client wishes the authorization server to direct the requesting party&#39;s user agent after completing its interaction.
-|  
-
-| response_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 response_type values that the Client is declaring that it will restrict itself to using. If omitted, the default is that the Client will use only the code Response Type. Allowed values are code, token, id_token.
-|  
-
-| grant_types 
-|  
-| List  of <<string>> 
-| A list of the OAuth 2.0 Grant Types that the Client is declaring that it will restrict itself to using.
-|  
-
-| contacts 
-|  
-| List  of <<string>> 
-| e-mail addresses of people responsible for this Client.
-|  
-
-| client_name 
-|  
-| String  
-| Name of the Client to be presented to the user.
-|  
-
-| logo_uri 
-|  
-| String  
-| URL that references a logo for the Client application
-|  
-
-| client_uri 
-|  
-| String  
-| URL of the home page of the Client. The value of this field must point to a valid Web page.
-|  
-
-| policy_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the how the profile data will be used.
-|  
-
-| tos_uri 
-|  
-| String  
-| URL that the Relying Party Client provides to the End-User to read about the Relying Party&#39;s terms of service.
-|  
-
-| jwks_uri 
-|  
-| String  
-| URL for the Client&#39;s JSON Web Key Set (JWK) document containing key(s) that are used for signing requests to the OP. The JWK Set may also contain the Client&#39;s encryption keys(s) that are used by the OP to encrypt the responses to the Client. When both signing and encryption keys are made available, a use (Key Use) parameter value is required for all keys in the document to indicate each key&#39;s intended usage .
-|  
-
-| jwks 
-|  
-| List  of <<JsonWebKey>> 
-| List of JSON Web Key (JWK) - A JSON object that represents a cryptographic key. The members of the object represent properties of the key, including its value.
-|  
-
-| sector_identifier_uri 
-|  
-| String  
-| URL using the https scheme to be used in calculating Pseudonymous Identifiers by the OP.
-|  
-
-| subject_type 
-|  
-| String  
-| Subject type requested for the Client ID. Valid types include pairwise and public.
-|  
-
-| rpt_as_jwt 
-|  
-| Boolean  
-| Specifies whether RPT should be return as signed JWT.
-|  
-
-| access_token_as_jwt 
-|  
-| Boolean  
-| Specifies whether access token as signed JWT.
-|  
-
-| access_token_signing_alg 
-|  
-| String  
-| Specifies signing algorithm that has to be used during JWT signing. If it&#39;s not specified, then the default OP signing algorithm will be used .
-|  
-
-| id_token_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| id_token_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting the ID Token issued to this Client.
-|  
-
-| userinfo_signed_response_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) required for signing UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| userinfo_encrypted_response_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) required for encrypting UserInfo Responses.
-|  
-
-| request_object_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing Request Objects sent to the OP.
-|  
-
-| request_object_encryption_alg 
-|  
-| String  
-| JWE alg algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| request_object_encryption_enc 
-|  
-| String  
-| JWE enc algorithm (JWA) the RP is declaring that it may use for encrypting Request Objects sent to the OP.
-|  
-
-| token_endpoint_auth_method 
-|  
-| String  
-| Requested Client Authentication method for the Token Endpoint.
-|  
-
-| token_endpoint_auth_signing_alg 
-|  
-| String  
-| JWS alg algorithm (JWA) that must be used for signing the JWT used to authenticate the Client at the Token Endpoint for the private_key_jwt and client_secret_jwt authentication methods.
-|  
-
-| default_max_age 
-|  
-| Integer  
-| Specifies the Default Maximum Authentication Age.
-|  
-
-| require_auth_time 
-|  
-| Boolean  
-| Boolean value specifying whether the auth_time Claim in the ID Token is required. It is required when the value is true.
-|  
-
-| default_acr_values 
-|  
-| List  of <<string>> 
-| Array of default requested Authentication Context Class Reference values that the Authorization Server must use for processing requests from the Client.
-|  
-
-| initiate_login_uri 
-|  
-| String  
-| Specifies the URI using the https scheme that the authorization server can call to initiate a login at the client.
-|  
-
-| post_logout_redirect_uris 
-|  
-| List  of <<string>> 
-| Provide the URLs supplied by the RP to request that the user be redirected to this location after a logout has been performed.
-|  
-
-| frontchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when rendered in an iframe by the OP.
-|  
-
-| frontchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID query parameter be included to identify the RP session at the OP when the logout_uri is used. If omitted, the default value is false.
-|  
-
-| backchannel_logout_uri 
-|  
-| String  
-| RP URL that will cause the RP to log itself out when sent a Logout Token by the OP.
-|  
-
-| backchannel_logout_session_required 
-|  
-| Boolean  
-| Boolean value specifying whether the RP requires that a session ID Claim be included in the Logout Token to identify the RP session with the OP when the backchannel_logout_uri is used. If omitted, the default value is false.
-|  
-
-| request_uris 
-|  
-| List  of <<string>> 
-| Provide a list of request_uri values that are pre-registered by the Client for use at the Authorization Server.
-|  
-
-| scopes 
-|  
-| String  
-| This param will be removed in a future version because the correct is &#39;scope&#39; not &#39;scopes&#39;, see (rfc7591).
-|  
-
-| claims 
-|  
-| String  
-| String containing a space-separated list of claims that can be requested individually.
-|  
-
-| id_token_token_binding_cnf 
-|  
-| String  
-| Specifies the JWT Confirmation Method member name (e.g. tbh) that the Relying Party expects when receiving Token Bound ID Tokens. The presence of this parameter indicates that the Relying Party supports Token Binding of ID Tokens. If omitted, the default is that the Relying Party does not support Token Binding of ID Tokens.
-|  
-
-| tls_client_auth_subject_dn 
-|  
-| String  
-| An string representation of the expected subject distinguished name of the certificate, which the OAuth client will use in mutual TLS authentication.
-|  
-
-| allow_spontaneous_scopes 
-|  
-| Boolean  
-| Specifies whether to allow spontaneous scopes for client. The default value is false.
-|  
-
-| spontaneous_scopes 
-|  
-| List  of <<string>> 
-| List of spontaneous scopes
-|  
-
-| run_introspection_script_before_access_token_as_jwt_creation_and_include_claims 
-|  
-| Boolean  
-| Boolean value with default value false. If true and access_token_as_jwt\=true then run introspection script and transfer claims into JWT.
-|  
-
-| keep_client_authorization_after_expiration 
-|  
-| Boolean  
-| Boolean value indicating if the client authorization will not be removed afer expiration (expiration date is same as client&#39;s expiration that created it). The default value is false.
-|  
-
-| scope 
-|  
-| List  of <<string>> 
-| Provide list of scope which are used during authentication to authorize access to resource.
-|  
-
-| authorized_origins 
-|  
-| List  of <<string>> 
-| specifies authorized JavaScript origins.
-|  
-
-| access_token_lifetime 
-|  
-| Integer  
-| Specifies the Client-specific access token expiration.
-|  
-
-| software_id 
-|  
-| String  
-| Specifies a unique identifier string (UUID) assigned by the client developer or software publisher used by registration endpoints to identify the client software to be dynamically registered.
-|  
-
-| software_version 
-|  
-| String  
-| Specifies a version identifier string for the client software identified by &#39;software_id&#39;. The value of the &#39;software_version&#39; should change on any update to the client software identified by the same &#39;software_id&#39;.
-|  
-
-| software_statement 
-|  
-| String  
-| specifies a software statement containing client metadata values about the client software as claims. This is a string value containing the entire signed JWT.
-|  
-
-| backchannel_token_delivery_mode 
-|  
-| String  
-| specifies how backchannel token will be deliveried.
-|  
-
-| backchannel_client_notification_endpoint 
-|  
-| String  
-| Client Initiated Backchannel Authentication (CIBA) enables a Client to initiate the authentication of an end-user by means of out-of-band mechanisms. Upon receipt of the notification, the Client makes a request to the token endpoint to obtain the tokens.
-|  
-
-| backchannel_authentication_request_signing_alg 
-|  
-| String  
-| The JWS algorithm alg value that the Client will use for signing authentication request, as described in Section 7.1.1. of OAuth 2.0 [RFC6749]. When omitted, the Client will not send signed authentication requests.
-|  
-
-| backchannel_user_code_parameter 
-|  
-| Boolean  
-| Boolean value specifying whether the Client supports the user_code parameter. If omitted, the default value is false.
-|  
-
-| additional_audience 
-|  
-| List  of <<string>> 
-| Additional audiences.
-|  
-
-|===
-
-
-[#RegisterResponseParam]
-=== _RegisterResponseParam_ 
-
-
-
-[.fields-RegisterResponseParam]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| client_id 
-| X 
-| String  
-| Unique Client Identifier. It MUST NOT be currently valid for any other registered Client.
-|  
-
-| client_secret 
-|  
-| String  
-| This value is used by Confidential Clients to authenticate to the Token Endpoint
-|  
-
-| registration_access_token 
-|  
-| String  
-| Registration Access Token that can be used at the Client Configuration Endpoint to perform subsequent operations upon the Client registration.
-|  
-
-| registration_client_uri 
-|  
-| String  
-| Location of the Client Configuration Endpoint where the Registration Access Token can be used to perform subsequent operations upon the resulting Client registration.
-|  
-
-| client_id_issued_at 
-|  
-| Integer  
-| Time at which the Client Identifier was issued.
-|  
-
-| client_secret_expires_at 
-|  
-| Integer  
-| Time at which the client_secret will expire or 0 if it will not expire.
-|  
-
-|===
-
-
-[#RptIntrospectionResponse]
-=== _RptIntrospectionResponse_ 
-
-
-
-[.fields-RptIntrospectionResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| active 
-| X 
-| Boolean  
-| Boolean indicator of whether or not the presented token is currently active.
-|  
-
-| exp 
-|  
-| Long  
-| Integer timestamp, in seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-| iat 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this permission was originally issued.
-|  
-
-| clientId 
-|  
-| String  
-| Client id used to obtain RPT.
-|  
-
-| sub 
-|  
-| String  
-| Subject of the token. Usually a machine-readable identifier of the resource owner who authorized this token.
-|  
-
-| aud 
-|  
-| String  
-| Service-specific string identifier or list of string identifiers representing the intended audience for this token.
-|  
-
-| permissions 
-| X 
-| List  of <<RptIntrospectionResponse_permissions>> 
-| 
-|  
-
-| pct_claims 
-|  
-| Map  of <<string>> 
-| PCT token claims.
-|  
-
-| iss 
-|  
-| String  
-| String representing the issuer of this token, as defined in JWT [RFC7519].
-|  
-
-| jti 
-|  
-| String  
-| String identifier for the token, as defined in JWT [RFC7519].
-|  
-
-| nbf 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating the time before which this permission is not valid.
-|  
-
-| resource_id 
-| X 
-| String  
-| Resource ID.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| 
-|  
-
-|===
-
-
-[#RptIntrospectionResponse1]
-=== _RptIntrospectionResponse1_ 
-
-
-
-[.fields-RptIntrospectionResponse1]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| active 
-| X 
-| Boolean  
-| Boolean indicator of whether or not the presented token is currently active.
-|  
-
-| exp 
-|  
-| Long  
-| Integer timestamp, in seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-| iat 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this permission was originally issued.
-|  
-
-| clientId 
-|  
-| String  
-| Client id used to obtain RPT.
-|  
-
-| sub 
-|  
-| String  
-| Subject of the token. Usually a machine-readable identifier of the resource owner who authorized this token.
-|  
-
-| aud 
-|  
-| String  
-| Service-specific string identifier or list of string identifiers representing the intended audience for this token.
-|  
-
-| permissions 
-| X 
-| List  of <<RptIntrospectionResponse_permissions>> 
-| 
-|  
-
-| pct_claims 
-|  
-| Map  of <<string>> 
-| 
-|  
-
-| iss 
-|  
-| String  
-| String representing the issuer of this token, as defined in JWT [RFC7519].
-|  
-
-| jti 
-|  
-| String  
-| String identifier for the token, as defined in JWT [RFC7519].
-|  
-
-| nbf 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating the time before which this permission is not valid.
-|  
-
-| resource_id 
-| X 
-| String  
-| Resource ID.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| 
-|  
-
-|===
-
-
-[#RptIntrospectionResponsePermissions]
-=== _RptIntrospectionResponsePermissions_ 
-
-List of UmaPermission granted to RPT. A permission is (requested or granted) authorized access to a particular resource with some number of scopes  bound to that resource.
-
-[.fields-RptIntrospectionResponsePermissions]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| resource_id 
-| X 
-| String  
-| A string that uniquely identifies the protected resource, access to which has been granted to this client on behalf of this requesting party. The identifier MUST correspond to a resource that was previously registered as protected.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| An array referencing zero or more strings representing scopes to which access was granted for this resource. Each string MUST correspond to a scope that was registered by this resource server for the referenced resource.
-|  
-
-| exp 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this permission will expire. If the token-level exp value pre-dates a permission-level exp value, the token-level value takes precedence.
-|  
-
-| iat 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating when this permission was originally issued. If the token-level iat value post-dates a permission-level iat value, the token-level value takes precedence.
-|  
-
-| nbf 
-|  
-| Integer  
-| Integer timestamp, measured in the number of seconds since January 1 1970 UTC, indicating the time before which this permission is not valid. If the token-level nbf value post-dates a permission-level nbf value, the token-level value takes precedence.
-|  
-
-|===
-
-
-[#SessionStateObject]
-=== _SessionStateObject_ 
-
-
-
-[.fields-SessionStateObject]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| state 
-|  
-| String  
-| String that represents the End-User&#39;s login state at the OP. It MUST NOT contain the space (\\\&quot; \\\&quot;) character.
-|  
-
-| auth_time 
-|  
-| date  
-| specifies the time at which session was authenticated.
-| date 
-
-| custom_state 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#UmaPermissiona]
-=== _UmaPermissiona_ UmaPermissiona
-
-A permission is (requested or granted) authorized access to a particular resource with some number of scopes bound to that resource.
-
-[.fields-UmaPermissiona]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| resource_id 
-| X 
-| String  
-| The identifier for a resource to which this client is seeking access. The identifier MUST correspond to a resource that was previously registered.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| An array referencing zero or more strings representing scopes to which access was granted for this resource. Each string MUST correspond to a scope that was registered by this resource server for the referenced resource.
-|  
-
-| params 
-|  
-| Map  of <<string>> 
-| A key/value map that can contain custom parameters.
-|  
-
-|===
-
-
-[#UmaResource]
-=== _UmaResource_ UmaResource
-
-Resource description
-
-[.fields-UmaResource]
+[.fields-NewResource]
 [cols="2,1,2,4,1"]
 |===         
 | Field Name| Required| Type| Description| Format
@@ -6069,227 +919,62 @@ Resource description
 | name 
 |  
 | String  
-| A human-readable string describing a set of one or more resources. This name MAY be used by the authorization server in its resource owner user interface for the resource owner.
+| Human readable name for the resource
 |  
 
 | icon_uri 
 |  
 | String  
-| A URI for a graphic icon representing the resource set. The referenced icon MAY be used by the authorization server in its resource owner user interface for the resource owner.
-|  
-
-| type 
-|  
-| String  
-| A string uniquely identifying the semantics of the resource set. For example, if the resource set consists of a single resource that is an identity claim that leverages standardized claim semantics for \\\&quot;verified email address\\\&quot;, the value of this property could be an identifying URI for this claim.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| An array of strings, any of which MAY be a URI, indicating the available scopes for this resource set. URIs MUST resolve to scope descriptions as defined in Section 2.1. Published scope descriptions MAY reside anywhere on the web; a resource server is not required to self-host scope descriptions and may wish to point to standardized scope descriptions residing elsewhere. It is the resource server&#39;s responsibility to ensure that scope description documents are accessible to authorization servers through GET calls to support any user interface requirements. The resource server and authorization server are presumed to have separately negotiated any required interpretation of scope handling not conveyed through scope descriptions.
-|  
-
-| scope_expression 
-|  
-| String  
-| 
-|  
-
-| description 
-|  
-| String  
-| A human-readable string describing the resource
-|  
-
-| iat 
-|  
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when the token was issued at
-| int64 
-
-| exp 
-|  
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-|===
-
-
-[#UmaResource1]
-=== _UmaResource1_ UmaResource
-
-Resource description
-
-[.fields-UmaResource1]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| name 
-|  
-| String  
-| A human-readable string describing a set of one or more resources. This name MAY be used by the authorization server in its resource owner user interface for the resource owner.
-|  
-
-| icon_uri 
-|  
-| String  
-| A URI for a graphic icon representing the resource set. The referenced icon MAY be used by the authorization server in its resource owner user interface for the resource owner.
-|  
-
-| type 
-|  
-| String  
-| A string uniquely identifying the semantics of the resource set. For example, if the resource set consists of a single resource that is an identity claim that leverages standardized claim semantics for \\\&quot;verified email address\\\&quot;, the value of this property could be an identifying URI for this claim.
-|  
-
-| resource_scopes 
-| X 
-| List  of <<string>> 
-| An array of strings, any of which MAY be a URI, indicating the available scopes for this resource set. URIs MUST resolve to scope descriptions as defined in Section 2.1. Published scope descriptions MAY reside anywhere on the web; a resource server is not required to self-host scope descriptions and may wish to point to standardized scope descriptions residing elsewhere. It is the resource server&#39;s responsibility to ensure that scope description documents are accessible to authorization servers through GET calls to support any user interface requirements. The resource server and authorization server are presumed to have separately negotiated any required interpretation of scope handling not conveyed through scope descriptions.
-|  
-
-| scope_expression 
-|  
-| String  
-| 
-|  
-
-| description 
-|  
-| String  
-| A human-readable string describing the resource
-|  
-
-| iat 
-|  
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when the token was issued at
-| int64 
-
-| exp 
-|  
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-|===
-
-
-[#UmaResourceResponse]
-=== _UmaResourceResponse_ 
-
-UmaResourceResponse Resource created.
-
-[.fields-UmaResourceResponse]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| _id 
-| X 
-| String  
-| UMA Resource identifier
-|  
-
-| user_access_policy_uri 
-|  
-| String  
-| 
-|  
-
-|===
-
-
-[#UmaResourceWithId]
-=== _UmaResourceWithId_ 
-
-Uma Resource details
-
-[.fields-UmaResourceWithId]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| _id 
-| X 
-| String  
-| UMA Resource identifier
-|  
-
-| name 
-|  
-| String  
-| A human-readable string describing a set of one or more resources. This name MAY be used by the authorization server in its resource owner user interface for the resource owner.
-|  
-
-| uri 
-|  
-| String  
-| A human-readable string describing the resource
-|  
-
-| type 
-|  
-| String  
-| A string uniquely identifying the semantics of the resource set. For example, if the resource set consists of a single resource that is an identity claim that leverages standardized claim semantics for \\\&quot;verified email address\\\&quot;, the value of this property could be an identifying URI for this claim.
+| Protected uri of the resource. 
 |  
 
 | scopes 
 |  
 | List  of <<string>> 
-| An array of strings, any of which MAY be a URI, indicating the available scopes for this resource set. URIs MUST resolve to scope descriptions as defined in Section 2.1. Published scope descriptions MAY reside anywhere on the web; a resource server is not required to self-host scope descriptions and may wish to point to standardized scope descriptions residing elsewhere. It is the resource server&#39;s responsibility to ensure that scope description documents are accessible to authorization servers through GET calls to support any user interface requirements. The resource server and authorization server are presumed to have separately negotiated any required interpretation of scope handling not conveyed through scope descriptions.
+| List of scopes associated with the resource
 |  
 
-| scope_expression 
-|  
-| String  
-| 
-|  
+|===
 
-| description 
+
+[#Resource]
+=== _Resource_ 
+
+
+
+[.fields-Resource]
+[cols="2,1,2,4,1"]
+|===         
+| Field Name| Required| Type| Description| Format
+
+| ownership_id 
+|  
+| UUID  
+| UUID of the Owner End-User
+| uuid 
+
+| id 
+|  
+| UUID  
+| UUID of the resource
+| uuid 
+
+| name 
 |  
 | String  
-| A human-readable string describing the resource
+| Human readable name for the resource
 |  
 
 | icon_uri 
 |  
 | String  
-| A URI for a graphic icon representing the resource set. The referenced icon MAY be used by the authorization server in its resource owner user interface for the resource owner.
+| Protected uri of the resource. 
 |  
 
-| iat 
-| X 
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when the token was issued at
-| int64 
-
-| exp 
-| X 
-| Long  
-| number of seconds since January 1 1970 UTC, indicating when this token will expire.
-| int64 
-
-|===
-
-
-[#WebKeysConfiguration]
-=== _WebKeysConfiguration_ 
-
-JSON Web Key Set (JWKS) - A JSON object that represents a set of JWKs. The JSON object MUST have a keys member, which is an array of JWKs.
-
-[.fields-WebKeysConfiguration]
-[cols="2,1,2,4,1"]
-|===         
-| Field Name| Required| Type| Description| Format
-
-| keys 
-| X 
-| List  of <<JsonWebKey>> 
-| List of JSON Web Key (JWK) - A JSON object that represents a cryptographic key. The members of the object represent properties of the key, including its value.
+| scopes 
+|  
+| List  of <<string>> 
+| List of scopes associated with the resource
 |  
 
 |===
