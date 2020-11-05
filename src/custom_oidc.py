@@ -13,6 +13,7 @@ from jwkest.jws import JWS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
+from jwt_verification.signature_verification import JWT_Verification
 
 from requests import post
 
@@ -67,6 +68,17 @@ class OIDCHandler:
             decoded = base64.b64decode(paddedPayload)
             #to remove byte-code
             decoded = decoded.decode('utf-8')
+            decoded_str = json.loads(decoded)
+
+            verificator = JWT_Verification()
+            result = verificator.verify_signature_JWT(token)
+            
+            if result == False:
+                print("Verification of the signature for the JWT failed!")
+                raise Exception
+            else:
+                print("Signature verification is correct")
+
             user_value = json.loads(decoded)[key]
             return user_value
         except Exception as e:
