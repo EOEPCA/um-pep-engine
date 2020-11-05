@@ -64,6 +64,15 @@ else:
         else:
             g_config[env_var_config.lower()] = os.environ[env_var].replace('"', '')
 
+# Sanitize proxy endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
+proxy_endpoint_reject_list = ["/", "/resources", "resources"]
+if g_config["proxy_endpoint"] in proxy_endpoint_reject_list:
+    raise Exception("PROXY_ENDPOINT value contains on of invalid values: " + str(proxy_endpoint_reject_list))
+if g_config["proxy_endpoint"][0] is not "/":
+    g_config["proxy_endpoint"] = "/" + g_config["proxy_endpoint"]
+if g_config["proxy_endpoint"][-1] is "/":
+    g_config["proxy_endpoint"] = g_config["proxy_endpoint"][:-1]
+
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
 
@@ -158,14 +167,15 @@ def split_headers(headers):
 
 def proxy_request(request, new_header):
     try:
+        endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
         if request.method == 'POST':
-            res = post(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
+            res = post(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'GET':
-            res = get(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
+            res = get(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
         elif request.method == 'PUT':
-            res = put(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, data=request.data, stream=False)           
+            res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
         elif request.method == 'DELETE':
-            res = delete(g_config["resource_server_endpoint"]+"/"+request.full_path, headers=new_header, stream=False)
+            res = delete(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
         else:
             response = Response()
             response.status_code = 501
@@ -234,7 +244,9 @@ def resource_request(path):
         print("No matched resource, passing through to resource server to handle")
         # In this case, the PEP doesn't have that resource handled, and just redirects to it.
         try:
-            cont = get(g_config["resource_server_endpoint"]+request.full_path, headers=request.headers).content
+            #Takes the full path, which contains query parameters, and removes the proxy_endpoint at the start
+            endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
+            cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
             return cont
         except Exception as e:
             print("Error while redirecting to resource: "+str(e))

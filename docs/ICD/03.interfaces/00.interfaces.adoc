@@ -1,0 +1,982 @@
+= Policy Enforcement Point Interfaces
+
+[abstract]
+.Abstract
+This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. <br> <br> Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. <br> <br> As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters.
+
+
+// markup not found, no include::{specDir}intro.adoc[opts=optional]
+
+
+
+== Endpoints
+
+
+[.PolicyEnforcement]
+=== PolicyEnforcement
+
+
+[.proxyPathDelete]
+==== Proxy DELETE
+    
+`DELETE /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.proxyPathGet]
+==== Proxy GET
+    
+`GET /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers and query parameters
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.proxyPathPost]
+==== Proxy POST
+    
+`POST /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.proxyPathPut]
+==== Proxy PUT
+    
+`PUT /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/PUT/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PUT/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PUT/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/PUT/PUT.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.Resources]
+=== Resources
+
+
+[.resourcesGet]
+==== Resources GET
+    
+`GET /resources`
+
+List all owned resources
+
+===== Description 
+
+This operation lists all resources filtered by ownership ID. Ownership ID is extracted from the OpenID Connect Token
+
+
+// markup not found, no include::{specDir}resources/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+array[<<resource>>]
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+| List[<<resource>>] 
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.resourcesPost]
+==== Resources POST
+    
+`POST /resources`
+
+Creates a new Resource reference in the Platform
+
+===== Description 
+
+This operation generates a new resource reference object that can be protected. Ownership ID is set to the unique ID of the End-User
+
+
+// markup not found, no include::{specDir}resources/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+===== Body Parameter
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| NewResource 
+|  <<NewResource>> 
+| X 
+|  
+|  
+
+|===         
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+<<resource>>
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<resource>>
+
+
+| 401
+| UNAUTHORIZED
+|  <<>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.resourcesResourceIdDelete]
+==== Resources DELETE
+    
+`DELETE /resources/{resource_id}`
+
+Deletes an owned Resource Reference from the Platform
+
+===== Description 
+
+This operation removes an existing Resource reference owned by the user.
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| resource_id 
+| Unique Resource ID  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| UNAUTHORIZED
+|  <<>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/{resource_id}/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.resourcesResourceIdGet]
+==== Resource GET (ID)
+    
+`GET /resources/{resource_id}`
+
+Retrieve a specific owned resource
+
+===== Description 
+
+This operation retrieves information about an owned resource.
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| resource_id 
+| Unique Resource ID  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+<<resource>>
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<resource>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/{resource_id}/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.resourcesResourceIdPut]
+==== Resource PUT (ID)
+    
+`PUT /resources/{resource_id}`
+
+Updates an existing Resource reference in the Platform
+
+===== Description 
+
+This operation updates an existing 'owned' resource reference. 
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/PUT/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| resource_id 
+| Unique Resource ID  
+| X 
+ 
+
+|===         
+
+===== Body Parameter
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Resource 
+|  <<Resource>> 
+| X 
+|  
+|  
+
+|===         
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| UNAUTHORIZED
+|  <<>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PUT/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PUT/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/{resource_id}/PUT/PUT.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[#models]
+== Models
+
+
+[#NewResource]
+=== _NewResource_ 
+
+
+
+[.fields-NewResource]
+[cols="2,1,2,4,1"]
+|===         
+| Field Name| Required| Type| Description| Format
+
+| name 
+|  
+| String  
+| Human readable name for the resource
+|  
+
+| icon_uri 
+|  
+| String  
+| Protected uri of the resource. 
+|  
+
+| scopes 
+|  
+| List  of <<string>> 
+| List of scopes associated with the resource
+|  
+
+|===
+
+
+[#Resource]
+=== _Resource_ 
+
+
+
+[.fields-Resource]
+[cols="2,1,2,4,1"]
+|===         
+| Field Name| Required| Type| Description| Format
+
+| ownership_id 
+|  
+| UUID  
+| UUID of the Owner End-User
+| uuid 
+
+| id 
+|  
+| UUID  
+| UUID of the resource
+| uuid 
+
+| name 
+|  
+| String  
+| Human readable name for the resource
+|  
+
+| icon_uri 
+|  
+| String  
+| Protected uri of the resource. 
+|  
+
+| scopes 
+|  
+| List  of <<string>> 
+| List of scopes associated with the resource
+|  
+
+|===
+
+
