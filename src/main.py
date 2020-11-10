@@ -81,7 +81,7 @@ if g_config["proxy_endpoint"][-1] is "/":
 if g_config["pdp_policy_endpoint"][0] is not "/":
     g_config["pdp_policy_endpoint"] = "/" + g_config["pdp_policy_endpoint"]
 if g_config["pdp_policy_endpoint"][-1] is not "/":
-    g_config["pdp_policy_endpoint"] = "/" + g_config["pdp_policy_endpoint"]
+    g_config["pdp_policy_endpoint"] = g_config["pdp_policy_endpoint"] + "/"
 
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
