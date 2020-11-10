@@ -4,8 +4,8 @@ from base64 import b64encode
 from WellKnownHandler import TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT, KEY_OIDC_USERINFO_ENDPOINT
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 from base64 import b64encode
-from custom_uma import UMA_Handler, resource
-from custom_uma import rpt as class_rpt
+from handlers.uma_handler import UMA_Handler, resource
+from handlers.uma_handler import rpt as class_rpt
 import logging
 import base64
 import json
@@ -70,14 +70,14 @@ class OIDCHandler:
             decoded = decoded.decode('utf-8')
             decoded_str = json.loads(decoded)
 
-            verificator = JWT_Verification()
-            result = verificator.verify_signature_JWT(token)
+            # verificator = JWT_Verification()
+            # result = verificator.verify_signature_JWT(token)
             
-            if result == False:
-                print("Verification of the signature for the JWT failed!")
-                raise Exception
-            else:
-                print("Signature verification is correct")
+            # if result == False:
+            #     print("Verification of the signature for the JWT failed!")
+            #     raise Exception
+            # else:
+            #     print("Signature verification is correct")
 
             user_value = json.loads(decoded)[key]
             return user_value
