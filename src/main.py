@@ -226,16 +226,16 @@ def resource_request(path):
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
 
-        if  len(str(rpt))>40 and len(str(rpt)) != 76:
-            verificator = JWT_Verification()
-            result = verificator.verify_signature_JWT(str(rpt))
+        # if  len(str(rpt))>40 and len(str(rpt)) != 76:
+        #     verificator = JWT_Verification()
+        #     result = verificator.verify_signature_JWT(str(rpt))
             
-            if result == False:
-                print("Verification of the signature for the JWT failed!")
-                response.status_code = 403
-                return response
-            else:
-                print("Signature verification is correct")
+        #     if result == False:
+        #         print("Verification of the signature for the JWT failed!")
+        #         response.status_code = 403
+        #         return response
+        #     else:
+        #         print("Signature verification is correct")
 
 
         # Validate for a specific resource
