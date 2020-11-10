@@ -238,7 +238,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         return { "resource_id": resource_id, "rules": [{ "AND": [ {"EQUAL": {"user_name" : user_name } }] }] }
 
     def get_default_ownership_policy_body(resource_id, user_name):
-        name = "Default Ownership Policy"
+        name = "Default Ownership Policy of " + str(resource_id)
         description = "This is the default ownership policy for created resources through PEP"
         policy_cfg = get_default_ownership_policy_cfg(resource_id, user_name)
         scopes = ["protected_access"]
