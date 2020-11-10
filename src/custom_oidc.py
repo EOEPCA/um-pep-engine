@@ -15,7 +15,7 @@ from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
 from jwt_verification.signature_verification import JWT_Verification
 
-from requests import post
+from requests import post, get
 
 class OIDCHandler:
 
