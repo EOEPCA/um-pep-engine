@@ -12,10 +12,11 @@ import json
 
 from config import load_config, save_config
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
-from custom_oidc import OIDCHandler
-from custom_uma import UMA_Handler, resource
-from custom_uma import rpt as class_rpt
-from custom_mongo import Mongo_Handler
+from handlers.oidc_handler import OIDCHandler
+from handlers.uma_handler import UMA_Handler, resource
+from handlers.uma_handler import rpt as class_rpt
+from handlers.mongo_handler import Mongo_Handler
+from handlers.policy_handler import policy_handler
 import resources.resources as resources
 import os
 import sys
@@ -42,7 +43,10 @@ env_vars = [
 "PEP_DEBUG_MODE",
 "PEP_RESOURCE_SERVER_ENDPOINT",
 "PEP_API_RPT_UMA_VALIDATION",
-"PEP_RPT_LIMIT_USES"]
+"PEP_RPT_LIMIT_USES",
+"PEP_PDP_URL",
+"PEP_PDP_PORT",
+"PEP_PDP_POLICY_ENDPOINT"]
 
 use_env_var = True
 
@@ -68,11 +72,17 @@ else:
 # Sanitize proxy endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
 proxy_endpoint_reject_list = ["/", "/resources", "resources"]
 if g_config["proxy_endpoint"] in proxy_endpoint_reject_list:
-    raise Exception("PROXY_ENDPOINT value contains on of invalid values: " + str(proxy_endpoint_reject_list))
+    raise Exception("PROXY_ENDPOINT value contains one of invalid values: " + str(proxy_endpoint_reject_list))
 if g_config["proxy_endpoint"][0] is not "/":
     g_config["proxy_endpoint"] = "/" + g_config["proxy_endpoint"]
 if g_config["proxy_endpoint"][-1] is "/":
     g_config["proxy_endpoint"] = g_config["proxy_endpoint"][:-1]
+
+# Sanitize PDP "policy" endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
+if g_config["pdp_policy_endpoint"][0] is not "/":
+    g_config["pdp_policy_endpoint"] = "/" + g_config["pdp_policy_endpoint"]
+if g_config["pdp_policy_endpoint"][-1] is not "/":
+    g_config["pdp_policy_endpoint"] = g_config["pdp_policy_endpoint"] + "/"
 
 # Global handlers
 g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
@@ -124,11 +134,14 @@ uma_handler.status()
 #         print("Resource already existed, moving on")
 #     else: raise e
 
+#PDP Policy Handler
+pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
+
 app = Flask(__name__)
 app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
 # Register api blueprints (module endpoints)
-app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, g_config))
+app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
 
 def generateRSAKeyPair():
     _rsakey = RSA.generate(2048)
@@ -213,16 +226,16 @@ def resource_request(path):
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
 
-        if  len(str(rpt))>40 and len(str(rpt)) != 76:
-            verificator = JWT_Verification()
-            result = verificator.verify_signature_JWT(str(rpt))
+        # if  len(str(rpt))>40 and len(str(rpt)) != 76:
+        #     verificator = JWT_Verification()
+        #     result = verificator.verify_signature_JWT(str(rpt))
             
-            if result == False:
-                print("Verification of the signature for the JWT failed!")
-                response.status_code = 403
-                return response
-            else:
-                print("Signature verification is correct")
+        #     if result == False:
+        #         print("Verification of the signature for the JWT failed!")
+        #         response.status_code = 403
+        #         return response
+        #     else:
+        #         print("Signature verification is correct")
 
 
         # Validate for a specific resource

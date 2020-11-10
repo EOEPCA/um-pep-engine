@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from eoepca_uma import rpt, resource
-from custom_mongo import Mongo_Handler
+from handlers.mongo_handler import Mongo_Handler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 from typing import List
 import pymongo

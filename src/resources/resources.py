@@ -1,12 +1,13 @@
 from flask import Blueprint, request, Response, jsonify
 import json
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
-from custom_oidc import OIDCHandler
-from custom_uma import UMA_Handler, resource
-from custom_uma import rpt as class_rpt
-from custom_mongo import Mongo_Handler
+from handlers.oidc_handler import OIDCHandler
+from handlers.uma_handler import UMA_Handler, resource
+from handlers.uma_handler import rpt as class_rpt
+from handlers.mongo_handler import Mongo_Handler
+from handlers.policy_handler import policy_handler
 
-def construct_blueprint(oidc_client, uma_handler, g_config):
+def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
 
     @resources_bp.route("/resources", methods=["GET"])
@@ -82,7 +83,18 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
 
         #add resource is outside of any extra validations, so it is called now
         if request.method == "POST":
-            return create_resource(uid, request, uma_handler, response)
+            resource_reply = create_resource(uid, request, uma_handler, response)
+            #If the reply is not of type Response, the creation was successful
+            #Here we register a default ownership policy to the new resource, with the PDP
+            if not isinstance(resource_reply, Response):
+                resource_id = resource_reply
+                policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
+                if policy_reply.status_code == 200:
+                    return resource_id
+                response.status_code = policy_reply.status_code
+                response.headers["Error"] = "Error when registering resource ownership policy!"
+                return response
+            return resource_reply
 
         try:
             #otherwise continue with validations
@@ -221,5 +233,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         response.status_code = 403
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
+
+    def get_default_ownership_policy_cfg(resource_id, user_name):
+        return { "resource_id": resource_id, "rules": [{ "AND": [ {"EQUAL": {"user_name" : user_name } }] }] }
+
+    def get_default_ownership_policy_body(resource_id, user_name):
+        name = "Default Ownership Policy of " + str(resource_id)
+        description = "This is the default ownership policy for created resources through PEP"
+        policy_cfg = get_default_ownership_policy_cfg(resource_id, user_name)
+        scopes = ["protected_access"]
+        return {"name": name, "description": description, "config": policy_cfg, "scopes": scopes}
 
     return resources_bp
