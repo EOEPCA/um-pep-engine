@@ -94,7 +94,9 @@ The endpoints used for SCIM are:
 The Resource API Endpoints offered by the PEP component are protected based on the unique identifier of the Resource Owner that is adding/removing/editing resources.
 The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these tokens:
 
-* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter)
+* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter) and the signature of the JWT will also be verified.
+
+* RPT Token: in this case the PEP extracts the necessary claims from the RPT uniquely from the "pct_claims" parameter
 
 * OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.
 
