@@ -1151,7 +1151,10 @@ The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these
 <div class="ulist">
 <ul>
 <li>
-<p>JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter)</p>
+<p>JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter) and the signature of the JWT will also be verified.</p>
+</li>
+<li>
+<p>RPT Token: in this case the PEP extracts the necessary claims from the RPT uniquely from the "pct_claims" parameter</p>
 </li>
 <li>
 <p>OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.</p>
@@ -1597,7 +1600,7 @@ The main methods for the interaction with the database are displayed in this dat
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-11-06 16:04:18 UTC
+Last updated 2020-11-10 09:05:58 UTC
 </div>
 </div>
 </body>
