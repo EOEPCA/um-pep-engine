@@ -178,6 +178,8 @@ def proxy_request(request, new_header):
         excluded_headers = ['transfer-encoding']
         headers = [(name, value) for (name, value) in     res.raw.headers.items() if name.lower() not in excluded_headers]
         response = Response(res.content, res.status_code, headers)
+        response.autocorrect_location_header = False
+        response.headers["Location"] = response.headers["Location"].replace(g_config["resource_server_endpoint"], g_config["proxy_endpoint"])
         return response
     except Exception as e:
         response = Response()
