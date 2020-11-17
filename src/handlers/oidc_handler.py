@@ -86,7 +86,13 @@ class OIDCHandler:
                     print("Signature verification is correct!")
 
             if decoded_str_header['kid'] != "RSA1":
-                user_value = decoded_str['pct_claims'][key]
+                if key in decoded_str.keys():
+                    if decoded_str[key] != None:
+                        user_value = decoded_str[key]
+                    else:
+                        raise Exception
+                else:
+                    user_value = decoded_str['pct_claims'][key]
             else:
                 if decoded_str[key] == None:
                     if decoded_str['pct_claims'][key][0] == None:
