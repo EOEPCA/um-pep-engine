@@ -6,12 +6,15 @@ from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPO
 from base64 import b64encode
 from handlers.uma_handler import UMA_Handler, resource
 from handlers.uma_handler import rpt as class_rpt
+from config import load_config
 import logging
 import base64
 import json
 from jwkest.jws import JWS
+from jwkest.jwk import SYMKey, KEYS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
 from jwkest.jwk import load_jwks
+from jwkest.jwk import rsa_load
 from Crypto.PublicKey import RSA
 from jwt_verification.signature_verification import JWT_Verification
 
@@ -44,25 +47,15 @@ class OIDCHandler:
         
         return access_token
 
-    def verify_RPT_token(self, token, key):
-        try:
-            introspection_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
-            pat = self.get_new_pat()
-            rpt_class = class_rpt.introspect(rpt=token, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
-    
-            if rpt_class[key] == None:
-                if rpt_class['pct_claims'][key][0] == None:
-                    raise Exception
-                else:
-                    return rpt_class['pct_claims'][key][0]
-            else:
-                return rpt_class[key]
-        except Exception as e:
-            print("Authenticated RPT Resource. No Valid RPT token passed! " +str(e))
-            return None
-
     def verify_JWT_token(self, token, key):
         try:
+            header = str(token).split(".")[0]
+            paddedHeader = header + '=' * (4 - len(header) % 4)
+            decodedHeader = base64.b64decode(paddedHeader)
+            #to remove byte-code
+            decodedHeader_format = decodedHeader.decode('utf-8')
+            decoded_str_header = json.loads(decodedHeader_format)
+
             payload = str(token).split(".")[1]
             paddedPayload = payload + '=' * (4 - len(payload) % 4)
             decoded = base64.b64decode(paddedPayload)
@@ -70,16 +63,39 @@ class OIDCHandler:
             decoded = decoded.decode('utf-8')
             decoded_str = json.loads(decoded)
 
-            # verificator = JWT_Verification()
-            # result = verificator.verify_signature_JWT(token)
-            
-            # if result == False:
-            #     print("Verification of the signature for the JWT failed!")
-            #     raise Exception
-            # else:
-            #     print("Signature verification is correct")
+            verification_signature = self.getVerificationConfig()
 
-            user_value = json.loads(decoded)[key]
+            if verification_signature == True:
+                if decoded_str_header['kid'] != "RSA1":
+                    verificator = JWT_Verification()
+                    result = verificator.verify_signature_JWT(token)
+                else:
+                    #validate signature for rpt
+                    rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/public.pem"))
+                    dict_rpt_values = JWS().verify_compact(token, keys=[rsajwk], sigalg="RS256")
+
+                    if dict_rpt_values == decoded_str:
+                        result = True
+                    else:
+                        result = False
+
+                if result == False:
+                    print("Verification of the signature for the JWT failed!")
+                    raise Exception
+                else:
+                    print("Signature verification is correct!")
+
+            if decoded_str_header['kid'] != "RSA1":
+                user_value = decoded_str['pct_claims'][key]
+            else:
+                if decoded_str[key] == None:
+                    if decoded_str['pct_claims'][key][0] == None:
+                        raise Exception
+                    else:
+                        user_value = decoded_str['pct_claims'][key][0]
+                else:
+                    user_value = decoded_str[key]
+
             return user_value
         except Exception as e:
             print("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
@@ -106,9 +122,7 @@ class OIDCHandler:
         token_protected = inputToken_protected
         if token_protected:
             #Compares between JWT id_token and OAuth access token to retrieve the requested key-value
-            if len(str(token_protected)) == 76:
-                value=self.verify_RPT_token(token_protected, key)
-            elif len(str(token_protected))>40:
+            if len(str(token_protected))>40:
                 value=self.verify_JWT_token(token_protected, key)
             else:
                 value=self.verify_OAuth_token(token_protected, key)
@@ -116,3 +130,8 @@ class OIDCHandler:
             return value
         else:
             return 'NO TOKEN FOUND'
+
+    def getVerificationConfig(self):
+        g_config = load_config("config/config.json")
+        
+        return g_config['verify_signature']

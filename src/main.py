@@ -26,7 +26,6 @@ from jwkest.jws import JWS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
-from jwt_verification.signature_verification import JWT_Verification
 import logging
 logging.getLogger().setLevel(logging.INFO)
 ### INITIAL SETUP
@@ -226,31 +225,27 @@ def resource_request(path):
         print("Token found: "+rpt)
         rpt = rpt.replace("Bearer ","").strip()
 
-        # if  len(str(rpt))>40 and len(str(rpt)) != 76:
-        #     verificator = JWT_Verification()
-        #     result = verificator.verify_signature_JWT(str(rpt))
-            
-        #     if result == False:
-        #         print("Verification of the signature for the JWT failed!")
-        #         response.status_code = 403
-        #         return response
-        #     else:
-        #         print("Signature verification is correct")
-
-
         # Validate for a specific resource
-        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"])) or not api_rpt_uma_validation:
+        if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or not api_rpt_uma_validation:
             print("RPT valid, accesing ")
-            introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
-            pat = oidc_client.get_new_pat()
-            rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
-            jwt_rpt_response = create_jwt(rpt_class, private_key)
+
+            rpt_splitted = rpt.split('.')
+            
+            if  len(rpt_splitted) == 3:
+                jwt_rpt_response = rpt
+            else:
+                introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
+                pat = oidc_client.get_new_pat()
+                rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+                jwt_rpt_response = create_jwt(rpt_class, private_key)
+                
             headers_splitted = split_headers(str(request.headers))
             headers_splitted['Authorization'] = "Bearer "+str(jwt_rpt_response)
 
             new_header = Headers()
             for key, value in headers_splitted.items():
                 new_header.add(key, value)
+
             # redirect to resource
             return proxy_request(request, new_header)
         print("Invalid RPT!, sending ticket")

@@ -2,7 +2,10 @@
 from eoepca_uma import rpt, resource
 from handlers.mongo_handler import Mongo_Handler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
+from jwt_verification.signature_verification import JWT_Verification
 from typing import List
+import base64
+import json
 import pymongo
 from datetime import datetime
 
@@ -69,15 +72,35 @@ class UMA_Handler:
 
     # Usage of Python library for query mongodb instance
 
-    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, rpt_limit_uses: int) -> bool:
+    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, rpt_limit_uses: int, verify_signature: bool) -> bool:
         """
         Returns True/False, if the RPT is valid for the resource(s) they are trying to access
         """
         results = []
 
+        rpt_splitted = user_rpt.split('.')
+
         introspection_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
         pat = self.oidch.get_new_pat()
-        rpt_class = rpt.introspect(rpt=user_rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+
+        if len(rpt_splitted) == 3:
+            if verify_signature == True:
+                test = JWT_Verification()
+                result = test.verify_signature_JWT(user_rpt)
+
+                if result == False:
+                    print("Verification of the signature for the JWT failed!")
+                    return False
+                else:
+                    print("Signature verification is correct!")
+
+            payload = str(user_rpt).split(".")[1]
+            paddedPayload = payload + '=' * (4 - len(payload) % 4)
+            decoded = base64.b64decode(paddedPayload)
+            decoded = decoded.decode('utf-8')
+            rpt_class = json.loads(decoded)
+        else:
+            rpt_class = rpt.introspect(rpt=user_rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
 
         result = rpt.is_valid_now(user_rpt, pat, introspection_endpoint, resources, time_margin= margin_time_rpt_valid ,secure= self.verify )
 
