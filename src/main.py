@@ -116,6 +116,8 @@ if "client_id" not in g_config or "client_secret" not in g_config:
 else:
     print("Client found in config, using: "+g_config["client_id"])
 
+save_config("config/config.json", g_config)
+
 oidc_client = OIDCHandler(g_wkh,
                             client_id = g_config["client_id"],
                             client_secret = g_config["client_secret"],
