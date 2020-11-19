@@ -98,6 +98,7 @@ The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these
 The signature of this token will be verified if the signature verification is enabled in the environment variables.
 In case it is enabled, it will be distinguished if the JWT obtained in the header is signed with the internal keys of the platform or the building block.
 If the platform signature has been used, it will be verified with the platform endpoint. If the signature is from the PEP block, it will be verified with the public key from the PEP.
+In case it is disabled, the signature will not be verified but the other steps above will be performed. The PEP extracts the necessary claims from "sub" parameter.
 
 * OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.
 
