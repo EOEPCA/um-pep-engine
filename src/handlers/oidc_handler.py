@@ -63,9 +63,7 @@ class OIDCHandler:
             decoded = decoded.decode('utf-8')
             decoded_str = json.loads(decoded)
 
-            verification_signature = self.getVerificationConfig()
-
-            if verification_signature == True:
+            if self.getVerificationConfig() == True:
                 if decoded_str_header['kid'] != "RSA1":
                     verificator = JWT_Verification()
                     result = verificator.verify_signature_JWT(token)
