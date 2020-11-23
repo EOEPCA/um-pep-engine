@@ -94,9 +94,11 @@ The endpoints used for SCIM are:
 The Resource API Endpoints offered by the PEP component are protected based on the unique identifier of the Resource Owner that is adding/removing/editing resources.
 The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these tokens:
 
-* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter) and the signature of the JWT will also be verified.
-
-* RPT Token: in this case the PEP extracts the necessary claims from the RPT uniquely from the "pct_claims" parameter
+* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter).
+The signature of this token will be verified if the signature verification is enabled in the environment variables.
+In case it is enabled, it will be distinguished if the JWT obtained in the header is signed with the internal keys of the platform or the building block.
+If the platform signature has been used, it will be verified with the platform endpoint. If the signature is from the PEP block, it will be verified with the public key from the PEP.
+In case it is disabled, the signature will not be verified but the other steps above will be performed. The PEP extracts the necessary claims from "sub" parameter.
 
 * OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.
 
@@ -177,6 +179,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 
 === Request Forwarding with JWT header
  
-After validating the RPT we proceed to make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.
-
+After validating the RPT we proceed to verify the signature of the JWT if the signature verification is enabled in the environment variables and the we pass the JWT to the request header in the request to the resource server.
+If the header has a RPT as token we make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.
 Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.
+If the verification of the signature for the JWT is disabled, the code will do the introspection steps in the case of a RPT, and then will add the JWT to the request header without verifying the token signature.
