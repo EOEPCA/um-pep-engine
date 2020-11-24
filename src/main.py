@@ -4,6 +4,7 @@ from WellKnownHandler import WellKnownHandler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 
 from flask import Flask, request, Response
+from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
@@ -142,8 +143,24 @@ pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_conf
 app = Flask(__name__)
 app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
+# SWAGGER initiation
+SWAGGER_URL = '/swagger-ui'  # URL for exposing Swagger UI (without trailing '/')
+API_URL = "" # Our local swagger resource for PEP. Not used here as 'spec' parameter is used in config
+SWAGGER_SPEC = json.load(open("./static/swagger_pep_ui.json"))
+SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': SWAGGER_APP_NAME,
+        'spec': SWAGGER_SPEC
+    },
+)
+
 # Register api blueprints (module endpoints)
 app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
+app.register_blueprint(swaggerui_blueprint)
 
 def generateRSAKeyPair():
     _rsakey = RSA.generate(2048)
