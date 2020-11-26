@@ -61,18 +61,21 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         response.headers["Error"] = "No user-owned resources found!"
         return response
 
-
-    @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "POST", "DELETE"])
-    def resource_operation(resource_id):
+    @resources_bp.route("/resources", methods=["POST"])
+    def resource_creation():
         print("Processing " + request.method + " resource request...")
         response = Response()
-        custom_mongo = Mongo_Handler("resource_db", "resources")
         uid = None
         #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            if "NO TOKEN FOUND" in uid:
+                print("Error: no token passed!")
+                response.status_code = 401
+                response.headers["Error"] = 'no token passed!'
+                return response
         except Exception as e:
             print("Error While passing the token: "+str(uid))
             response.status_code = 500
@@ -86,20 +89,47 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             response.headers["Error"] = 'Could not get the UID for the user'
             return response
 
-        #add resource is outside of any extra validations, so it is called now
-        if request.method == "POST":
-            resource_reply = create_resource(uid, request, uma_handler, response)
-            #If the reply is not of type Response, the creation was successful
-            #Here we register a default ownership policy to the new resource, with the PDP
-            if not isinstance(resource_reply, Response):
-                resource_id = resource_reply
-                policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
-                if policy_reply.status_code == 200:
-                    return resource_id
-                response.status_code = policy_reply.status_code
-                response.headers["Error"] = "Error when registering resource ownership policy!"
+        resource_reply = create_resource(uid, request, uma_handler, response)
+        #If the reply is not of type Response, the creation was successful
+        #Here we register a default ownership policy to the new resource, with the PDP
+        if not isinstance(resource_reply, Response):
+            resource_id = resource_reply
+            policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
+            if policy_reply.status_code == 200:
+                return resource_id
+            response.status_code = policy_reply.status_code
+            response.headers["Error"] = "Error when registering resource ownership policy!"
+            return response
+        return resource_reply
+
+    @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "DELETE"])
+    def resource_operation(resource_id):
+        print("Processing " + request.method + " resource request...")
+        response = Response()
+        custom_mongo = Mongo_Handler("resource_db", "resources")
+        uid = None
+        #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
+        try:
+            head_protected = str(request.headers)
+            headers_protected = head_protected.split()
+            uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            if "NO TOKEN FOUND" in uid:
+                print("Error: no token passed!")
+                response.status_code = 401
+                response.headers["Error"] = 'no token passed!'
                 return response
-            return resource_reply
+        except Exception as e:
+            print("Error While passing the token: "+str(uid))
+            response.status_code = 500
+            response.headers["Error"] = str(e)
+            return response
+        
+        #If UUID does not exist
+        if not uid:
+            print("UID for the user not found")
+            response.status_code = 401
+            response.headers["Error"] = 'Could not get the UID for the user'
+            return response
 
         try:
             #otherwise continue with validations
