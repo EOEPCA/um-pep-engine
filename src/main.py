@@ -22,6 +22,7 @@ import blueprints.proxy as proxy
 import os
 import sys
 import traceback
+import threading
 
 from jwkest.jws import JWS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
@@ -59,17 +60,38 @@ def generateRSAKeyPair():
 
 private_key = generateRSAKeyPair()
 
-app = Flask(__name__)
-app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
+proxy_app = Flask(__name__)
+proxy_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
+
+resources_app = Flask(__name__)
+resources_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
 # Register api blueprints (module endpoints)
-app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
-app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+resources_app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
+proxy_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
 
-# Start reverse proxy for x endpoint
-app.run(
-    debug=g_config["debug_mode"],
-    threaded=g_config["use_threads"],
-    port=int(g_config["service_port"]),
-    host=g_config["service_host"]
-)
+# Define run methods for both Flask instances
+# Start reverse proxy for proxy endpoint
+def run_proxy_app():
+    proxy_app.run(
+        debug=False,
+        threaded=True,
+        port=int(g_config["service_port"]),
+        host=g_config["service_host"]
+    )
+
+# Start reverse proxy for resources endpoint
+def run_resources_app():
+    resources_app.run(
+        debug=False,
+        threaded=True,
+        port=int(g_config["service_port"])+10,
+        host=g_config["service_host"]
+    )
+
+if __name__ == '__main__':
+    # Executing the Threads seperatly.
+    proxy_thread = threading.Thread(target=run_proxy_app)
+    resource_thread = threading.Thread(target=run_resources_app)
+    proxy_thread.start()
+    resource_thread.start()

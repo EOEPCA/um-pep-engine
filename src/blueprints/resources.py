@@ -26,6 +26,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            if "NO TOKEN FOUND" in uid:
+                print("Error: no token passed!")
+                response.status_code = 401
+                response.headers["Error"] = 'no token passed!'
+                return response
         except Exception as e:
             print("Error While passing the token: "+str(uid))
             response.status_code = 500
