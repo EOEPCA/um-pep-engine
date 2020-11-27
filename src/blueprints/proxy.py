@@ -23,8 +23,7 @@ logging.getLogger().setLevel(logging.INFO)
 def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     proxy_bp = Blueprint('proxy_bp', __name__)
 
-    @proxy_bp.route(g_config["proxy_endpoint"], defaults={'path': ''})
-    @proxy_bp.route(g_config["proxy_endpoint"]+"/<path:path>", methods=["GET","POST","PUT","DELETE"])
+    @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE"])
     def resource_request(path):
         # Check for token
         print("Processing path: '"+path+"'")
@@ -84,8 +83,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             print("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
             try:
-                #Takes the full path, which contains query parameters, and removes the proxy_endpoint at the start
-                endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
                 cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
                 return cont
             except Exception as e:
@@ -95,7 +92,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
 
     def proxy_request(request, new_header):
         try:
-            endpoint_path = request.full_path.replace(g_config["proxy_endpoint"], '', 1)
+            endpoint_path = request.full_path
             if request.method == 'POST':
                 res = post(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
             elif request.method == 'GET':
@@ -113,7 +110,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             response = Response(res.content, res.status_code, headers)
             if "Location" in response.headers:
                 response.autocorrect_location_header = False
-                response.headers["Location"] = g_config["proxy_endpoint"] + response.headers["Location"].replace(g_config["resource_server_endpoint"], '')
+                response.headers["Location"] = response.headers["Location"].replace(g_config["resource_server_endpoint"], '')
             return response
         except Exception as e:
             response = Response()

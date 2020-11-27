@@ -76,7 +76,7 @@ def run_proxy_app():
     proxy_app.run(
         debug=False,
         threaded=True,
-        port=int(g_config["service_port"]),
+        port=int(g_config["proxy_service_port"]),
         host=g_config["service_host"]
     )
 
@@ -85,7 +85,7 @@ def run_resources_app():
     resources_app.run(
         debug=False,
         threaded=True,
-        port=int(g_config["service_port"])+10,
+        port=int(g_config["resources_service_port"]),
         host=g_config["service_host"]
     )
 

@@ -35,9 +35,9 @@ def get_config(config_path: str):
     env_vars = [
     "PEP_REALM",
     "PEP_AUTH_SERVER_URL",
-    "PEP_PROXY_ENDPOINT",
     "PEP_SERVICE_HOST",
-    "PEP_SERVICE_PORT",
+    "PEP_PROXY_SERVICE_PORT",
+    "PEP_RESOURCES_SERVICE_PORT",
     "PEP_S_MARGIN_RPT_VALID",
     "PEP_CHECK_SSL_CERTS",
     "PEP_USE_THREADS",
@@ -70,15 +70,6 @@ def get_config(config_path: str):
                 g_config[env_var_config.lower()] = False
             else:
                 g_config[env_var_config.lower()] = os.environ[env_var].replace('"', '')
-
-    # Sanitize proxy endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
-    proxy_endpoint_reject_list = ["/", "/resources", "resources"]
-    if g_config["proxy_endpoint"] in proxy_endpoint_reject_list:
-        raise Exception("PROXY_ENDPOINT value contains one of invalid values: " + str(proxy_endpoint_reject_list))
-    if g_config["proxy_endpoint"][0] is not "/":
-        g_config["proxy_endpoint"] = "/" + g_config["proxy_endpoint"]
-    if g_config["proxy_endpoint"][-1] is "/":
-        g_config["proxy_endpoint"] = g_config["proxy_endpoint"][:-1]
 
     # Sanitize PDP "policy" endpoint config value, VERY IMPORTANT to ensure proper function of the endpoint
     if g_config["pdp_policy_endpoint"][0] is not "/":
