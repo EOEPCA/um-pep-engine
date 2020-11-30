@@ -71,7 +71,7 @@ class Mongo_Handler:
             # Check if the resource is alredy registered in the collection
             x=None
             if self.mongo_exists("resource_id", resource_id):
-                x= self.update_resource(myres)
+                x= self.update_in_mongo("resource_id", myres)
             # Add the resource since it doesn't exist on the database 
             else:
                 x = col.insert_one(myres)
