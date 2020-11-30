@@ -5,7 +5,6 @@ metadata:
 data:
   PEP_REALM: {{ .Values.global.realm | quote }}
   PEP_AUTH_SERVER_URL: {{ .Values.global.domain | quote }}
-  PEP_PROXY_ENDPOINT: {{ .Values.global.proxyEndpoint | quote }}
   PEP_SERVICE_HOST: {{ .Values.global.serviceHost | quote }}
   PEP_SERVICE_PORT: {{ .Values.global.servicePort | quote }}
   PEP_S_MARGIN_RPT_VALID: {{ .Values.global.margin | quote }}
@@ -19,3 +18,5 @@ data:
   PEP_PDP_PORT: {{ .Values.global.pdpPort | quote }}
   PEP_PDP_POLICY_ENDPOINT: {{ .Values.global.pdpPolicy | quote }}
   PEP_VERIFY_SIGNATURE: {{ .Values.global.verifySignature | quote }}
+  PEP_PROXY_SERVICE_PORT: {{ .Values.global.proxyServicePort | quote }}
+  PEP_RESOURCES_SERVICE_PORT: {{ .Values.global.resourcesServicePort | quote }}

@@ -7,7 +7,6 @@ global:
   domain:  https://demoexample.gluu.org
   pep: pep-engine
   realm: eoepca
-  proxyEndpoint: /ades
   serviceHost: 0.0.0.0
   servicePort: 5566
   margin: 5
@@ -22,13 +21,15 @@ global:
   pdpPolicy: /policy/
   verifySignature: "'false'"
   nginxIp: 10.0.2.15
+  proxyServicePort: 5566
+  resourcesServicePort: 5576
 
 
 
 image: 
   statefulSetReplicas: 1
   imagePullPolicy: Always
-  image: eoepca/um-pep-engine:latest
+  image: eoepca/um-pep-engine:task203_1
 persistence: 
   accessModes: ReadWriteMany
   dbStorageSize: 5Gi
