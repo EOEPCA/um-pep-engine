@@ -6,83 +6,10 @@
     "description" : "This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. <br> <br> Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. <br> <br> As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters."
   },
   "tags" : [ {
-    "name" : "Policy Enforcement",
-    "description" : "Proxying functionality to enforce authorization policies"
-  }, {
     "name" : "Resources",
     "description" : "Operations to create, modify or delete resources"
   } ],
   "paths" : {
-    "/proxy/{path}" : {
-      "parameters" : [ {
-        "in" : "path",
-        "name" : "path",
-        "description" : "Path to the Back-End Service",
-        "required" : true,
-        "schema" : {
-          "type" : "string"
-        }
-      }, {
-        "in" : "header",
-        "name" : "Authorization",
-        "description" : "RPT Token generated through UMA Flow",
-        "schema" : {
-          "type" : "string"
-        }
-      } ],
-      "get" : {
-        "tags" : [ "Policy Enforcement" ],
-        "summary" : "Request to Back-End Service",
-        "description" : "This operation propagates all headers and query parameters",
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "$ref" : "#/components/responses/UMAUnauthorized"
-          }
-        }
-      },
-      "post" : {
-        "tags" : [ "Policy Enforcement" ],
-        "summary" : "Request to Back-End Service",
-        "description" : "This operation propagates all headers, query parameters and body",
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "$ref" : "#/components/responses/UMAUnauthorized"
-          }
-        }
-      },
-      "put" : {
-        "tags" : [ "Policy Enforcement" ],
-        "summary" : "Request to Back-End Service",
-        "description" : "This operation propagates all headers, query parameters and body",
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "$ref" : "#/components/responses/UMAUnauthorized"
-          }
-        }
-      },
-      "delete" : {
-        "tags" : [ "Policy Enforcement" ],
-        "summary" : "Request to Back-End Service",
-        "description" : "This operation propagates all headers",
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "$ref" : "#/components/responses/UMAUnauthorized"
-          }
-        }
-      }
-    },
     "/resources" : {
       "parameters" : [ {
         "in" : "header",
