@@ -265,13 +265,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
 
-    def get_default_ownership_policy_cfg(resource_id, user_name):
-        return { "resource_id": resource_id, "rules": [{ "AND": [ {"EQUAL": {"user_name" : user_name } }] }] }
+    def get_default_ownership_policy_cfg(resource_id, uid):
+        return { "resource_id": resource_id, "action": "view", "rules": [{ "AND": [ {"EQUAL": {"uid" : uid } }] }] }
 
-    def get_default_ownership_policy_body(resource_id, user_name):
+    def get_default_ownership_policy_body(resource_id, uid):
         name = "Default Ownership Policy of " + str(resource_id)
         description = "This is the default ownership policy for created resources through PEP"
-        policy_cfg = get_default_ownership_policy_cfg(resource_id, user_name)
+        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid)
         scopes = ["protected_access"]
         return {"name": name, "description": description, "config": policy_cfg, "scopes": scopes}
 

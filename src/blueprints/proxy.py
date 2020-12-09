@@ -38,6 +38,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         uid = None
         
         #If UUID exists and resource requested has same UUID
+        api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
         if rpt:
             print("Token found: "+rpt)
