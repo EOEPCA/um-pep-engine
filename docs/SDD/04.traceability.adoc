@@ -1,0 +1,71 @@
+[[traceabilityMatrix]]
+= User Story Traceability
+
+.User Stories
+|===
+|Code |Description 
+
+|EOEPCA-12	
+|Reusable UMA Client Implementation
+
+|EOEPCA-221	
+|Administrative tooling for integration and operation
+
+|EOEPCA-214	
+|Add Usage of Persistence Volumes
+
+|EOEPCA-35	
+|Ownership management for Resources
+
+|EOEPCA-210	
+|Implementation of Helm Charts
+
+|EOEPCA-25	
+|Registration of Resource References
+
+|EOEPCA-121	
+|Propagation of End-User claims to the Resource Server
+
+|EOEPCA-205	
+|Create Swagger Endpoint for Resource Protection API
+
+|EOEPCA-203	
+|Separation of Proxy and Resource Management concerns
+
+|EOEPCA-194	
+|Usage of relative URLs without proxy prefix
+
+|EOEPCA-189	
+|Security: Verification of RPT Signatures
+
+|EOEPCA-187	
+|Allow both RPT and ID Token Forwarding
+
+|EOEPCA-178	
+|Default protection of resources
+
+|EOEPCA-126	
+|Policy to Resource Data Model Extension
+
+|EOEPCA-173	
+|Implementation of strict RPT Validation Measures
+
+|EOEPCA-120	
+|Path-based resolution of Resource IDs
+
+|EOEPCA-114	
+|Local Registration of Resources
+
+|EOEPCA-99	
+|Command Line Interface UMA Client
+
+|EOEPCA-98	
+|Baseline Enforcement Functionality
+
+|EOEPCA-94	
+|Reusable UMA Client Implementation - End-User Functionality
+
+|EOEPCA-144	
+|Resource Ownership Enforcement
+
+|===

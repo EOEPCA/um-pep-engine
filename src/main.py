@@ -4,6 +4,7 @@ from WellKnownHandler import WellKnownHandler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 
 from flask import Flask, request, Response
+from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
@@ -66,9 +67,38 @@ proxy_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Ran
 resources_app = Flask(__name__)
 resources_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
+# SWAGGER initiation
+SWAGGER_URL = '/swagger-ui'  # URL for exposing Swagger UI (without trailing '/')
+API_URL = "" # Our local swagger resource for PEP. Not used here as 'spec' parameter is used in config
+SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
+SWAGGER_SPEC_RESOURCES = json.load(open("./static/swagger_pep_resources_ui.json"))
+SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
+
+swaggerui_proxy_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': SWAGGER_APP_NAME,
+        'spec': SWAGGER_SPEC_PROXY
+    },
+)
+
+swaggerui_resources_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': SWAGGER_APP_NAME,
+        'spec': SWAGGER_SPEC_RESOURCES
+    },
+)
+
 # Register api blueprints (module endpoints)
 resources_app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
 proxy_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+
+# SWAGGER UI respective bindings
+resources_app.register_blueprint(swaggerui_resources_blueprint)
+proxy_app.register_blueprint(swaggerui_proxy_blueprint)
 
 # Define run methods for both Flask instances
 # Start reverse proxy for proxy endpoint

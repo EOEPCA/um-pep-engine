@@ -51,6 +51,10 @@ include::02.overview/00.overview.adoc[]
 
 include::03.design/00.design.adoc[]
 
+<<<
+
+include::04.traceability.adoc[]
+
 '''
 
 include::end-of-document.adoc[]

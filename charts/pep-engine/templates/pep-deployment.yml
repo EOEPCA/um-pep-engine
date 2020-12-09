@@ -28,10 +28,6 @@ spec:
         envFrom:
         - configMapRef:
             name: pep-cm
-        volumeMounts:
-        - mountPath: /data/db/resource
-          sub_path: pep-engine/db/resource
-          name: eoepca-pep-pv-host
       - name: mongo
         imagePullPolicy: {{ .Values.image.imagePullPolicy }}
         image: mongo
@@ -43,7 +39,7 @@ spec:
         - configMapRef:
             name: pep-cm
         volumeMounts:
-        - mountPath: /data/db/resource
+        - mountPath: /data/db/
           sub_path: pep-engine/db/resource
           name: eoepca-pep-pv-host
       hostAliases:
