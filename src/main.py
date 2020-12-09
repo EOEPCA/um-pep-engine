@@ -57,6 +57,10 @@ def generateRSAKeyPair():
     file_out.write(private_key)
     file_out.close()
 
+    file_out = open("config/public.pem", "wb+")
+    file_out.write(public_key)
+    file_out.close()
+
     return private_key
 
 private_key = generateRSAKeyPair()
