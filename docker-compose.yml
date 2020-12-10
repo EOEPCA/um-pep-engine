@@ -10,6 +10,7 @@ services:
       - eoepca_network
     ports:
       - '5566:5566'
+      - '5576:5576'
     volumes:
       - ./src/config:/config
 

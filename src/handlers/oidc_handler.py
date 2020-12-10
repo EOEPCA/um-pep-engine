@@ -118,12 +118,12 @@ class OIDCHandler:
 
     def verify_uid_headers(self, headers_protected, key):
         value = None
+        token_protected = None
         #Retrieve the token from the headers
         for i in headers_protected:
             if 'Bearer' in str(i):
                 aux_protected=headers_protected.index('Bearer')
-                inputToken_protected = headers_protected[aux_protected+1]           
-        token_protected = inputToken_protected
+                token_protected = headers_protected[aux_protected+1]           
         if token_protected:
             #Compares between JWT id_token and OAuth access token to retrieve the requested key-value
             if len(str(token_protected))>40:

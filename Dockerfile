@@ -14,6 +14,7 @@ RUN chmod +x /management_tools.py
 
 # Declare and expose service listening port
 EXPOSE 5566/tcp
+EXPOSE 5576/tcp
 
 # Declare entrypoint of that exposed service
 ENTRYPOINT ["python3", "./main.py"]
