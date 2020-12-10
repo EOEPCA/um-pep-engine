@@ -27,45 +27,46 @@ class PEPResourceTest(unittest.TestCase):
         wkh = WellKnownHandler(cls.g_config["auth_server_url"], secure=False)
         cls.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)
 
-        #Generate ID Token
-        _rsakey = RSA.generate(2048)
-        _private_key = _rsakey.exportKey()
-        _public_key = _rsakey.publickey().exportKey()
-
-        file_out = open("private.pem", "wb")
-        file_out.write(_private_key)
-        file_out.close()
-
-        file_out = open("public.pem", "wb")
-        file_out.write(_public_key)
-        file_out.close()
-
-        _rsajwk = RSAKey(kid='RSA1', key=import_rsa_key(_private_key))
+        _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("../src/config/private.pem"))
         _payload = { 
                     "iss": cls.g_config["client_id"],
                     "sub": cls.g_config["client_id"],
                     "aud": cls.__TOKEN_ENDPOINT,
+                    "user_name": "admin",
                     "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
                     "exp": int(time.time())+3600,
-                    "isOperator": True
+                    "isOperator": False
                 }
         _jws = JWS(_payload, alg="RS256")
+
+        _payload_ownership = { 
+                    "iss": cls.g_config["client_id"],
+                    "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
+                    "aud": cls.__TOKEN_ENDPOINT,
+                    "user_name": "admin",
+                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                    "exp": int(time.time())+3600,
+                    "isOperator": False
+                }
+        _jws_ownership = JWS(_payload_ownership, alg="RS256")
+
         cls.jwt = _jws.sign_compact(keys=[_rsajwk])
-        cls.scopes = 'public_access'
+        cls.jwt_rotest = _jws_ownership.sign_compact(keys=[_rsajwk])
+        #cls.scopes = 'public_access'
+        cls.scopes = 'protected_access'
         cls.resourceName = "TestResourcePEP"
         cls.PEP_HOST = "http://localhost:5566"
-    
-    @classmethod
-    def tearDownClass(cls):
-        os.remove("private.pem")
-        os.remove("public.pem")
-
+        cls.PEP_RES_HOST = "http://localhost:5576"
+       
     def getJWT(self):
         return self.jwt
 
+    def getJWT_RO(self):
+        return self.jwt_rotest
+
     def getResourceList(self, id_token="filler"):
         headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token)}
-        res = requests.get(self.PEP_HOST+"/resources", headers=headers, verify=False)
+        res = requests.get(self.PEP_RES_HOST+"/resources", headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 404:
@@ -77,14 +78,14 @@ class PEPResourceTest(unittest.TestCase):
     def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res = requests.post(self.PEP_HOST+"/resources/"+self.resourceName, headers=headers, json=payload, verify=False)
+        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
             return 200, res.text
         return 500, None
 
     def getResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.get(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        res = requests.get(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 200:
@@ -95,7 +96,7 @@ class PEPResourceTest(unittest.TestCase):
 
     def deleteResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.delete(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        res = requests.delete(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 204:
@@ -105,9 +106,21 @@ class PEPResourceTest(unittest.TestCase):
     def updateResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
         payload = { "resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod" }
-        res = requests.put(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
+        if res.status_code == 200:
+            return 200, None
+        return 500, None
+
+    def updateResourceRO(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        payload = {"resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod", "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
+        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        if res.status_code == 401:
+            return 401, res.headers["Error"]
+        if res.status_code == 403:
+            return 403, res.headers["Error"]
         if res.status_code == 200:
             return 200, None
         return 500, None
@@ -117,6 +130,7 @@ class PEPResourceTest(unittest.TestCase):
     def test_resource(self):
         #Use a JWT token as id_token
         id_token = self.getJWT()
+        id_token_ro = self.getJWT_RO()
 
         #Create resource
         status, self.resourceID = self.createTestResource(id_token)
@@ -167,8 +181,24 @@ class PEPResourceTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Delete created resource
-        status, reply = self.deleteResource(id_token)
+        # Change ownership with user ROTEST but using admin jwt - should fail
+        status, _ = self.updateResourceRO(id_token_ro)
+        self.assertEqual(status, 403)
+        del status
+        print("Invalid Ownership Change request successfully denied")
+        print("=======================")
+        print("")
+
+        # Test ownership with user ROTEST with ROTEST jwt - should succeed
+        status, _ = self.updateResourceRO(id_token)
+        self.assertEqual(status, 200)
+        del status
+        print("Valid Ownership Change request successfull")
+        print("=======================")
+        print("")
+
+        # Delete created resource
+        status, reply = self.deleteResource(id_token_ro)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")
         del status, reply
