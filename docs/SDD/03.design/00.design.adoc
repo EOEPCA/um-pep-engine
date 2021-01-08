@@ -117,3 +117,25 @@ image::../images/MongoFlow.png[top=5%, align="center", pdfwidth=6.5in]
 === Applicable Resources
 
 * MongoDB image from DockerHub - https://hub.docker.com/_/mongo
+
+== Resource default Protection Policy
+=== Overview and Purpose
+Together with the Resource Repository, the PEP will also contact the Policy Decision Point in order to register a default protection policy for the resource.
+
+This call to `<pdp_url>/policy` will include a preset policy configuration, to be applied to the registering resource. It stands as follows:
+```
+{"name": "Default Ownership Policy of <resource_id>",
+ "description": "This is the default ownership policy for created resources through PEP",
+  "config": {"resource_id": resource_id,
+             "rules": [ { "AND": [ { "EQUAL": { "user_name" : user_name }}]}]
+            },
+   "scopes": ["protected_access"]}
+```
+
+=== Data flow
+
+This subroutine is triggered by the successful registration of the resource.
+
+=== Applicable Resources
+
+* EOEPCA's Policy Decision Point - https://github.com/EOEPCA/um-pdp-engine
