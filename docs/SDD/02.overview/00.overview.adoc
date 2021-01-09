@@ -42,7 +42,7 @@ To further clarify the flow the PEP uses, you can also take a look at the Data F
 
 === Initialization flow
 
-image::../images/init_flow.png[top=5%, align=left, pdfwidth=6.5in]
+image::../images/init_flow3.png[top=5%, align=left, pdfwidth=6.5in]
 
 == External Interfaces
 
@@ -129,6 +129,7 @@ The following Open-Source Software is required to support the deployment and int
 * EOEPCA's SCIM Client - https://github.com/EOEPCA/um-common-scim-client
 * EOEPCA's UMA Client - https://github.com/EOEPCA/um-common-uma-client
 * EOEPCA's Well Known Handler - https://github.com/EOEPCA/well-known-handler
+* EOEPCA's Policy Decision Point - https://github.com/EOEPCA/um-pdp-engine
 * Flask - https://github.com/pallets/flask
 * MongoDB for Python - https://pymongo.readthedocs.io/en/stable/index.html
 

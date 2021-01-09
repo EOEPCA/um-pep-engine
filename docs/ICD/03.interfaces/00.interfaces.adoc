@@ -911,7 +911,7 @@ endif::internal-generation[]
 
 ===== Description 
 
-This operation accesses the API for the Policy Decision Point
+This operation accesses the API for the Policy Enforcement Point
 
 
 // markup not found, no include::{specDir}swagger-ui/spec.adoc[opts=optional]
