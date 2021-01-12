@@ -127,6 +127,13 @@ class Mongo_Handler:
         '''
         col = self.db['resources']
         return col.find()
+        
+    def remove_resources(self, filter_key=None, filter_value=None):
+        col = self.db['resources']
+        query = {}
+        if filter_key is not None and filter_value is not None:
+            query = { filter_key: filter_value }
+        col.delete_many(query)
 
     #Functions for rpt db
     def insert_rpt_in_mongo(self, rpt: str, rpt_limit_uses: int, timestamp: str):   

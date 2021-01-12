@@ -266,7 +266,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         return response
 
     def get_default_ownership_policy_cfg(resource_id, uid):
-        return { "resource_id": resource_id, "action": "view", "rules": [{ "AND": [ {"EQUAL": {"uid" : uid } }] }] }
+        return { "resource_id": resource_id, "action": "view", "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
 
     def get_default_ownership_policy_body(resource_id, uid):
         name = "Default Ownership Policy of " + str(resource_id)
