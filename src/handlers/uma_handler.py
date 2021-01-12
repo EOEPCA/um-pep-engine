@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 from eoepca_uma import rpt, resource
-from custom_mongo import Mongo_Handler
+from handlers.mongo_handler import Mongo_Handler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
+from jwt_verification.signature_verification import JWT_Verification
 from typing import List
+import base64
+import json
 import pymongo
+from datetime import datetime
 
 class UMA_Handler:
 
     def __init__(self, wkhandler, oidc_handler, verify_ssl: bool = False ):
         self.wkh = wkhandler
-        self.mongo= Mongo_Handler()
+        self.mongo= Mongo_Handler("resource_db", "resources")
+        self.mongo_rpt= Mongo_Handler("rpt_db", "rpts")
         self.oidch = oidc_handler
         self.verify = verify_ssl
         self.registered_resources = None
@@ -28,7 +33,7 @@ class UMA_Handler:
         new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
         print("Created resource '"+name+"' with ID :"+new_resource_id)
         # Register resources inside the dbs
-        resp=self.mongo.insert_in_mongo(new_resource_id, name, ownership_id, icon_uri)
+        resp=self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri)
         if resp: print('Resource saved in DB succesfully')
        
         return new_resource_id
@@ -42,7 +47,7 @@ class UMA_Handler:
         resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         pat = self.oidch.get_new_pat()
         new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-        resp=self.mongo.insert_in_mongo(resource_id, name, ownership_id, icon_uri)
+        resp=self.mongo.insert_resource_in_mongo(resource_id, name, ownership_id, icon_uri)
         print("Updated resource '"+name+"' with ID :"+new_resource_id)
         
     def delete(self, resource_id: str):
@@ -59,7 +64,7 @@ class UMA_Handler:
         pat = self.oidch.get_new_pat()
         try:
             resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
-            resp = self.mongo.delete_resource(resource_id)
+            resp = self.mongo.delete_in_mongo("resource_id", resource_id)
             print("Deleted resource with ID :"+resource_id)
         except Exception as e:
             print("Error while deleting resource: "+str(e))
@@ -67,13 +72,73 @@ class UMA_Handler:
 
     # Usage of Python library for query mongodb instance
 
-    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, ) -> bool:
+    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, rpt_limit_uses: int, verify_signature: bool) -> bool:
         """
         Returns True/False, if the RPT is valid for the resource(s) they are trying to access
         """
+        results = []
+
+        rpt_splitted = user_rpt.split('.')
+
         introspection_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
         pat = self.oidch.get_new_pat()
-        return rpt.is_valid_now(user_rpt, pat, introspection_endpoint, resources, time_margin= margin_time_rpt_valid ,secure= self.verify )
+
+        if len(rpt_splitted) == 3:
+            if verify_signature == True:
+                test = JWT_Verification()
+                result = test.verify_signature_JWT(user_rpt)
+
+                if result == False:
+                    print("Verification of the signature for the JWT failed!")
+                    return False
+                else:
+                    print("Signature verification is correct!")
+
+            payload = str(user_rpt).split(".")[1]
+            paddedPayload = payload + '=' * (4 - len(payload) % 4)
+            decoded = base64.b64decode(paddedPayload)
+            decoded = decoded.decode('utf-8')
+            rpt_class = json.loads(decoded)
+        else:
+            rpt_class = rpt.introspect(rpt=user_rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+
+        result = rpt.is_valid_now(user_rpt, pat, introspection_endpoint, resources, time_margin= margin_time_rpt_valid ,secure= self.verify )
+
+        if result is False:
+            return False
+
+        resource_id_mongo = resources[0]['resource_id']
+
+        #We see in the database if the rpt exists
+        exists_rpt = self.mongo_rpt.mongo_exists("rpt", user_rpt)
+        #If it exists -> decrease rpt usage and check if you have limit_uses
+        if exists_rpt is True:
+            rpt_mongo_obj = self.mongo_rpt.get_from_mongo("rpt", user_rpt)
+            limits = rpt_mongo_obj['rpt_limit_uses']
+
+            if limits > 0:
+                rpt_mongo_obj['rpt_limit_uses'] = limits - 1
+                self.mongo_rpt.update_in_mongo("rpt", rpt_mongo_obj)
+        else:
+            #If it does not exist -> it is inserted into the database with all the limit_uses obtained from the env var or config
+            dateTimeObj = datetime.now()
+            timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
+
+            self.mongo_rpt.insert_rpt_in_mongo(user_rpt, rpt_limit_uses - 1, timestampStr)
+            limits = rpt_limit_uses
+
+        if rpt_class['permissions'] is not None:
+            result = self.validate_resources_ids(resource_id_mongo, rpt_class, limits)
+            results.append(result)
+        else:
+            return False
+
+        validator = True
+        for i in range(0, len(results)):
+            if results[i] is False:
+                validator = False
+    
+        return validator
 
     
     def resource_exists(self, icon_uri: str):
@@ -151,3 +216,14 @@ class UMA_Handler:
         Updates and returns all the registed resources
         """
         return self.update_resources_from_as()
+
+    def validate_resources_ids(self, resource_id_mongo: str, resource_id_rpt_list: List[dict], limits: int):
+        first_validation = False
+
+        for i in range(0, len(resource_id_rpt_list['permissions'])):
+            resource_id_rpt = resource_id_rpt_list['permissions'][i]['resource_id']
+
+            if (resource_id_mongo == resource_id_rpt) and limits > 0:
+                first_validation = True
+
+        return first_validation

@@ -3,14 +3,14 @@
 :email: <Eoepca.SystemTeam@telespazio.com>
 :project: EOEPCA
 :project-name: EO Exploitation Platform Common Architecture
-:component-name: PEP Engine
+:component-name: Policy Enforcement Point
 :component-github-name: um-pep-engine
-:doc-title: {component-name} Design Document
-:doc-num: {project}.SDD.xxx
-:revnumber: 0.1
-:revdate: dd/mm/yyyy
+:doc-title: {component-name} Interface Control Document
+:doc-num: {project}.ICD.xxx
+:revnumber: 1.0
+:revdate: 30/11/2020
 :revremark:
-:category: Design Document
+:category: Interface Control Document
 :copyrightYear: 2020
 // attributes
 :hardbreaks:
@@ -32,6 +32,7 @@
 :pdf-stylesdir: resources/themes
 :pdf-style: eoepca
 :media: screen
+:title-logo-image: image::logo.png[top=5%, align=right, pdfwidth=6.5in]
 
 = {doc-title}: {doc-num}
 
@@ -49,7 +50,7 @@ include::02.overview/00.overview.adoc[]
 
 <<<
 
-include::03.design/00.design.adoc[]
+include::03.interfaces/00.interfaces.adoc[]
 
 '''
 

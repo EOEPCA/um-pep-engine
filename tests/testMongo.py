@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pymongo
 from pymongo import MongoClient
-from src.custom_mongo import Mongo_Handler
+from src.handlers.mongo_handler import Mongo_Handler
 import pytest
 import unittest
 import mock
@@ -54,8 +54,8 @@ class Mongo_Unit_Test(unittest.TestCase):
         mock_resp.raise_for_status = mock.Mock()
         if raise_for_status:
             mock_resp.raise_for_status.side_effect = raise_for_status
-        mongo = Mongo_Handler()
-        self.assertEqual(str(mongo)[:-16], '<src.custom_mongo.Mongo_Handler object at')
+        mongo = Mongo_Handler("resource_db", "resources")
+        self.assertEqual(str(mongo)[:-16], '<src.handlers.mongo_handler.Mongo_Handler object at')
     
    
     @mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
@@ -64,20 +64,20 @@ class Mongo_Unit_Test(unittest.TestCase):
         mock_resp.raise_for_status = mock.Mock()
         if raise_for_status:
             mock_resp.raise_for_status.side_effect = raise_for_status
-        mongo = Mongo_Handler()
+        mongo = Mongo_Handler("resource_db", "resources")
         a=mongo.get_id_from_uri('c')
 
    
     #@mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
-    @mock.patch('src.custom_mongo.Mongo_Handler.insert_in_mongo', side_effect=mocked_insert_mongo)
+    @mock.patch('src.handlers.mongo_handler.Mongo_Handler.insert_resource_in_mongo', side_effect=mocked_insert_mongo)
     @mock.patch('pymongo.collection.Collection.find_one', side_effect=mocked_exists_mongo)
     def test_insert_mongo(self, mock_insert_test,raise_for_status=None):
         mock_resp = mock.Mock()
         mock_resp.raise_for_status = mock.Mock()
         if raise_for_status:
             mock_resp.raise_for_status.side_effect = raise_for_status
-        mongo = Mongo_Handler()
-        j=mongo.insert_in_mongo('a','b','c')
+        mongo = Mongo_Handler("resource_db", "resources")
+        j=mongo.insert_resource_in_mongo('a','b','c')
         a=mongo.get_id_from_uri('c')
     
 

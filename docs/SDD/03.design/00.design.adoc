@@ -51,14 +51,16 @@ The parameters that are accepted, and their meaning, are as follows:
 
 - **realm**: 'realm' parameter answered for each UMA ticket. Default is "eoepca"
 - **auth_server_url**: complete url (with "https") of the Authorization server.
-- **proxy_endpoint**: "/path"-formatted string to indicate where the reverse proxy should listen. The proxy will catch any request that starts with that path. Default is "/pep"
 - **service_host**: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces
-- **service_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
+- **proxy_service_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
+- **resources_service_port**: Port for the resources to listen on. By default, **5576**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
 - **s_margin_rpt_valid**: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using **5** will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.
+- **rpt_limit_uses**: Number of uses for each of the RPTs.
 - **check_ssl_certs**: Toggle on/off (bool) to check certificates in all requests. This should be forced to True in a production environment
 - **use_threads**: Toggle on/off (bool) the usage of threads for the proxy. Recommended to be left as True.
 - **debug_mode**: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.
 - **resource_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
+- **verify_signature**: Toggle on/off (bool) the usage of signature validation for the JWT.
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 - **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 
@@ -98,9 +100,9 @@ Included with the PEP there is a script at the source path that performs queries
 It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.
 The script defines methods to:
 
-* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.
+* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries. For updated operations, it is also capable of querying the OIDC endpoint of the Authorization Server to query if the request was performed by a valid resource operator.
 * **Get the ID from a URI**: Returns the id for the best candidate of the match by a given URI.
-* **Delete resources**: Receives a resource id and will find and delete the matched document
+* **Delete resources**: Receives a resource id and will find and delete the matched document, if the requesting user is a valid resource operator.
 
 This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.
 The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.
@@ -115,3 +117,25 @@ image::../images/MongoFlow.png[top=5%, align="center", pdfwidth=6.5in]
 === Applicable Resources
 
 * MongoDB image from DockerHub - https://hub.docker.com/_/mongo
+
+== Resource default Protection Policy
+=== Overview and Purpose
+Together with the Resource Repository, the PEP will also contact the Policy Decision Point in order to register a default protection policy for the resource.
+
+This call to `<pdp_url>/policy` will include a preset policy configuration, to be applied to the registering resource. It stands as follows:
+```
+{"name": "Default Ownership Policy of <resource_id>",
+ "description": "This is the default ownership policy for created resources through PEP",
+  "config": {"resource_id": resource_id,
+             "rules": [ { "AND": [ { "EQUAL": { "user_name" : user_name }}]}]
+            },
+   "scopes": ["protected_access"]}
+```
+
+=== Data flow
+
+This subroutine is triggered by the successful registration of the resource.
+
+=== Applicable Resources
+
+* EOEPCA's Policy Decision Point - https://github.com/EOEPCA/um-pdp-engine

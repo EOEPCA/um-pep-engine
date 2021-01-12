@@ -42,7 +42,7 @@ To further clarify the flow the PEP uses, you can also take a look at the Data F
 
 === Initialization flow
 
-image::../images/init_flow.png[top=5%, align=left, pdfwidth=6.5in]
+image::../images/init_flow3.png[top=5%, align=left, pdfwidth=6.5in]
 
 == External Interfaces
 
@@ -94,12 +94,21 @@ The endpoints used for SCIM are:
 The Resource API Endpoints offered by the PEP component are protected based on the unique identifier of the Resource Owner that is adding/removing/editing resources.
 The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these tokens:
 
-* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter)
+* JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter).
+The signature of this token will be verified if the signature verification is enabled in the environment variables.
+In case it is enabled, it will be distinguished if the JWT obtained in the header is signed with the internal keys of the platform or the building block.
+If the platform signature has been used, it will be verified with the platform endpoint. If the signature is from the PEP block, it will be verified with the public key from the PEP.
+In case it is disabled, the signature will not be verified but the other steps above will be performed. The PEP extracts the necessary claims from "sub" parameter.
 
 * OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.
 
 The UUID of the End-User will be included as attribute of the Resource description document (extending the data model) upon resource creation (with an “ownership_id” field).
 Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 check, cross-checking against the “ownership_id” before performing actions and answering back with a 401 Unauthorized if there is no match.
+
+==== Policy API (to Policy Decision Point)
+When registering a new resource, the PEP will consume the Policy API to register a default policy with the PDP. The endpoint for this is:
+
+* <pdp_url>/policy
 
 == Required resources
 
@@ -120,6 +129,7 @@ The following Open-Source Software is required to support the deployment and int
 * EOEPCA's SCIM Client - https://github.com/EOEPCA/um-common-scim-client
 * EOEPCA's UMA Client - https://github.com/EOEPCA/um-common-uma-client
 * EOEPCA's Well Known Handler - https://github.com/EOEPCA/well-known-handler
+* EOEPCA's Policy Decision Point - https://github.com/EOEPCA/um-pdp-engine
 * Flask - https://github.com/pallets/flask
 * MongoDB for Python - https://pymongo.readthedocs.io/en/stable/index.html
 
@@ -165,7 +175,7 @@ Ticket generation as per the UMA 2.0 standard, are only valid for that requested
 
 === Resource protection & RPT validation
 
-The PEP when presented with an RPT in an `Authorization` HTTP header, will check the validity of this token for the requested resource. This token is only valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker.
+The PEP when presented with an RPT in an `Authorization` HTTP header, will check the validity of this token for the requested resource. This token is valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker. The validation of the rpt token was extended by including a new parameter that allows to establish the number of uses of the rpt. To store the rpts that will be used will be stored in the database with the number of uses that the rpt has.
 
 The PEP will only protect the resources that it recognizes as such. This means that, even without an RPT, the PEP will alllow a client to pass-through directly to the resource server if there is no identified resource that matches what the client is requesting.
 
@@ -175,6 +185,7 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 
 === Request Forwarding with JWT header
  
-After validating the RPT we proceed to make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.
-
+After validating the RPT we proceed to verify the signature of the JWT if the signature verification is enabled in the environment variables and the we pass the JWT to the request header in the request to the resource server.
+If the header has a RPT as token we make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.
 Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.
+If the verification of the signature for the JWT is disabled, the code will do the introspection steps in the case of a RPT, and then will add the JWT to the request header without verifying the token signature.

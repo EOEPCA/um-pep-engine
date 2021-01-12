@@ -27,96 +27,125 @@ class PEPResourceTest(unittest.TestCase):
         wkh = WellKnownHandler(cls.g_config["auth_server_url"], secure=False)
         cls.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)
 
-        #Generate ID Token
-        _rsakey = RSA.generate(2048)
-        _private_key = _rsakey.exportKey()
-        _public_key = _rsakey.publickey().exportKey()
-
-        file_out = open("private.pem", "wb")
-        file_out.write(_private_key)
-        file_out.close()
-
-        file_out = open("public.pem", "wb")
-        file_out.write(_public_key)
-        file_out.close()
-
-        _rsajwk = RSAKey(kid='RSA1', key=import_rsa_key(_private_key))
+        _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("../src/config/private.pem"))
         _payload = { 
                     "iss": cls.g_config["client_id"],
-                    "sub": cls.g_config["client_secret"],
+                    "sub": cls.g_config["client_id"],
                     "aud": cls.__TOKEN_ENDPOINT,
+                    "user_name": "admin",
                     "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600
+                    "exp": int(time.time())+3600,
+                    "isOperator": False
                 }
         _jws = JWS(_payload, alg="RS256")
+
+        _payload_ownership = { 
+                    "iss": cls.g_config["client_id"],
+                    "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
+                    "aud": cls.__TOKEN_ENDPOINT,
+                    "user_name": "admin",
+                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                    "exp": int(time.time())+3600,
+                    "isOperator": False
+                }
+        _jws_ownership = JWS(_payload_ownership, alg="RS256")
+
         cls.jwt = _jws.sign_compact(keys=[_rsajwk])
-        cls.scopes = 'public_access'
+        cls.jwt_rotest = _jws_ownership.sign_compact(keys=[_rsajwk])
+        #cls.scopes = 'public_access'
+        cls.scopes = 'protected_access'
         cls.resourceName = "TestResourcePEP"
         cls.PEP_HOST = "http://localhost:5566"
-    
-    @classmethod
-    def tearDownClass(cls):
-        os.remove("private.pem")
-        os.remove("public.pem")
+        cls.PEP_RES_HOST = "http://localhost:5576"
+       
+    def getJWT(self):
+        return self.jwt
 
-    def getRPTFromAS(self, ticket):
-        headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache"}
-        payload = { "claim_token_format": "http://openid.net/specs/openid-connect-core-1_0.html#IDToken", "claim_token": self.jwt, "ticket": ticket, "grant_type": "urn:ietf:params:oauth:grant-type:uma-ticket", "client_id": self.g_config["client_id"], "client_secret": self.g_config["client_secret"], "scope": self.scopes}
-        res = requests.post(self.__TOKEN_ENDPOINT, headers=headers, data=payload, verify=False)
-        if res.status_code == 200:
-            return 200, res.json()["access_token"]
-        return 500, None
+    def getJWT_RO(self):
+        return self.jwt_rotest
 
-    def getResourceList(self, rpt="filler"):
-        headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache", "Authorization": "Bearer "+str(rpt)}
-        res = requests.get(self.PEP_HOST+"/resources", headers=headers, verify=False)
+    def getResourceList(self, id_token="filler"):
+        headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token)}
+        res = requests.get(self.PEP_RES_HOST+"/resources", headers=headers, verify=False)
         if res.status_code == 401:
-            return 401, res.headers["WWW-Authenticate"].split("ticket=")[1]
+            return 401, res.headers["Error"]
+        if res.status_code == 404:
+            return 404, res.headers["Error"]
         if res.status_code == 200:
             return 200, res.json()
         return 500, None
 
-    def createTestResource(self):
+    def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
-        headers = { 'content-type': "application/json", "cache-control": "no-cache" }
-        res = requests.post(self.PEP_HOST+"/resources/"+self.resourceName, headers=headers, json=payload, verify=False)
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
+        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
             return 200, res.text
         return 500, None
 
-    def getResource(self, rpt="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+rpt }
-        res = requests.get(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+    def getResource(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        res = requests.get(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
-            return 401, res.headers["WWW-Authenticate"].split("ticket=")[1]
+            return 401, res.headers["Error"]
         if res.status_code == 200:
             return 200, res.json()
+        if res.status_code == 404:
+            return 404, res.headers["Error"]
         return 500, None
 
-    def deleteResource(self, rpt="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+rpt }
-        res = requests.delete(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+    def deleteResource(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        res = requests.delete(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
-            return 401, res.headers["WWW-Authenticate"].split("ticket=")[1]
+            return 401, res.headers["Error"]
         if res.status_code == 204:
             return 204, None
         return 500, None
 
-    def updateResource(self, rpt="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+rpt }
+    def updateResource(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
         payload = { "resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod" }
-        res = requests.put(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
         if res.status_code == 401:
-            return 401, res.headers["WWW-Authenticate"].split("ticket=")[1]
+            return 401, res.headers["Error"]
         if res.status_code == 200:
             return 200, None
         return 500, None
 
+    def updateResourceRO(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        payload = {"resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod", "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
+        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        if res.status_code == 401:
+            return 401, res.headers["Error"]
+        if res.status_code == 403:
+            return 403, res.headers["Error"]
+        if res.status_code == 200:
+            return 200, None
+        return 500, None
+
+    def swaggerUI(self):
+        reply = requests.get(self.PEP_HOST+"/swagger-ui")
+        self.assertEqual(200, reply.status_code)
+        print("=================")
+        print("Get Web Page: 200 OK!")
+        print("=================")
+        page = reply.text
+        page_title = page[page.find("<title>")+7: page.find('</title>')]
+        print("Get Page Title found: " + page_title)
+        self.assertEqual("Policy Enforcement Point Interfaces", page_title)
+        print("Get Page: OK!")
+
     #Monolithic test to avoid jumping through hoops to implement ordered tests
-    #This test case assumes UMA is in place
-    def test_resource_UMA(self):
+    #This test case assumes v0.3 of the PEP engine
+    def test_resource(self):
+        #Use a JWT token as id_token
+        id_token = self.getJWT()
+        id_token_ro = self.getJWT_RO()
+
         #Create resource
-        status, self.resourceID = self.createTestResource()
+        status, self.resourceID = self.createTestResource(id_token)
         self.assertEqual(status, 200)
         print("Create resource: Resource created with id: "+self.resourceID)
         del status
@@ -124,34 +153,19 @@ class PEPResourceTest(unittest.TestCase):
         print("")
 
         #Get created resource
-        #First attempt should return a 401 with a ticket
-        status, reply = self.getResource()
-        self.assertNotEqual(status, 500)
-        #Now we get a valid RPT from the Authorization Server
-        status, rpt = self.getRPTFromAS(reply)
+        status, reply = self.getResource(id_token)
         self.assertEqual(status, 200)
-        #Now we retry the first call with the valid RPT
-        status, reply = self.getResource(rpt)
-        self.assertEqual(status, 200)
-        #And we finally check if the returned id matches the id we got on creation
+        #And we check if the returned id matches the id we got on creation
         #The reply message is in JSON format
         self.assertEqual(reply["_id"], self.resourceID)
         print("Get resource: Resource found.")
         print(reply)
-        del status, reply, rpt
+        del status, reply
         print("=======================")
         print("")
 
         #Get resource list
-        #Same MO as above
-        #First attempt should return a 401 with a ticket
-        status, reply = self.getResourceList()
-        self.assertNotEqual(status, 500)
-        #Now we get a valid RPT from the Authorization Server
-        status, rpt = self.getRPTFromAS(reply)
-        self.assertEqual(status, 200)
-        #Now we retry the first call with the valid RPT
-        status, reply = self.getResourceList(rpt)
+        status, reply = self.getResourceList(id_token)
         self.assertEqual(status, 200)
         #And we finally check if the returned list contains our created resource
         #The reply message is a list of resources in JSON format
@@ -161,63 +175,67 @@ class PEPResourceTest(unittest.TestCase):
         self.assertTrue(found)
         print("Get resource list: Resource found on Internal List.")
         print(reply)
-        del status, reply, rpt
+        del status, reply
         print("=======================")
         print("")
         
         #Modify created resource
         #This will simply test if we can modify the pre-determined resource name with "Mod" at the end
-        #The MO is the same as above tests, so no further comment
-        status, reply = self.updateResource()
-        self.assertNotEqual(status, 500)
-        status, rpt = self.getRPTFromAS(reply)
-        self.assertEqual(status, 200)
-        status, _ = self.updateResource(rpt)
+        status, _ = self.updateResource(id_token)
         self.assertEqual(status, 200)
         #Get resource to check if modification actually was successfull
-        status, reply = self.getResource()
-        status, rpt = self.getRPTFromAS(reply)
-        status, reply = self.getResource(rpt)
+        status, reply = self.getResource(id_token)
         self.assertEqual(reply["_id"], self.resourceID)
-        self.assertEqual(reply["name"], self.resourceName+"Mod")
+        self.assertEqual(reply["_name"], self.resourceName+"Mod")
         print("Update resource: Resource properly modified.")
         print(reply)
-        del status, reply, rpt
+        del status, reply
         print("=======================")
         print("")
 
-        #Delete created resource
-        status, reply = self.deleteResource()
-        self.assertNotEqual(status, 500)
-        status, rpt = self.getRPTFromAS(reply)
+        # Change ownership with user ROTEST but using admin jwt - should fail
+        status, _ = self.updateResourceRO(id_token_ro)
+        self.assertEqual(status, 403)
+        del status
+        print("Invalid Ownership Change request successfully denied")
+        print("=======================")
+        print("")
+
+        # Test ownership with user ROTEST with ROTEST jwt - should succeed
+        status, _ = self.updateResourceRO(id_token)
         self.assertEqual(status, 200)
-        status, reply = self.deleteResource(rpt)
+        del status
+        print("Valid Ownership Change request successfull")
+        print("=======================")
+        print("")
+
+        # Delete created resource
+        status, reply = self.deleteResource(id_token_ro)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")
-        del status, reply, rpt
+        del status, reply
         print("=======================")
         print("")
 
         #Get resource to make sure it was deleted
-        status, _ = self.getResource()
-        self.assertEqual(status, 500)
+        status, _ = self.getResource(id_token)
+        self.assertEqual(status, 404)
         print("Get resource: Resource correctly not found.")
         del status
         print("=======================")
         print("")
 
         #Get resource list to make sure the resource was removed from internal cache
-        status, reply = self.getResourceList()
-        status, rpt = self.getRPTFromAS(reply)
-        status, reply = self.getResourceList(rpt)
-
-        found = False
-        for r in reply:
-            if r["_id"] == self.resourceID: found = True
-        self.assertFalse(found)
+        status, reply = self.getResourceList(id_token)
+        self.assertEqual(status, 404)
         print("Get resource list: Resource correctly removed from Internal List.")
-        print(reply)
-        del status, reply, rpt, found
+        del status, reply, id_token
+        print("=======================")
+        print("")
+
+        #Swagger UI Endpoint
+        print("Swagger UI Endpoint ")
+        self.swaggerUI()
         print("=======================")
         print("")
 
