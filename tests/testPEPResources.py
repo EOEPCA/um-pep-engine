@@ -125,6 +125,18 @@ class PEPResourceTest(unittest.TestCase):
             return 200, None
         return 500, None
 
+    def swaggerUI(self):
+        reply = requests.get(self.PEP_HOST+"/swagger-ui")
+        self.assertEqual(200, reply.status_code)
+        print("=================")
+        print("Get Web Page: 200 OK!")
+        print("=================")
+        page = reply.text
+        page_title = page[page.find("<title>")+7: page.find('</title>')]
+        print("Get Page Title found: " + page_title)
+        self.assertEqual("Policy Enforcement Point Interfaces", page_title)
+        print("Get Page: OK!")
+
     #Monolithic test to avoid jumping through hoops to implement ordered tests
     #This test case assumes v0.3 of the PEP engine
     def test_resource(self):
@@ -218,6 +230,12 @@ class PEPResourceTest(unittest.TestCase):
         self.assertEqual(status, 404)
         print("Get resource list: Resource correctly removed from Internal List.")
         del status, reply, id_token
+        print("=======================")
+        print("")
+
+        #Swagger UI Endpoint
+        print("Swagger UI Endpoint ")
+        self.swaggerUI()
         print("=======================")
         print("")
 
