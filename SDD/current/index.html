@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="generator" content="Asciidoctor 2.0.10">
+<meta name="generator" content="Asciidoctor 2.0.12">
 <meta name="description" content="PEP Engine Design Document for the Common Architecture">
 <meta name="keywords" content="common architecture design">
 <meta name="author" content="TVUK System Team">
@@ -102,6 +102,7 @@
 </li>
 </ul>
 </li>
+<li><a href="#traceabilityMatrix">4. User Story Traceability</a></li>
 </ul>
 </div>
 </div>
@@ -1151,10 +1152,11 @@ The Resource API is protected with OAuth/OIDC in the PEP, expecting any of these
 <div class="ulist">
 <ul>
 <li>
-<p>JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter) and the signature of the JWT will also be verified.</p>
-</li>
-<li>
-<p>RPT Token: in this case the PEP extracts the necessary claims from the RPT uniquely from the "pct_claims" parameter</p>
+<p>JWT id_tokens: in this case the PEP extracts the necessary claims from the JWT uniquely identifying the user (“sub” parameter).<br>
+The signature of this token will be verified if the signature verification is enabled in the environment variables.<br>
+In case it is enabled, it will be distinguished if the JWT obtained in the header is signed with the internal keys of the platform or the building block.<br>
+If the platform signature has been used, it will be verified with the platform endpoint. If the signature is from the PEP block, it will be verified with the public key from the PEP.<br>
+In case it is disabled, the signature will not be verified but the other steps above will be performed. The PEP extracts the necessary claims from "sub" parameter.</p>
 </li>
 <li>
 <p>OAuth Access Token: in this case the PEP performs a query against the User-Info endpoint, uniquely identifying the user.</p>
@@ -1318,10 +1320,10 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <div class="sect3">
 <h4 id="_request_forwarding_with_jwt_header">2.5.4. Request Forwarding with JWT header</h4>
 <div class="paragraph">
-<p>After validating the RPT we proceed to make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.</p>
-</div>
-<div class="paragraph">
-<p>Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.</p>
+<p>After validating the RPT we proceed to verify the signature of the JWT if the signature verification is enabled in the environment variables and the we pass the JWT to the request header in the request to the resource server.<br>
+If the header has a RPT as token we make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.<br>
+Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.<br>
+If the verification of the signature for the JWT is disabled, the code will do the introspection steps in the case of a RPT, and then will add the JWT to the request header without verifying the token signature.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1442,13 +1444,13 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 <p><strong>auth_server_url</strong>: complete url (with "https") of the Authorization server.</p>
 </li>
 <li>
-<p><strong>proxy_endpoint</strong>: "/path"-formatted string to indicate where the reverse proxy should listen. The proxy will catch any request that starts with that path. Default is "/pep"</p>
-</li>
-<li>
 <p><strong>service_host</strong>: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces</p>
 </li>
 <li>
-<p><strong>service_port</strong>: Port for the proxy to listen on. By default, <strong>5566</strong>. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.</p>
+<p><strong>proxy_service_port</strong>: Port for the proxy to listen on. By default, <strong>5566</strong>. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.</p>
+</li>
+<li>
+<p><strong>resources_service_port</strong>: Port for the resources to listen on. By default, <strong>5576</strong>. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.</p>
 </li>
 <li>
 <p><strong>s_margin_rpt_valid</strong>: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using <strong>5</strong> will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.</p>
@@ -1467,6 +1469,9 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 </li>
 <li>
 <p><strong>resource_server_endpoint</strong>: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.</p>
+</li>
+<li>
+<p><strong>verify_signature</strong>: Toggle on/off (bool) the usage of signature validation for the JWT.</p>
 </li>
 <li>
 <p><strong>client_id</strong>: string indicating a client_id for an already registered and configured client. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
@@ -1588,6 +1593,113 @@ The main methods for the interaction with the database are displayed in this dat
 </li>
 </ul>
 </div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="traceabilityMatrix">4. User Story Traceability</h2>
+<div class="sectionbody">
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. User Stories</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-12</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reusable UMA Client Implementation</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-221</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Administrative tooling for integration and operation</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-214</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Add Usage of Persistence Volumes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-35</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ownership management for Resources</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-210</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementation of Helm Charts</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-25</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Registration of Resource References</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-121</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Propagation of End-User claims to the Resource Server</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-205</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Create Swagger Endpoint for Resource Protection API</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-203</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separation of Proxy and Resource Management concerns</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-194</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usage of relative URLs without proxy prefix</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-189</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Security: Verification of RPT Signatures</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-187</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Allow both RPT and ID Token Forwarding</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-178</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Default protection of resources</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-126</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Policy to Resource Data Model Extension</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-173</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementation of strict RPT Validation Measures</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-120</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path-based resolution of Resource IDs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-114</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Local Registration of Resources</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-99</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Command Line Interface UMA Client</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-98</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Baseline Enforcement Functionality</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-94</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reusable UMA Client Implementation - End-User Functionality</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-144</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resource Ownership Enforcement</p></td>
+</tr>
+</tbody>
+</table>
 <hr>
 <div class="paragraph large">
 <p>&lt;&lt; End of Document &gt;&gt;</p>
@@ -1595,12 +1707,10 @@ The main methods for the interaction with the database are displayed in this dat
 </div>
 </div>
 </div>
-</div>
-</div>
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2020-11-16 15:25:19 UTC
+Last updated 2021-01-29 13:15:55 UTC
 </div>
 </div>
 </body>
