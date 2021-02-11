@@ -71,7 +71,7 @@ class Mongo_Handler:
             # Check if the resource is alredy registered in the collection
             x=None
             if self.mongo_exists("resource_id", resource_id):
-                x= self.update_resource(myres)
+                x= self.update_in_mongo("resource_id", myres)
             # Add the resource since it doesn't exist on the database 
             else:
                 x = col.insert_one(myres)
@@ -127,6 +127,13 @@ class Mongo_Handler:
         '''
         col = self.db['resources']
         return col.find()
+        
+    def remove_resources(self, filter_key=None, filter_value=None):
+        col = self.db['resources']
+        query = {}
+        if filter_key is not None and filter_value is not None:
+            query = { filter_key: filter_value }
+        col.delete_many(query)
 
     #Functions for rpt db
     def insert_rpt_in_mongo(self, rpt: str, rpt_limit_uses: int, timestamp: str):   
