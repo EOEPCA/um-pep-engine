@@ -33,7 +33,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         resource_id = custom_mongo.get_id_from_uri("/"+path)
         scopes= None
         if resource_id:
-            scopes = uma_handler.get_resource_scopes(resource_id)
+            scopes = []
+            if request.method == 'GET' or request.method == 'HEAD':
+                scopes.append('protected_read')             
+            elif request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
+                scopes.append('protected_write')
         
         uid = None
         
