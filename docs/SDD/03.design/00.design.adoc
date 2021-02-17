@@ -106,6 +106,8 @@ The script defines methods to:
 
 This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.
 The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.
+When the PEP registered a new resource this resource will contains two additional scopes: protected_read and protected_write.
+This two scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.
 
 === Data flow
 
@@ -120,16 +122,18 @@ image::../images/MongoFlow.png[top=5%, align="center", pdfwidth=6.5in]
 
 == Resource default Protection Policy
 === Overview and Purpose
-Together with the Resource Repository, the PEP will also contact the Policy Decision Point in order to register a default protection policy for the resource.
+Together with the Resource Repository, the PEP will also contact the Policy Decision Point in order to register two protection policies for the resource.
+One with the scope of 'protection_read' related to the requests to the PEP endopoint with HTTP verbs HEAD and GET.
+And one with the scope of 'protection_write' which is related to the requests to the PEP with the HTTP verbs PUT, POST and DELETE.
 
 This call to `<pdp_url>/policy` will include a preset policy configuration, to be applied to the registering resource. It stands as follows:
 ```
-{"name": "Default Ownership Policy of <resource_id>",
+{"name": "Default Ownership Policy of <resource_id> with action <action type depends on type of scope> ",
  "description": "This is the default ownership policy for created resources through PEP",
   "config": {"resource_id": resource_id,
              "rules": [ { "AND": [ { "EQUAL": { "user_name" : user_name }}]}]
             },
-   "scopes": ["protected_access"]}
+   "scopes": ["protected_read"]}
 ```
 
 === Data flow
