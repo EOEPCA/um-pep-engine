@@ -41,12 +41,30 @@ class PEPProtectedAction(unittest.TestCase):
         oauth_token = r.json()["access_token"]
         cls.jwt_id = id_token
 
+        headers2 = { 'cache-control': "no-cache" }
+        data2 = {
+            "scope": "openid user_name eoepca is_operator",
+            "grant_type": "password",
+            "username": "UserAction",
+            "password": "useractionpass",
+            "client_id": cls.g_config["client_id"],
+            "client_secret": cls.g_config["client_secret"]
+        }
+        session2 = requests.Session()
+        r2 = session2.post("https://test.10.0.2.15.nip.io/oxauth/restv1/token", headers=headers2, data=data2, verify=False)
+        id_token2 = r2.json()["id_token"]
+        oauth_token2 = r2.json()["access_token"]
+        cls.jwt_id2 = id_token2
+
         cls.PEP_HOST = "http://localhost:5566"
         cls.PEP_RES_HOST = "http://localhost:5576"
         cls.icon_uri_var = "Resource1"
        
     def getJWT(self):
         return self.jwt_id
+
+    def getJWT2(self):
+        return self.jwt_id2
 
     def createTestResource(self, id_token):
         payload = { "resource_scopes":[], "icon_uri":"/"+self.icon_uri_var, "name":"TestResourcePEP" }
@@ -81,6 +99,11 @@ class PEPProtectedAction(unittest.TestCase):
         with open("rpt.txt") as rpt:
             rpt_json = json.load(rpt)
 
+        if "error" in rpt_json.keys():
+            if rpt_json["error"] ==  "forbidden_by_policy":
+                return 403, rpt_json["error_description"]
+
+
         rpt_token = rpt_json["access_token"]
 
         payload = {"icon_uri":"/"+self.icon_uri_var, "name":"TestResourcePEP" }
@@ -105,9 +128,6 @@ class PEPProtectedAction(unittest.TestCase):
         if action == "read":
             scopes = ["protected_read"]
             policy_cfg =  { "resource_id": resource_id, "action": action, "rules": [] }
-        elif action == "write":
-            scopes = ["protected_write"]
-            policy_cfg =  { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
         else:
             scopes = ["protected_access"]
 
@@ -158,15 +178,16 @@ class PEPProtectedAction(unittest.TestCase):
         #-----------------------------------------------------------------------
 
         #Generate Ticket for GET
+        print("Creating ticket for user: admin")
         status, ticket_read = self.generateTicket(id_token, "read")
         self.assertEqual(status, 401)
         del status
-        print("=======================")
         print("")
 
         #Generate RPT for GET
         status, reply = self.getRPT(ticket_read, id_token, "read")
         self.assertEqual(status, 200)
+        print("Access granted to user: admin")
         del status
         print("=======================")
         print("")
@@ -174,15 +195,39 @@ class PEPProtectedAction(unittest.TestCase):
         #------------------------------------------------------------------------
 
         #Generate Ticket for POST
+        print("Creating ticket for user: admin")
         status, ticket_write = self.generateTicket(id_token, "write")
         self.assertEqual(status, 401)
         del status
-        print("=======================")
         print("")
 
         #Generate RPT for POST
         status, reply = self.getRPT(ticket_write, id_token, "write")
         self.assertEqual(status, 200)
+        print("")
+        print("Access granted to user: admin")
+        del status
+        print("=======================")
+        print("")
+
+        #-----------------------------------------------------------------------
+
+        #Use a JWT token as id_token
+        id_token2 = self.getJWT2()
+
+        #Generate Ticket for GET
+        print("Creating ticket for user and trying to access to the read policy: UserAction")
+        status, ticket_read = self.generateTicket(id_token2, "read")
+        self.assertEqual(status, 401)
+        del status
+        print("")
+
+        #Generate RPT for GET
+        status, reply = self.getRPT(ticket_read, id_token2, "read")
+        print("")
+        print("Access denied to user: UserAction")
+        print("Error code: "+str(status)+" "+reply)
+        self.assertEqual(status, 403)
         del status
         print("=======================")
         print("")
@@ -194,10 +239,24 @@ class PEPProtectedAction(unittest.TestCase):
         status, reply = self.updatePolicy(self.resourceID, ow_id, "read", id_token)
         self.assertEqual(status, 200)
         del status
+        print("")
+        print("")
         print("=======================")
 
-        status, reply = self.updatePolicy(self.resourceID, ow_id, "write", id_token)
+        #-----------------------------------------------------------------------
+
+        #Generate Ticket for GET
+        print("Creating ticket for user and trying to access to the read policy again after modified the policy read: UserAction")
+        status, ticket_read2 = self.generateTicket(id_token2, "read")
+        self.assertEqual(status, 401)
+        del status
+        print("")
+
+        #Generate RPT for GET
+        status, reply = self.getRPT(ticket_read2, id_token2, "read")
         self.assertEqual(status, 200)
+        print("")
+        print("Access granted to user: UserAction to the policy read modified")
         del status
         print("=======================")
         print("")
@@ -205,15 +264,18 @@ class PEPProtectedAction(unittest.TestCase):
         #-----------------------------------------------------------------------
 
         #Generate Ticket for GET
-        status, ticket_read2 = self.generateTicket(id_token, "read")
+        print("Creating ticket for user and trying to access to the write policy again: UserAction")
+        status, ticket_read2 = self.generateTicket(id_token2, "write")
         self.assertEqual(status, 401)
         del status
-        print("=======================")
         print("")
 
         #Generate RPT for GET
-        status, reply = self.getRPT(ticket_read2, id_token, "read")
-        self.assertEqual(status, 200)
+        status, reply = self.getRPT(ticket_read2, id_token2, "write")
+        self.assertEqual(status, 403)
+        print("")
+        print("Access denied to user: UserAction")
+        print("Error code: "+str(status)+" "+reply)
         del status
         print("=======================")
         print("")
