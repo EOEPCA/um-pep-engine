@@ -164,14 +164,15 @@ image::../images/PEPFlow2.png[top=5%, align=right, pdfwidth=6.5in]
 === Self Authentication & Registration
 (Represented in the above graph by the request to Login Service in the section "PEP Authentication" )
 
-The PEP has an internal UMA Client used for alll the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.
+The PEP has an internal UMA Client used for all the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.
 
 === Ticket generation
 
 (Represented in the above graph by the request to Login Service called "Request for ticket")
 
 The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.
-Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource. 
+Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource. When the ticket is generated, this ticket will contains a specific scope which it depends on the
+HTTP verb obtained. This scope in the ticket could be 'protected_read' or 'protected_write'. 
 
 === Resource protection & RPT validation
 
