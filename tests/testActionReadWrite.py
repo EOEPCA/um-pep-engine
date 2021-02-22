@@ -35,7 +35,7 @@ class PEPProtectedAction(unittest.TestCase):
             "client_secret": cls.g_config["client_secret"]
         }
         session = requests.Session()
-        r = session.post("https://test.10.0.2.15.nip.io/oxauth/restv1/token", headers=headers, data=data, verify=False)
+        r = session.post(cls.g_config["auth_server_url"]+"/oxauth/restv1/token", headers=headers, data=data, verify=False)
         #print(r.json())
         id_token = r.json()["id_token"]
         oauth_token = r.json()["access_token"]
@@ -51,7 +51,7 @@ class PEPProtectedAction(unittest.TestCase):
             "client_secret": cls.g_config["client_secret"]
         }
         session2 = requests.Session()
-        r2 = session2.post("https://test.10.0.2.15.nip.io/oxauth/restv1/token", headers=headers2, data=data2, verify=False)
+        r2 = session2.post(cls.g_config["auth_server_url"]+"/oxauth/restv1/token", headers=headers2, data=data2, verify=False)
         id_token2 = r2.json()["id_token"]
         oauth_token2 = r2.json()["access_token"]
         cls.jwt_id2 = id_token2
@@ -94,7 +94,7 @@ class PEPProtectedAction(unittest.TestCase):
         print("Trying with RPT Token for protected_"+action_type)
 
         #Generate RPT
-        os.system('bash rpt.sh -t '+ticket+' -c '+jwt_id+' -e '+self.g_config["client_id"]+' -k '+self.g_config["client_secret"]+' >/dev/null 2>&1')
+        os.system('bash rpt.sh -a '+self.g_config["auth_server_url"]+' -t '+ticket+' -c '+jwt_id+' -e '+self.g_config["client_id"]+' -k '+self.g_config["client_secret"]+' >/dev/null 2>&1')
 
         with open("rpt.txt") as rpt:
             rpt_json = json.load(rpt)
