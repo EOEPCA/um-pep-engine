@@ -29,7 +29,7 @@ global:
 image: 
   statefulSetReplicas: 1
   imagePullPolicy: Always
-  image: eoepca/um-pep-engine:task203_1
+  image: eoepca/um-pep-engine:v0.3.2
 persistence: 
   accessModes: ReadWriteMany
   dbStorageSize: 5Gi
