@@ -84,6 +84,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             print("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
             try:
+                endpoint_path = request.full_path
                 cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
                 return cont
             except Exception as e:
