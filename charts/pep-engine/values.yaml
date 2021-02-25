@@ -2,7 +2,7 @@
 
 global:
   namespace: default
-  serviceName: opendj
+  serviceName: pep-engine
   ep: demoexample.gluu.org
   domain:  https://demoexample.gluu.org
   pep: pep-engine
@@ -29,7 +29,7 @@ global:
 image: 
   statefulSetReplicas: 1
   imagePullPolicy: Always
-  image: eoepca/um-pep-engine:v0.3.2
+  image: eoepca/um-pep-engine:v0.3.1
 persistence: 
   accessModes: ReadWriteMany
   dbStorageSize: 5Gi
