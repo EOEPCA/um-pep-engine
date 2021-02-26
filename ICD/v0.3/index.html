@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 2.0.12">
+<meta name="description" content="Policy Enforcement Point Interface Control Document for the Common Architecture">
+<meta name="keywords" content="common architecture design">
+<meta name="author" content="TVUK System Team">
+<title>Policy Enforcement Point Interface Control Document: EOEPCA.ICD.xxx</title>
+<link rel="stylesheet" href="stylesheets/eoepca.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body class="book toc2 toc-left">
+<div id="header">
+<h1>Policy Enforcement Point Interface Control Document: EOEPCA.ICD.xxx</h1>
+<div class="details">
+<span id="author" class="author">TVUK System Team</span><br>
+<span id="email" class="email">&lt;<a href="mailto:Eoepca.SystemTeam@telespazio.com">Eoepca.SystemTeam@telespazio.com</a>&gt;</span><br>
+<span id="revnumber">version 1.0,</span>
+<span id="revdate">30/11/2020</span>
+<br><span id="revremark"></span>
+</div>
+<div id="toc" class="toc2">
+<div id="toctitle">Policy Enforcement Point Interface Control Document</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">1. Introduction</a>
+<ul class="sectlevel2">
+<li><a href="#_purpose_and_scope">1.1. Purpose and Scope</a></li>
+</ul>
+</li>
+<li><a href="#mainOverview">2. Overview</a></li>
+<li><a href="#_policy_enforcement_point_interfaces">3. Policy Enforcement Point Interfaces</a>
+<ul class="sectlevel2">
+<li><a href="#_endpoints">3.1. Endpoints</a>
+<ul class="sectlevel3">
+<li><a href="#_policyenforcement">3.1.1. PolicyEnforcement</a>
+<ul class="sectlevel4">
+<li><a href="#_proxy_delete">3.1.1.1. Proxy DELETE</a>
+<ul class="sectlevel5">
+<li><a href="#_description">3.1.1.1.1. Description</a></li>
+<li><a href="#_parameters">3.1.1.1.2. Parameters</a></li>
+<li><a href="#_return_type">3.1.1.1.3. Return Type</a></li>
+<li><a href="#_responses">3.1.1.1.4. Responses</a></li>
+<li><a href="#_samples">3.1.1.1.5. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_proxy_get">3.1.1.2. Proxy GET</a>
+<ul class="sectlevel5">
+<li><a href="#_description_2">3.1.1.2.1. Description</a></li>
+<li><a href="#_parameters_2">3.1.1.2.2. Parameters</a></li>
+<li><a href="#_return_type_2">3.1.1.2.3. Return Type</a></li>
+<li><a href="#_responses_2">3.1.1.2.4. Responses</a></li>
+<li><a href="#_samples_2">3.1.1.2.5. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_proxy_post">3.1.1.3. Proxy POST</a>
+<ul class="sectlevel5">
+<li><a href="#_description_3">3.1.1.3.1. Description</a></li>
+<li><a href="#_parameters_3">3.1.1.3.2. Parameters</a></li>
+<li><a href="#_return_type_3">3.1.1.3.3. Return Type</a></li>
+<li><a href="#_responses_3">3.1.1.3.4. Responses</a></li>
+<li><a href="#_samples_3">3.1.1.3.5. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_proxy_put">3.1.1.4. Proxy PUT</a>
+<ul class="sectlevel5">
+<li><a href="#_description_4">3.1.1.4.1. Description</a></li>
+<li><a href="#_parameters_4">3.1.1.4.2. Parameters</a></li>
+<li><a href="#_return_type_4">3.1.1.4.3. Return Type</a></li>
+<li><a href="#_responses_4">3.1.1.4.4. Responses</a></li>
+<li><a href="#_samples_4">3.1.1.4.5. Samples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_resources">3.1.2. Resources</a>
+<ul class="sectlevel4">
+<li><a href="#_resources_get">3.1.2.1. Resources GET</a>
+<ul class="sectlevel5">
+<li><a href="#_description_5">3.1.2.1.1. Description</a></li>
+<li><a href="#_parameters_5">3.1.2.1.2. Parameters</a></li>
+<li><a href="#_return_type_5">3.1.2.1.3. Return Type</a></li>
+<li><a href="#_content_type">3.1.2.1.4. Content Type</a></li>
+<li><a href="#_responses_5">3.1.2.1.5. Responses</a></li>
+<li><a href="#_samples_5">3.1.2.1.6. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_resources_post">3.1.2.2. Resources POST</a>
+<ul class="sectlevel5">
+<li><a href="#_description_6">3.1.2.2.1. Description</a></li>
+<li><a href="#_parameters_6">3.1.2.2.2. Parameters</a></li>
+<li><a href="#_body_parameter">3.1.2.2.3. Body Parameter</a></li>
+<li><a href="#_return_type_6">3.1.2.2.4. Return Type</a></li>
+<li><a href="#_content_type_2">3.1.2.2.5. Content Type</a></li>
+<li><a href="#_responses_6">3.1.2.2.6. Responses</a></li>
+<li><a href="#_samples_6">3.1.2.2.7. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_resources_delete">3.1.2.3. Resources DELETE</a>
+<ul class="sectlevel5">
+<li><a href="#_description_7">3.1.2.3.1. Description</a></li>
+<li><a href="#_parameters_7">3.1.2.3.2. Parameters</a></li>
+<li><a href="#_return_type_7">3.1.2.3.3. Return Type</a></li>
+<li><a href="#_responses_7">3.1.2.3.4. Responses</a></li>
+<li><a href="#_samples_7">3.1.2.3.5. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_resource_get_id">3.1.2.4. Resource GET (ID)</a>
+<ul class="sectlevel5">
+<li><a href="#_description_8">3.1.2.4.1. Description</a></li>
+<li><a href="#_parameters_8">3.1.2.4.2. Parameters</a></li>
+<li><a href="#_return_type_8">3.1.2.4.3. Return Type</a></li>
+<li><a href="#_content_type_3">3.1.2.4.4. Content Type</a></li>
+<li><a href="#_responses_8">3.1.2.4.5. Responses</a></li>
+<li><a href="#_samples_8">3.1.2.4.6. Samples</a></li>
+</ul>
+</li>
+<li><a href="#_resource_put_id">3.1.2.5. Resource PUT (ID)</a>
+<ul class="sectlevel5">
+<li><a href="#_description_9">3.1.2.5.1. Description</a></li>
+<li><a href="#_parameters_9">3.1.2.5.2. Parameters</a></li>
+<li><a href="#_body_parameter_2">3.1.2.5.3. Body Parameter</a></li>
+<li><a href="#_return_type_9">3.1.2.5.4. Return Type</a></li>
+<li><a href="#_responses_9">3.1.2.5.5. Responses</a></li>
+<li><a href="#_samples_9">3.1.2.5.6. Samples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_api">3.1.3. API</a>
+<ul class="sectlevel4">
+<li><a href="#_swagger_ui">3.1.3.1. Swagger UI</a>
+<ul class="sectlevel5">
+<li><a href="#_description_10">3.1.3.1.1. Description</a></li>
+<li><a href="#_parameters_10">3.1.3.1.2. Parameters</a></li>
+<li><a href="#_return_type_10">3.1.3.1.3. Return Type</a></li>
+<li><a href="#_responses_10">3.1.3.1.4. Responses</a></li>
+<li><a href="#_samples_10">3.1.3.1.5. Samples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#models">3.2. Models</a>
+<ul class="sectlevel3">
+<li><a href="#NewResource">3.2.1. <em>NewResource</em></a></li>
+<li><a href="#Resource">3.2.2. <em>Resource</em></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>EO Exploitation Platform Common Architecture<br>
+<em>Policy Enforcement Point Interface Control Document</em><br>
+EOEPCA.ICD.xxx</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>COMMENTS and ISSUES</strong><br>
+If you would like to raise comments or issues on this document, please do so by raising an Issue at the following URL <a href="https://github.com/EOEPCA/um-pep-engine/issues" class="bare">https://github.com/EOEPCA/um-pep-engine/issues</a>.</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>PDF</strong><br>
+This document is available in PDF format <a href="EOEPCA-um-pep-engine.pdf" target="_blank" rel="noopener">here</a>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>EUROPEAN SPACE AGENCY CONTRACT REPORT</strong><br>
+The work described in this report was done under ESA contract. Responsibility for the contents resides in the author or organisation that prepared it.</p></td>
+<td class="tableblock halign-center valign-top"><p class="tableblock"><strong>TELESPAZIO VEGA UK Ltd</strong><br>
+350 Capability Green, Luton, Bedfordshire, LU1 3LU, United Kingdom.<br>
+Tel: +44 (0)1582 399000<br>
+<a href="http://telespazio-vega.com/">www.telespazio-vega.com</a></p></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">AMENDMENT HISTORY</dt>
+<dd>
+<p>This document shall be amended by releasing a new edition of the document in its entirety.<br>
+The Amendment Record Sheet below records the history and issue status of this document.</p>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. Amendment Record Sheet</caption>
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+<col style="width: 62.5%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-center valign-top">ISSUE</th>
+<th class="tableblock halign-center valign-top">DATE</th>
+<th class="tableblock halign-left valign-top">REASON</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th class="tableblock halign-center valign-top"><p class="tableblock">0.1</p></th>
+<td class="tableblock halign-center valign-top"><p class="tableblock">dd/mm/yyyy</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Initial in-progress draft</p></td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+</div>
+<hr>
+<div style="page-break-after: always;"></div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">1. Introduction</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_purpose_and_scope">1.1. Purpose and Scope</h3>
+<div class="paragraph">
+<p>This document presents the Policy Enforcement Point Interfaces for the Common Architecture. It servers as a complementary document to its corresponding Software Design Document.</p>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="mainOverview">2. Overview</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>This Interface Control Document (ICD) is a companion to the System Design Document for the Policy Enforcement Point. The ICD provides a Building Block level specification of the interfaces exposed by the PEP to the rest of EOEPCA components.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Section <a href="#Interfaces">[Interfaces]</a></dt>
+<dd>
+<p>Provides the interface specification of the Building Block.</p>
+</dd>
+</dl>
+</div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_policy_enforcement_point_interfaces">3. Policy Enforcement Point Interfaces</h2>
+<div class="sectionbody">
+<div class="quoteblock abstract">
+<div class="title">Abstract</div>
+<blockquote>
+This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. &lt;br&gt; &lt;br&gt; Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. &lt;br&gt; &lt;br&gt; As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters.
+</blockquote>
+</div>
+<div class="sect2">
+<h3 id="_endpoints">3.1. Endpoints</h3>
+<div class="sect3 PolicyEnforcement">
+<h4 id="_policyenforcement">3.1.1. PolicyEnforcement</h4>
+<div class="sect4 proxyPathDelete">
+<h5 id="_proxy_delete">3.1.1.1. Proxy DELETE</h5>
+<div class="paragraph">
+<p><code>DELETE /proxy/{path}</code></p>
+</div>
+<div class="paragraph">
+<p>Request to Back-End Service</p>
+</div>
+<div class="sect5">
+<h6 id="_description">3.1.1.1.1. Description</h6>
+<div class="paragraph">
+<p>This operation propagates all headers</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters">3.1.1.1.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path to the Back-End Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RPT Token generated through UMA Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type">3.1.1.1.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses">3.1.1.1.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unauthorized access request.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples">3.1.1.1.5. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 proxyPathGet">
+<h5 id="_proxy_get">3.1.1.2. Proxy GET</h5>
+<div class="paragraph">
+<p><code>GET /proxy/{path}</code></p>
+</div>
+<div class="paragraph">
+<p>Request to Back-End Service</p>
+</div>
+<div class="sect5">
+<h6 id="_description_2">3.1.1.2.1. Description</h6>
+<div class="paragraph">
+<p>This operation propagates all headers and query parameters</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_2">3.1.1.2.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_2">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path to the Back-End Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_2">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RPT Token generated through UMA Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_2">3.1.1.2.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_2">3.1.1.2.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unauthorized access request.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_2">3.1.1.2.5. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 proxyPathPost">
+<h5 id="_proxy_post">3.1.1.3. Proxy POST</h5>
+<div class="paragraph">
+<p><code>POST /proxy/{path}</code></p>
+</div>
+<div class="paragraph">
+<p>Request to Back-End Service</p>
+</div>
+<div class="sect5">
+<h6 id="_description_3">3.1.1.3.1. Description</h6>
+<div class="paragraph">
+<p>This operation propagates all headers, query parameters and body</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_3">3.1.1.3.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_3">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path to the Back-End Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_3">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RPT Token generated through UMA Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_3">3.1.1.3.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_3">3.1.1.3.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 4. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unauthorized access request.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_3">3.1.1.3.5. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 proxyPathPut">
+<h5 id="_proxy_put">3.1.1.4. Proxy PUT</h5>
+<div class="paragraph">
+<p><code>PUT /proxy/{path}</code></p>
+</div>
+<div class="paragraph">
+<p>Request to Back-End Service</p>
+</div>
+<div class="sect5">
+<h6 id="_description_4">3.1.1.4.1. Description</h6>
+<div class="paragraph">
+<p>This operation propagates all headers, query parameters and body</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_4">3.1.1.4.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_4">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Path to the Back-End Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_4">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RPT Token generated through UMA Flow</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_4">3.1.1.4.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_4">3.1.1.4.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 5. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unauthorized access request.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_4">3.1.1.4.5. Samples</h6>
+
+</div>
+</div>
+</div>
+<div class="sect3 Resources">
+<h4 id="_resources">3.1.2. Resources</h4>
+<div class="sect4 resourcesGet">
+<h5 id="_resources_get">3.1.2.1. Resources GET</h5>
+<div class="paragraph">
+<p><code>GET /resources</code></p>
+</div>
+<div class="paragraph">
+<p>List all owned resources</p>
+</div>
+<div class="sect5">
+<h6 id="_description_5">3.1.2.1.1. Description</h6>
+<div class="paragraph">
+<p>This operation lists all resources filtered by ownership ID. Ownership ID is extracted from the OpenID Connect Token</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_5">3.1.2.1.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_header_parameters_5">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JWT or Bearer Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_5">3.1.2.1.3. Return Type</h6>
+<div class="paragraph">
+<p>array[<a href="#resource">[resource]</a>]</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_content_type">3.1.2.1.4. Content Type</h6>
+<div class="ulist">
+<ul>
+<li>
+<p>application/json</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_5">3.1.2.1.5. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 6. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List[<a href="#resource">[resource]</a>]</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_5">3.1.2.1.6. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 resourcesPost">
+<h5 id="_resources_post">3.1.2.2. Resources POST</h5>
+<div class="paragraph">
+<p><code>POST /resources</code></p>
+</div>
+<div class="paragraph">
+<p>Creates a new Resource reference in the Platform</p>
+</div>
+<div class="sect5">
+<h6 id="_description_6">3.1.2.2.1. Description</h6>
+<div class="paragraph">
+<p>This operation generates a new resource reference object that can be protected. Ownership ID is set to the unique ID of the End-User</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_6">3.1.2.2.2. Parameters</h6>
+
+</div>
+<div class="sect5">
+<h6 id="_body_parameter">3.1.2.2.3. Body Parameter</h6>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NewResource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#NewResource"><em>NewResource</em></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect6">
+<h7 id="_header_parameters_6">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JWT or Bearer Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_6">3.1.2.2.4. Return Type</h6>
+<div class="paragraph">
+<p><a href="#resource">[resource]</a></p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_content_type_2">3.1.2.2.5. Content Type</h6>
+<div class="ulist">
+<ul>
+<li>
+<p>application/json</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_6">3.1.2.2.6. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 7. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#resource">[resource]</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UNAUTHORIZED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">404</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOT FOUND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_6">3.1.2.2.7. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 resourcesResourceIdDelete">
+<h5 id="_resources_delete">3.1.2.3. Resources DELETE</h5>
+<div class="paragraph">
+<p><code>DELETE /resources/{resource_id}</code></p>
+</div>
+<div class="paragraph">
+<p>Deletes an owned Resource Reference from the Platform</p>
+</div>
+<div class="sect5">
+<h6 id="_description_7">3.1.2.3.1. Description</h6>
+<div class="paragraph">
+<p>This operation removes an existing Resource reference owned by the user.</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_7">3.1.2.3.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_5">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_id</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unique Resource ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_7">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JWT or Bearer Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_7">3.1.2.3.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_7">3.1.2.3.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 8. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UNAUTHORIZED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">404</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOT FOUND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_7">3.1.2.3.5. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 resourcesResourceIdGet">
+<h5 id="_resource_get_id">3.1.2.4. Resource GET (ID)</h5>
+<div class="paragraph">
+<p><code>GET /resources/{resource_id}</code></p>
+</div>
+<div class="paragraph">
+<p>Retrieve a specific owned resource</p>
+</div>
+<div class="sect5">
+<h6 id="_description_8">3.1.2.4.1. Description</h6>
+<div class="paragraph">
+<p>This operation retrieves information about an owned resource.</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_8">3.1.2.4.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_6">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_id</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unique Resource ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_8">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JWT or Bearer Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_8">3.1.2.4.3. Return Type</h6>
+<div class="paragraph">
+<p><a href="#resource">[resource]</a></p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_content_type_3">3.1.2.4.4. Content Type</h6>
+<div class="ulist">
+<ul>
+<li>
+<p>application/json</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_8">3.1.2.4.5. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 9. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#resource">[resource]</a></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">404</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOT FOUND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_8">3.1.2.4.6. Samples</h6>
+
+</div>
+</div>
+<div class="sect4 resourcesResourceIdPut">
+<h5 id="_resource_put_id">3.1.2.5. Resource PUT (ID)</h5>
+<div class="paragraph">
+<p><code>PUT /resources/{resource_id}</code></p>
+</div>
+<div class="paragraph">
+<p>Updates an existing Resource reference in the Platform</p>
+</div>
+<div class="sect5">
+<h6 id="_description_9">3.1.2.5.1. Description</h6>
+<div class="paragraph">
+<p>This operation updates an existing 'owned' resource reference.</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_9">3.1.2.5.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_7">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_id</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Unique Resource ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_body_parameter_2">3.1.2.5.3. Body Parameter</h6>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a href="#Resource"><em>Resource</em></a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">X</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect6">
+<h7 id="_header_parameters_9">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Authorization</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JWT or Bearer Token</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_9">3.1.2.5.4. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_9">3.1.2.5.5. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 10. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">401</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UNAUTHORIZED</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">404</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOT FOUND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_9">3.1.2.5.6. Samples</h6>
+
+</div>
+</div>
+</div>
+<div class="sect3 API">
+<h4 id="_api">3.1.3. API</h4>
+<div class="sect4 SwaggerUI">
+<h5 id="_swagger_ui">3.1.3.1. Swagger UI</h5>
+<div class="paragraph">
+<p><code>/swagger-ui</code></p>
+</div>
+<div class="sect5">
+<h6 id="_description_10">3.1.3.1.1. Description</h6>
+<div class="paragraph">
+<p>This operation accesses the API for the Policy Enforcement Point</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_10">3.1.3.1.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_8">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_10">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_10">3.1.3.1.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_10">3.1.3.1.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 11. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_10">3.1.3.1.5. Samples</h6>
+
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="models">3.2. Models</h3>
+<div class="sect3">
+<h4 id="NewResource">3.2.1. <em>NewResource</em></h4>
+<table class="tableblock frame-all grid-all stretch fields-NewResource">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 10%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field Name</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable name for the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable description of the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">icon_uri</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protected uri of the resource.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List  of <a href="#string">[string]</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List of scopes associated with the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="Resource">3.2.2. <em>Resource</em></h4>
+<table class="tableblock frame-all grid-all stretch fields-Resource">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 10%;">
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 10%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Field Name</th>
+<th class="tableblock halign-left valign-top">Required</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Format</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ownership_id</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UUID of the Owner End-User</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">uuid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">UUID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable description of the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">uuid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">name</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable name for the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">icon_uri</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Protected uri of the resource.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List  of <a href="#string">[string]</a></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">List of scopes associated with the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<div class="paragraph large">
+<p>&lt;&lt; End of Document &gt;&gt;</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Version 1.0<br>
+Last updated 2021-02-26 11:27:50 UTC
+</div>
+</div>
+</body>
+</html>
