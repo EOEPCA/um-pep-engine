@@ -137,6 +137,31 @@ class PEPResourceTest(unittest.TestCase):
         self.assertEqual("Policy Enforcement Point Interfaces", page_title)
         print("Get Page: OK!")
 
+    def access_enforcement(self, id_token="filler"):
+        #Create a new resource
+        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName+"_access_enforcement", "name": self.resourceName+"_access_enforcement" }
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
+        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        resource_id = res.text
+
+        #Access to the resource without token
+        headers2 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer filler" }
+        res2 = requests.get(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers2, verify=False)
+        print("Tried to access to the resource without token, return 500")
+        self.assertEqual(500, res2.status_code)
+        print("=======================")
+        print("")
+
+        #Access to the resource with token
+        headers3 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
+        res3 = requests.get(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers3, verify=False)
+        print("Tried to access to the resource with token, return 200")
+        self.assertEqual(200, res3.status_code)
+
+        #Delete resource
+        headers4 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        res4 = requests.delete(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers4, verify=False)
+
     #Monolithic test to avoid jumping through hoops to implement ordered tests
     #This test case assumes v0.3 of the PEP engine
     def test_resource(self):
@@ -229,7 +254,6 @@ class PEPResourceTest(unittest.TestCase):
         status, reply = self.getResourceList(id_token)
         self.assertEqual(status, 404)
         print("Get resource list: Resource correctly removed from Internal List.")
-        del status, reply, id_token
         print("=======================")
         print("")
 
@@ -237,6 +261,13 @@ class PEPResourceTest(unittest.TestCase):
         print("Swagger UI Endpoint ")
         self.swaggerUI()
         print("=======================")
+        print("")
+
+        #Access Enforcement
+        print("Access Enforcement")
+        self.access_enforcement(id_token)
+        print("=======================")
+        del status, reply, id_token
         print("")
 
 if __name__ == '__main__':
