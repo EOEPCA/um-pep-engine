@@ -70,7 +70,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
+            print(head_protected)
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            print(uid)
             if "NO TOKEN FOUND" in uid:
                 print("Error: no token passed!")
                 response.status_code = 401
@@ -90,6 +92,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
 
         resource_reply = create_resource(uid, request, uma_handler, response)
+        print("Creating resource!")
+        print(resource_reply)
         #If the reply is not of type Response, the creation was successful
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
@@ -100,6 +104,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 return resource_id
             response.status_code = policy_reply_read.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
+            print(response.headers["Error"])
             return response
         return resource_reply
 
@@ -201,6 +206,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
                     return response
+            else: 
+                response.status_code = 415
+                response.headers["Error"] = "Content-Type must be application/json"
+                return response
         except Exception as e:
             print("Error while creating resource: "+str(e))
             response.status_code = 500
