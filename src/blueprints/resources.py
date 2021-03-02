@@ -70,7 +70,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
+            print(head_protected)
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            print(uid)
             if "NO TOKEN FOUND" in uid:
                 print("Error: no token passed!")
                 response.status_code = 401
@@ -90,15 +92,20 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
 
         resource_reply = create_resource(uid, request, uma_handler, response)
+        print("Creating resource!")
+        print(resource_reply)
         #If the reply is not of type Response, the creation was successful
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
             resource_id = resource_reply
             policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
+            print("CODE: "+str(policy_reply.status_code))
+            print(policy_reply.text)
             if policy_reply.status_code == 200:
                 return resource_id
             response.status_code = policy_reply.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
+            print(response.headers["Error"])
             return response
         return resource_reply
 
@@ -181,12 +188,18 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             if request.is_json:
                 data = request.get_json()
-                if data.get("name") and data.get("resource_scopes"):
+                if "resource_scopes" not in data.keys():
+                    data["resource_scopes"] = ["protected_access"]
+                if "name" in data.keys() and "resource_scopes" in data.keys():
                     return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
                     return response
+            else: 
+                response.status_code = 415
+                response.headers["Error"] = "Content-Type must be application/json"
+                return response
         except Exception as e:
             print("Error while creating resource: "+str(e))
             response.status_code = 500
@@ -273,6 +286,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         description = "This is the default ownership policy for created resources through PEP"
         policy_cfg = get_default_ownership_policy_cfg(resource_id, uid)
         scopes = ["protected_access"]
+        print({"name": name, "description": description, "config": policy_cfg, "scopes": scopes})
         return {"name": name, "description": description, "config": policy_cfg, "scopes": scopes}
 
     return resources_bp
