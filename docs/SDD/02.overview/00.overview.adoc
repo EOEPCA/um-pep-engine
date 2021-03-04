@@ -194,7 +194,7 @@ If the verification of the signature for the JWT is disabled, the code will do t
 image::../images/PEPEndpoints.png[top=5%, align=center, pdfwidth=6.5in]
 This diagram covers the following use cases:
 
-=== PEP_UC_005: Resource CRUD operations
+=== PEP_UC_005: Resource Management
 
 The PEP allows for calls done on specific API endpoints for resource management. The currently available options are:
 * Create resource
