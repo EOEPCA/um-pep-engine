@@ -3,69 +3,111 @@
 
 .User Stories
 |===
-|Code |Description 
+|Code |Description |Use Case |VVP Coverage
 
 |EOEPCA-12	
 |Reusable UMA Client Implementation
+| PEP_UC_001/PEP_UC_002
+| -
 
 |EOEPCA-221	
 |Administrative tooling for integration and operation
+| -
+| -
 
 |EOEPCA-214	
 |Add Usage of Persistence Volumes
+| -
+| -
 
 |EOEPCA-35	
 |Ownership management for Resources
+| PEP_UC_005/PEP_UC_006
+| -
 
 |EOEPCA-210	
 |Implementation of Helm Charts
+| -
+| -
 
 |EOEPCA-25	
 |Registration of Resource References
+| PEP_UC_005
+| -
 
 |EOEPCA-121	
 |Propagation of End-User claims to the Resource Server
+| PEP_UC_004
+| -
 
 |EOEPCA-205	
 |Create Swagger Endpoint for Resource Protection API
+| PEP_UC_007
+| -
 
 |EOEPCA-203	
 |Separation of Proxy and Resource Management concerns
+| PEP_UC_007
+| -
 
 |EOEPCA-194	
 |Usage of relative URLs without proxy prefix
+| -
+| -
 
 |EOEPCA-189	
 |Security: Verification of RPT Signatures
+| PEP_UC_003
+| -
 
 |EOEPCA-187	
 |Allow both RPT and ID Token Forwarding
+| PEP_UC_003/PEP_UC_004
+| -
 
 |EOEPCA-178	
 |Default protection of resources
+| PEP_UC_006
+| -
 
 |EOEPCA-126	
 |Policy to Resource Data Model Extension
+| -
+| -
 
 |EOEPCA-173	
 |Implementation of strict RPT Validation Measures
+| PEP_UC_003
+| -
 
 |EOEPCA-120	
 |Path-based resolution of Resource IDs
+| -
+| -
 
 |EOEPCA-114	
 |Local Registration of Resources
+| PEP_UC_005
+| -
 
 |EOEPCA-99	
 |Command Line Interface UMA Client
+| -
+| -
 
 |EOEPCA-98	
 |Baseline Enforcement Functionality
+| -
+| -
 
 |EOEPCA-94	
 |Reusable UMA Client Implementation - End-User Functionality
+| -
+| -
 
 |EOEPCA-144	
 |Resource Ownership Enforcement
+| -
+| -
 
 |===
