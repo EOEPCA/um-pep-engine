@@ -98,12 +98,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
             resource_id = resource_reply["id"]
-            policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
-            print("CODE: "+str(policy_reply.status_code))
-            print(policy_reply.text)
-            if policy_reply.status_code == 200:
+            policy_reply_read = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "read"), input_headers=request.headers)
+            policy_reply_write = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "write"), input_headers=request.headers)
+            if policy_reply_read.status_code == 200 and policy_reply_write.status_code == 200:
                 return resource_reply
-            response.status_code = policy_reply.status_code
+            response.status_code = policy_reply_read.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
             print(response.headers["Error"])
             return response
@@ -188,13 +187,21 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             if request.is_json:
                 data = request.get_json()
-                if "resource_scopes" not in data.keys():
-                    data["resource_scopes"] = ["protected_access"]
-                if "name" in data.keys() and "resource_scopes" in data.keys():
-                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
-                    data["ownership_id"] = uid
-                    data["id"] = resource_id
-                    return data
+                if data.get("name"):
+                    if  'resource_scopes' not in data.keys():
+                        data['resource_scopes'] = []
+                        data['resource_scopes'].append('protected_access')
+                        data['resource_scopes'].append('protected_read')
+                        data['resource_scopes'].append('protected_write')
+                    else:
+                        if 'protected_access' not in data.get("resource_scopes"):
+                            data['resource_scopes'].append('protected_access')
+                        if 'protected_read' not in data.get("resource_scopes"):
+                            data['resource_scopes'].append('protected_read')
+                        if 'protected_write' not in data.get("resource_scopes"):
+                            data['resource_scopes'].append('protected_write')
+
+                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
@@ -284,15 +291,21 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
 
-    def get_default_ownership_policy_cfg(resource_id, uid):
-        return { "resource_id": resource_id, "action": "view", "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
+    def get_default_ownership_policy_cfg(resource_id, uid, action):    
+        return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
 
-    def get_default_ownership_policy_body(resource_id, uid):
-        name = "Default Ownership Policy of " + str(resource_id)
+    def get_default_ownership_policy_body(resource_id, uid, action):
+        name = "Default Ownership Policy of " + str(resource_id) + " with action " + action
         description = "This is the default ownership policy for created resources through PEP"
-        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid)
-        scopes = ["protected_access"]
-        print({"name": name, "description": description, "config": policy_cfg, "scopes": scopes})
+        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, action)
+
+        if action == "read":
+            scopes = ["protected_read"]
+        elif action == "write":
+            scopes = ["protected_write"]
+        else:
+            scopes = ["protected_access"]
+
         return {"name": name, "description": description, "config": policy_cfg, "scopes": scopes}
 
     return resources_bp

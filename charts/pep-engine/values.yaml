@@ -40,6 +40,13 @@ persistence:
 config:
   enabled: true
 
+# The PEP context is used to distinguish PEP instances,
+# e.g. PEP for ADES vs PEP for Catalogue etc.
+context: generic
+
+# VolumeClaim values
+volumeClaim:
+  name: um-pep-engine-pvc
 
 ingress:
   enabled: true
