@@ -210,7 +210,3 @@ A new dynamically (via CRUD operations) registered resource will have a default 
 === PEP-UC-007: Policy Enforcement Point API
 
 The current implemented functionalities can be consulted through a specific OpenAPI webpage, available at the PEP level.
-
-=== PEP-UC-008: Administrative Tooling
-
-An administration tool is accessible at the container level. A validated administrator is capable of using this tool for quick management of the local PEP database.
