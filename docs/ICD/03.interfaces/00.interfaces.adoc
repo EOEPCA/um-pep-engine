@@ -901,6 +901,96 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+[.API]
+=== API
+
+[.SwaggerUI]
+==== Swagger UI
+    
+`/swagger-ui`
+
+===== Description 
+
+This operation accesses the API for the Policy Enforcement Point
+
+
+// markup not found, no include::{specDir}swagger-ui/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| - 
+| -  
+| - 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| - 
+| -  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}swagger-ui/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}swagger-ui/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :swagger-ui/swagger-ui.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}swagger-ui/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [#models]
 == Models
@@ -917,22 +1007,28 @@ endif::internal-generation[]
 | Field Name| Required| Type| Description| Format
 
 | name 
-|  
+| Y 
 | String  
 | Human readable name for the resource
-|  
+| - 
+
+| description 
+| Y 
+| String  
+| Human readable description of the resource
+| - 
 
 | icon_uri 
-|  
+| Y 
 | String  
 | Protected uri of the resource. 
-|  
+| - 
 
-| scopes 
-|  
+| resource_scopes 
+| Y 
 | List  of <<string>> 
 | List of scopes associated with the resource
-|  
+| - 
 
 |===
 
@@ -948,34 +1044,34 @@ endif::internal-generation[]
 | Field Name| Required| Type| Description| Format
 
 | ownership_id 
-|  
+| Y 
 | UUID  
 | UUID of the Owner End-User
 | uuid 
 
-| id 
-|  
+| description 
+| Y 
 | UUID  
-| UUID of the resource
+| Human readable description of the resource
 | uuid 
 
 | name 
-|  
+| Y 
 | String  
 | Human readable name for the resource
-|  
+| - 
 
 | icon_uri 
-|  
+| Y 
 | String  
 | Protected uri of the resource. 
-|  
+| - 
 
-| scopes 
-|  
+| resource_scopes 
+| Y 
 | List  of <<string>> 
 | List of scopes associated with the resource
-|  
+| - 
 
 |===
 

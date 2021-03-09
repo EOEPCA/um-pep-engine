@@ -45,6 +45,11 @@ oidc_client = OIDCHandler(g_wkh,
 uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 
+#Default behavior is open_access
+try:
+    uma_handler.create("Base Path", ["public_access"], "Base path for Open Access to PEP", "0000000000000", "/")
+except:
+    pass
 #PDP Policy Handler
 pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
 
@@ -55,6 +60,10 @@ def generateRSAKeyPair():
 
     file_out = open("config/private.pem", "wb+")
     file_out.write(private_key)
+    file_out.close()
+
+    file_out = open("config/public.pem", "wb+")
+    file_out.write(public_key)
     file_out.close()
 
     return private_key

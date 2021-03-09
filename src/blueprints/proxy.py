@@ -33,11 +33,16 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         resource_id = custom_mongo.get_id_from_uri("/"+path)
         scopes= None
         if resource_id:
-            scopes = uma_handler.get_resource_scopes(resource_id)
+            scopes = []
+            if request.method == 'GET' or request.method == 'HEAD':
+                scopes.append('protected_read')             
+            elif request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
+                scopes.append('protected_write')
         
         uid = None
         
         #If UUID exists and resource requested has same UUID
+        api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
         if rpt:
             print("Token found: "+rpt)
@@ -83,6 +88,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             print("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
             try:
+                endpoint_path = request.full_path
                 cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
                 return cont
             except Exception as e:
