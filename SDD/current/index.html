@@ -11,6 +11,7 @@
 <title>PEP Engine Design Document: EOEPCA.SDD.xxx</title>
 <link rel="stylesheet" href="stylesheets/eoepca.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="stylesheets/coderay-asciidoctor.css">
 </head>
 <body class="book toc2 toc-left">
 <div id="header">
@@ -55,6 +56,7 @@
 <li><a href="#_oidc_to_login_service">2.2.2.2. OIDC (to Login Service)</a></li>
 <li><a href="#_scim_to_login_service">2.2.2.3. SCIM (to Login Service)</a></li>
 <li><a href="#_resource_api">2.2.2.4. Resource API</a></li>
+<li><a href="#_policy_api_to_policy_decision_point">2.2.2.5. Policy API (to Policy Decision Point)</a></li>
 </ul>
 </li>
 </ul>
@@ -67,10 +69,13 @@
 <li><a href="#_static_architecture">2.4. Static Architecture</a></li>
 <li><a href="#_use_cases">2.5. Use cases</a>
 <ul class="sectlevel3">
-<li><a href="#_self_authentication_registration">2.5.1. Self Authentication &amp; Registration</a></li>
-<li><a href="#_ticket_generation">2.5.2. Ticket generation</a></li>
-<li><a href="#_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</a></li>
-<li><a href="#_request_forwarding_with_jwt_header">2.5.4. Request Forwarding with JWT header</a></li>
+<li><a href="#_pep_uc_001_self_authentication_registration">2.5.1. PEP-UC-001: Self Authentication &amp; Registration</a></li>
+<li><a href="#_pep_uc_002_ticket_generation">2.5.2. PEP-UC-002: Ticket generation</a></li>
+<li><a href="#_pep_uc_003_resource_protection_rpt_validation">2.5.3. PEP-UC-003: Resource protection &amp; RPT validation</a></li>
+<li><a href="#_pep_uc_004_request_forwarding_with_jwt_header">2.5.4. PEP-UC-004: Request Forwarding with JWT header</a></li>
+<li><a href="#_pep_uc_005_resource_management">2.5.5. PEP-UC-005: Resource Management</a></li>
+<li><a href="#_pep_uc_006_default_protection_of_resources">2.5.6. PEP-UC-006: Default protection of resources</a></li>
+<li><a href="#_pep_uc_007_policy_enforcement_point_api">2.5.7. PEP-UC-007: Policy Enforcement Point API</a></li>
 </ul>
 </li>
 </ul>
@@ -98,6 +103,13 @@
 <li><a href="#_overview_and_purpose_2">3.3.1. Overview and Purpose</a></li>
 <li><a href="#_data_flow_2">3.3.2. Data flow</a></li>
 <li><a href="#_applicable_resources_2">3.3.3. Applicable Resources</a></li>
+</ul>
+</li>
+<li><a href="#_resource_default_protection_policy">3.4. Resource default Protection Policy</a>
+<ul class="sectlevel3">
+<li><a href="#_overview_and_purpose_3">3.4.1. Overview and Purpose</a></li>
+<li><a href="#_data_flow_3">3.4.2. Data flow</a></li>
+<li><a href="#_applicable_resources_3">3.4.3. Applicable Resources</a></li>
 </ul>
 </li>
 </ul>
@@ -1046,7 +1058,7 @@ In case the request is accompained by a header using a valid RPT in the format <
 <h4 id="_initialization_flow">2.1.1. Initialization flow</h4>
 <div class="imageblock text-left">
 <div class="content">
-<img src="./images/init_flow.png" alt="init flow">
+<img src="./images/init_flow3.png" alt="init flow3">
 </div>
 </div>
 </div>
@@ -1168,6 +1180,19 @@ In case it is disabled, the signature will not be verified but the other steps a
 Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 check, cross-checking against the “ownership_id” before performing actions and answering back with a 401 Unauthorized if there is no match.</p>
 </div>
 </div>
+<div class="sect4">
+<h5 id="_policy_api_to_policy_decision_point">2.2.2.5. Policy API (to Policy Decision Point)</h5>
+<div class="paragraph">
+<p>When registering a new resource, the PEP will consume the Policy API to register a default policy with the PDP. The endpoint for this is:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>&lt;pdp_url&gt;/policy</p>
+</li>
+</ul>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -1212,6 +1237,9 @@ Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 c
 </li>
 <li>
 <p>EOEPCA&#8217;s Well Known Handler - <a href="https://github.com/EOEPCA/well-known-handler" class="bare">https://github.com/EOEPCA/well-known-handler</a></p>
+</li>
+<li>
+<p>EOEPCA&#8217;s Policy Decision Point - <a href="https://github.com/EOEPCA/um-pdp-engine" class="bare">https://github.com/EOEPCA/um-pdp-engine</a></p>
 </li>
 <li>
 <p>Flask - <a href="https://github.com/pallets/flask" class="bare">https://github.com/pallets/flask</a></p>
@@ -1286,26 +1314,27 @@ Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 c
 </div>
 </div>
 <div class="sect3">
-<h4 id="_self_authentication_registration">2.5.1. Self Authentication &amp; Registration</h4>
+<h4 id="_pep_uc_001_self_authentication_registration">2.5.1. PEP-UC-001: Self Authentication &amp; Registration</h4>
 <div class="paragraph">
 <p>(Represented in the above graph by the request to Login Service in the section "PEP Authentication" )</p>
 </div>
 <div class="paragraph">
-<p>The PEP has an internal UMA Client used for alll the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.</p>
+<p>The PEP has an internal UMA Client used for all the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ticket_generation">2.5.2. Ticket generation</h4>
+<h4 id="_pep_uc_002_ticket_generation">2.5.2. PEP-UC-002: Ticket generation</h4>
 <div class="paragraph">
 <p>(Represented in the above graph by the request to Login Service called "Request for ticket")</p>
 </div>
 <div class="paragraph">
 <p>The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.<br>
-Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource.</p>
+Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource. When the ticket is generated, this ticket will contains a specific scope which it depends on the<br>
+HTTP verb obtained. This scope in the ticket could be 'protected_read' or 'protected_write'.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_resource_protection_rpt_validation">2.5.3. Resource protection &amp; RPT validation</h4>
+<h4 id="_pep_uc_003_resource_protection_rpt_validation">2.5.3. PEP-UC-003: Resource protection &amp; RPT validation</h4>
 <div class="paragraph">
 <p>The PEP when presented with an RPT in an <code>Authorization</code> HTTP header, will check the validity of this token for the requested resource. This token is valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker. The validation of the rpt token was extended by including a new parameter that allows to establish the number of uses of the rpt. To store the rpts that will be used will be stored in the database with the number of uses that the rpt has.</p>
 </div>
@@ -1318,12 +1347,43 @@ On the other hand, this baseline functionality is desirable to allow PEP-chainin
 </div>
 </div>
 <div class="sect3">
-<h4 id="_request_forwarding_with_jwt_header">2.5.4. Request Forwarding with JWT header</h4>
+<h4 id="_pep_uc_004_request_forwarding_with_jwt_header">2.5.4. PEP-UC-004: Request Forwarding with JWT header</h4>
 <div class="paragraph">
 <p>After validating the RPT we proceed to verify the signature of the JWT if the signature verification is enabled in the environment variables and the we pass the JWT to the request header in the request to the resource server.<br>
 If the header has a RPT as token we make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.<br>
 Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.<br>
 If the verification of the signature for the JWT is disabled, the code will do the introspection steps in the case of a RPT, and then will add the JWT to the request header without verifying the token signature.</p>
+</div>
+<div class="imageblock text-center">
+<div class="content">
+<img src="./images/PEPEndpoints.png" alt="PEPEndpoints">
+</div>
+</div>
+<div class="paragraph">
+<p>This diagram covers the following use cases:</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pep_uc_005_resource_management">2.5.5. PEP-UC-005: Resource Management</h4>
+<div class="paragraph">
+<p>The PEP allows for calls done on specific API endpoints for resource management. The currently available options are:<br>
+* Create resource<br>
+* Get resource (based on resource ID)<br>
+* Get all available resources (based on user id)<br>
+* Modify resource<br>
+* Delete resource</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pep_uc_006_default_protection_of_resources">2.5.6. PEP-UC-006: Default protection of resources</h4>
+<div class="paragraph">
+<p>A new dynamically (via CRUD operations) registered resource will have a default protection policy indexed to it. For this goal, the PEP will contact the Policy Decision Point in order to register said policy, associate it with this resource and establish user ownership.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_pep_uc_007_policy_enforcement_point_api">2.5.7. PEP-UC-007: Policy Enforcement Point API</h4>
+<div class="paragraph">
+<p>The current implemented functionalities can be consulted through a specific OpenAPI webpage, available at the PEP level.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1557,19 +1617,21 @@ The script defines methods to:</p>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Insert resource data</strong>: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries.</p>
+<p><strong>Insert resource data</strong>: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries. For updated operations, it is also capable of querying the OIDC endpoint of the Authorization Server to query if the request was performed by a valid resource operator.</p>
 </li>
 <li>
 <p><strong>Get the ID from a URI</strong>: Returns the id for the best candidate of the match by a given URI.</p>
 </li>
 <li>
-<p><strong>Delete resources</strong>: Receives a resource id and will find and delete the matched document</p>
+<p><strong>Delete resources</strong>: Receives a resource id and will find and delete the matched document, if the requesting user is a valid resource operator.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
 <p>This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.<br>
-The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.</p>
+The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.<br>
+When the PEP registered a new resource this resource will contains two additional scopes: protected_read and protected_write.<br>
+This two scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1593,6 +1655,46 @@ The main methods for the interaction with the database are displayed in this dat
 </li>
 </ul>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_default_protection_policy">3.4. Resource default Protection Policy</h3>
+<div class="sect3">
+<h4 id="_overview_and_purpose_3">3.4.1. Overview and Purpose</h4>
+<div class="paragraph">
+<p>Together with the Resource Repository, the PEP will also contact the Policy Decision Point in order to register two protection policies for the resource.<br>
+One with the scope of 'protection_read' related to the requests to the PEP endopoint with HTTP verbs HEAD and GET.<br>
+And one with the scope of 'protection_write' which is related to the requests to the PEP with the HTTP verbs PUT, POST and DELETE.</p>
+</div>
+<div class="paragraph">
+<p>This call to <code>&lt;pdp_url&gt;/policy</code> will include a preset policy configuration, to be applied to the registering resource. It stands as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>{&quot;name&quot;: &quot;Default Ownership Policy of &lt;resource_id&gt; with action &lt;action type depends on type of scope&gt; &quot;,
+ &quot;description&quot;: &quot;This is the default ownership policy for created resources through PEP&quot;,
+  &quot;config&quot;: {&quot;resource_id&quot;: resource_id,
+             &quot;rules&quot;: [ { &quot;AND&quot;: [ { &quot;EQUAL&quot;: { &quot;user_name&quot; : user_name }}]}]
+            },
+   &quot;scopes&quot;: [&quot;protected_read&quot;]}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_flow_3">3.4.2. Data flow</h4>
+<div class="paragraph">
+<p>This subroutine is triggered by the successful registration of the resource.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_applicable_resources_3">3.4.3. Applicable Resources</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>EOEPCA&#8217;s Policy Decision Point - <a href="https://github.com/EOEPCA/um-pdp-engine" class="bare">https://github.com/EOEPCA/um-pdp-engine</a></p>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1604,99 +1706,145 @@ The main methods for the interaction with the database are displayed in this dat
 <table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 2. User Stories</caption>
 <colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">User Story Code</th>
 <th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Building Block Use Case</th>
+<th class="tableblock halign-left valign-top">Master Use Case</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-12</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Reusable UMA Client Implementation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-001/PEP-UC-002</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-1003</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-221</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Administrative tooling for integration and operation</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-214</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Add Usage of Persistence Volumes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-35</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Ownership management for Resources</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-005/PEP-UC-006</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0105</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-210</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implementation of Helm Charts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-25</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Registration of Resource References</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-005</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0105</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-121</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Propagation of End-User claims to the Resource Server</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0106</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-205</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Create Swagger Endpoint for Resource Protection API</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-007</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-203</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Separation of Proxy and Resource Management concerns</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-007</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-194</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Usage of relative URLs without proxy prefix</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-189</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Security: Verification of RPT Signatures</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0107/EOEPCA-UC-0108</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-187</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Allow both RPT and ID Token Forwarding</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-003/PEP-UC-004</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0106</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-178</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Default protection of resources</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-006</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0104/EOEPCA-UC-0105</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-126</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Policy to Resource Data Model Extension</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0108</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-173</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implementation of strict RPT Validation Measures</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-003</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0107/EOEPCA-UC-0108</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-120</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Path-based resolution of Resource IDs</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-114</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Local Registration of Resources</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PEP-UC-005</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0105</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-99</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Command Line Interface UMA Client</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-1003</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-98</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Baseline Enforcement Functionality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">CI/CD Task</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-94</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Reusable UMA Client Implementation - End-User Functionality</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-1003</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-144</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Resource Ownership Enforcement</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">EOEPCA-UC-0105</p></td>
 </tr>
 </tbody>
 </table>
@@ -1710,7 +1858,7 @@ The main methods for the interaction with the database are displayed in this dat
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2021-01-29 13:15:55 UTC
+Last updated 2021-03-09 11:18:25 UTC
 </div>
 </div>
 </body>

@@ -129,6 +129,19 @@
 </li>
 </ul>
 </li>
+<li><a href="#_api">3.1.3. API</a>
+<ul class="sectlevel4">
+<li><a href="#_swagger_ui">3.1.3.1. Swagger UI</a>
+<ul class="sectlevel5">
+<li><a href="#_description_10">3.1.3.1.1. Description</a></li>
+<li><a href="#_parameters_10">3.1.3.1.2. Parameters</a></li>
+<li><a href="#_return_type_10">3.1.3.1.3. Return Type</a></li>
+<li><a href="#_responses_10">3.1.3.1.4. Responses</a></li>
+<li><a href="#_samples_10">3.1.3.1.5. Samples</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#models">3.2. Models</a>
@@ -1250,6 +1263,107 @@ This OpenAPI Document describes the endpoints exposed by Policy Enforcement Poin
 </div>
 </div>
 </div>
+<div class="sect3 API">
+<h4 id="_api">3.1.3. API</h4>
+<div class="sect4 SwaggerUI">
+<h5 id="_swagger_ui">3.1.3.1. Swagger UI</h5>
+<div class="paragraph">
+<p><code>/swagger-ui</code></p>
+</div>
+<div class="sect5">
+<h6 id="_description_10">3.1.3.1.1. Description</h6>
+<div class="paragraph">
+<p>This operation accesses the API for the Policy Enforcement Point</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_parameters_10">3.1.3.1.2. Parameters</h6>
+<div class="sect6">
+<h7 id="_path_parameters_8">Path Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect6">
+<h7 id="_header_parameters_10">Header Parameters</h7>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+<th class="tableblock halign-left valign-top">Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_return_type_10">3.1.3.1.3. Return Type</h6>
+<div class="paragraph">
+<p>-</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_responses_10">3.1.3.1.4. Responses</h6>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 11. http response codes</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 50%;">
+<col style="width: 16.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Code</th>
+<th class="tableblock halign-left valign-top">Message</th>
+<th class="tableblock halign-left valign-top">Datatype</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">200</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">OK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&lt;&lt;&gt;&gt;</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect5">
+<h6 id="_samples_10">3.1.3.1.5. Samples</h6>
+
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="models">3.2. Models</h3>
@@ -1275,24 +1389,31 @@ This OpenAPI Document describes the endpoints exposed by Policy Enforcement Poin
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">name</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Human readable name for the resource</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable description of the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">icon_uri</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Protected uri of the resource.</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">scopes</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">List  of <a href="#string">[string]</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">List of scopes associated with the resource</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 </tbody>
 </table>
@@ -1319,38 +1440,38 @@ This OpenAPI Document describes the endpoints exposed by Policy Enforcement Poin
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ownership_id</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">UUID</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">UUID of the Owner End-User</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">uuid</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">id</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">description</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">UUID</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">UUID of the resource</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Human readable description of the resource</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">uuid</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">name</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Human readable name for the resource</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">icon_uri</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">String</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Protected uri of the resource.</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">scopes</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">resource_scopes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Y</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">List  of <a href="#string">[string]</a></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">List of scopes associated with the resource</p></td>
-<td class="tableblock halign-left valign-top"></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
 </tr>
 </tbody>
 </table>
@@ -1366,7 +1487,7 @@ This OpenAPI Document describes the endpoints exposed by Policy Enforcement Poin
 <div id="footer">
 <div id="footer-text">
 Version 1.0<br>
-Last updated 2021-01-29 13:15:55 UTC
+Last updated 2021-03-09 11:18:24 UTC
 </div>
 </div>
 </body>
