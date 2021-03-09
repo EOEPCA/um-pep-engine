@@ -3,69 +3,111 @@
 
 .User Stories
 |===
-|Code |Description 
+|User Story Code |Description |Building Block Use Case |Master Use Case
 
 |EOEPCA-12	
 |Reusable UMA Client Implementation
+| PEP-UC-001/PEP-UC-002
+| EOEPCA-UC-1003
 
 |EOEPCA-221	
 |Administrative tooling for integration and operation
+| -
+| CI/CD Task
 
 |EOEPCA-214	
 |Add Usage of Persistence Volumes
+| -
+| CI/CD Task
 
 |EOEPCA-35	
 |Ownership management for Resources
+| PEP-UC-005/PEP-UC-006
+| EOEPCA-UC-0105
 
 |EOEPCA-210	
 |Implementation of Helm Charts
+| -
+| CI/CD Task
 
 |EOEPCA-25	
 |Registration of Resource References
+| PEP-UC-005
+| EOEPCA-UC-0105
 
 |EOEPCA-121	
 |Propagation of End-User claims to the Resource Server
+| PEP-UC-004
+| EOEPCA-UC-0106
 
 |EOEPCA-205	
 |Create Swagger Endpoint for Resource Protection API
+| PEP-UC-007
+| CI/CD Task
 
 |EOEPCA-203	
 |Separation of Proxy and Resource Management concerns
+| PEP-UC-007
+| CI/CD Task
 
 |EOEPCA-194	
 |Usage of relative URLs without proxy prefix
+| -
+| CI/CD Task
 
 |EOEPCA-189	
 |Security: Verification of RPT Signatures
+| PEP-UC-003
+| EOEPCA-UC-0107/EOEPCA-UC-0108
 
 |EOEPCA-187	
 |Allow both RPT and ID Token Forwarding
+| PEP-UC-003/PEP-UC-004
+| EOEPCA-UC-0106
 
 |EOEPCA-178	
 |Default protection of resources
+| PEP-UC-006
+| EOEPCA-UC-0104/EOEPCA-UC-0105
 
 |EOEPCA-126	
 |Policy to Resource Data Model Extension
+| -
+| EOEPCA-UC-0108
 
 |EOEPCA-173	
 |Implementation of strict RPT Validation Measures
+| PEP-UC-003
+| EOEPCA-UC-0107/EOEPCA-UC-0108
 
 |EOEPCA-120	
 |Path-based resolution of Resource IDs
+| -
+| CI/CD Task
 
 |EOEPCA-114	
 |Local Registration of Resources
+| PEP-UC-005
+| EOEPCA-UC-0105
 
 |EOEPCA-99	
 |Command Line Interface UMA Client
+| -
+| EOEPCA-UC-1003
 
 |EOEPCA-98	
 |Baseline Enforcement Functionality
+| -
+| CI/CD Task
 
 |EOEPCA-94	
 |Reusable UMA Client Implementation - End-User Functionality
+| -
+| EOEPCA-UC-1003
 
 |EOEPCA-144	
 |Resource Ownership Enforcement
+| -
+| EOEPCA-UC-0105
 
 |===
