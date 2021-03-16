@@ -27,6 +27,20 @@ global:
   resourceHost: http://demoexample.gluu.org/res
 
 
+readinessProbe:
+  initialDelaySeconds: 150
+  periodSeconds: 90
+livenessProbe:
+  initialDelaySeconds: 150
+  periodSeconds: 90
+
+# limits:
+#   memory: 600Mi
+requests:
+  serviceCpu: 2m
+  serviceMemory: 50Mi
+  dbCpu: 3m
+  dbMemory: 150Mi
 
 image: 
   statefulSetReplicas: 1
