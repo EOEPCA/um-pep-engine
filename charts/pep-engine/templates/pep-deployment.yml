@@ -18,6 +18,22 @@ spec:
       - name: {{ .Values.global.pep }}
         imagePullPolicy: {{ .Values.image.imagePullPolicy }}
         image: {{ .Values.image.image }}
+        resources:
+          requests:
+            memory: {{ .Values.requests.serviceMemory }}
+            cpu: {{ .Values.requests.serviceCpu }}
+        livenessProbe:
+          httpGet:
+            path: /oxauth/.well-known/openid-configuration
+            port: 8080
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+        readinessProbe:
+          httpGet:
+            path: /oxauth/.well-known/openid-configuration
+            port: 8080
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
         ports:
         - name: proxy-pep
           containerPort: 5566
@@ -31,6 +47,10 @@ spec:
       - name: mongo
         imagePullPolicy: {{ .Values.image.imagePullPolicy }}
         image: mongo
+        resources:
+          requests:
+            memory: {{ .Values.requests.dbMemory }}
+            cpu: {{ .Values.requests.dbCpu }}
         ports:
         - name: http-rp
           containerPort: 27017
