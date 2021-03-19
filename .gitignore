@@ -1,5 +1,6 @@
 # Log file
 *.log
+!pep_engine.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -6,13 +6,16 @@ from handlers.uma_handler import UMA_Handler, resource
 from handlers.uma_handler import rpt as class_rpt
 from handlers.mongo_handler import Mongo_Handler
 from handlers.policy_handler import policy_handler
+from handlers.log_handler import LogHandler
+import logging
 
 def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
+    logger = logging.getLogger("PEP_ENGINE")
 
     @resources_bp.route("/resources", methods=["GET"])
     def get_resource_list():
-        print("Retrieving all registered resources...")
+        logger.debug("Retrieving all registered resources...")
         #gets all resources registered on local DB
         custom_mongo = Mongo_Handler("resource_db", "resources")
         resources = custom_mongo.get_all_resources()
@@ -27,18 +30,18 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
-                print("Error: no token passed!")
+                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
                 return response
         except Exception as e:
-            print("Error While passing the token: "+str(uid))
+            logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
             return response
 
         if not uid:
-            print("UID for the user not found")
+            logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
             return response
@@ -48,7 +51,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         for rsrc in resources:
             #If UUID exists and owns the requested resource
             if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
-                print("Matching owned-resource found!")
+                logger.debug("Matching owned-resource found!")
                 #Add resource to return list
                 resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"]})
                 found_uid = True
@@ -63,37 +66,37 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
     @resources_bp.route("/resources", methods=["POST"])
     def resource_creation():
-        print("Processing " + request.method + " resource request...")
+        logger.debug("Processing " + request.method + " resource request...")
         response = Response()
         uid = None
         #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
-            print(head_protected)
+            logger.debug(head_protected)
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
-            print(uid)
+            logger.debug(uid)
             if "NO TOKEN FOUND" in uid:
-                print("Error: no token passed!")
+                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
                 return response
         except Exception as e:
-            print("Error While passing the token: "+str(uid))
+            logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
             return response
         
         #If UUID does not exist
         if not uid:
-            print("UID for the user not found")
+            logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
             return response
 
         resource_reply = create_resource(uid, request, uma_handler, response)
-        print("Creating resource!")
-        print(resource_reply)
+        logger.debug("Creating resource!")
+        logger.debug(resource_reply)
         #If the reply is not of type Response, the creation was successful
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
@@ -104,13 +107,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 return resource_reply
             response.status_code = policy_reply_read.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
-            print(response.headers["Error"])
+            logger.debug(response.headers["Error"])
             return response
         return resource_reply
 
     @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "DELETE"])
     def resource_operation(resource_id):
-        print("Processing " + request.method + " resource request...")
+        logger.debug("Processing " + request.method + " resource request...")
         response = Response()
         custom_mongo = Mongo_Handler("resource_db", "resources")
         uid = None
@@ -120,19 +123,19 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
-                print("Error: no token passed!")
+                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
                 return response
         except Exception as e:
-            print("Error While passing the token: "+str(uid))
+            logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
             return response
         
         #If UUID does not exist
         if not uid:
-            print("UID for the user not found")
+            logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
             return response
@@ -147,7 +150,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if not is_operator:
                 is_operator = False
         except Exception as e:
-            print("Error while reading token: "+str(e))
+            logger.debug("Error while reading token: "+str(e))
             response.status_code = 500
             return response
         
@@ -168,7 +171,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             else:
                 return user_not_authorized(response)
         except Exception as e:
-            print("Error while redirecting to resource: "+str(e))
+            logger.debug("Error while redirecting to resource: "+str(e))
             response.status_code = 500
             return response
 
@@ -211,7 +214,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 response.headers["Error"] = "Content-Type must be application/json"
                 return response
         except Exception as e:
-            print("Error while creating resource: "+str(e))
+            logger.debug("Error while creating resource: "+str(e))
             if "already exists for URI" in str(e):
                 response.status_code = 422
             else:

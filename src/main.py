@@ -30,8 +30,13 @@ from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, imp
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
 import logging
-logging.getLogger().setLevel(logging.INFO)
+from handlers.log_handler import LogHandler
 
+log_handler = LogHandler
+log_handler.load_config("PEP", "./config/log_config.yaml")
+logger = logging.getLogger("PEP_ENGINE")
+
+logger.info("==========Starting load config==========")
 ### INITIAL SETUP
 g_config, g_wkh = get_config("config/config.json")
 
@@ -69,6 +74,7 @@ def generateRSAKeyPair():
     return private_key
 
 private_key = generateRSAKeyPair()
+logger.info("==========Configuration loaded==========")
 
 proxy_app = Flask(__name__)
 proxy_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
@@ -104,10 +110,13 @@ swaggerui_resources_blueprint = get_swaggerui_blueprint(
 # Register api blueprints (module endpoints)
 resources_app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
 proxy_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+logger.info("==========Resources endpoint Loaded==========")
 
 # SWAGGER UI respective bindings
 resources_app.register_blueprint(swaggerui_resources_blueprint)
 proxy_app.register_blueprint(swaggerui_proxy_blueprint)
+logger.info("==========Proxy endpoint Loaded==========")
+logger.info("==========Startup complete. PEP Engine is available!==========")
 
 # Define run methods for both Flask instances
 # Start reverse proxy for proxy endpoint
