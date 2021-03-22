@@ -169,7 +169,7 @@ INFO level log messages follow the following format:
 Subcomponent division is as follows:
 
  * 20xx: RESOURCES
- * 2100: PROXY
+ * 21xx: PROXY
  
 .Log Codes
 |===
