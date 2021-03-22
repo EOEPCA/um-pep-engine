@@ -1787,7 +1787,7 @@ And one with the scope of 'protection_write' which is related to the requests to
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2103</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Token validated, forwarding to RM"}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Token validated, forwarding to RM"}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2104</p></td>
@@ -1795,39 +1795,43 @@ And one with the scope of 'protection_write' which is related to the requests to
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2105</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"No resource found, forwarding request for path "+path}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"No resource found, forwarding request for path "+path}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2106</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Non-disclosed exception occurred."}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Error while redirecting to resource: "+str(exception)}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2007</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Returning resource list: "+resource_list}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Returning resource list: "+resource_list}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2008</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"No matching resources found for requested path "+path}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"No matching resources found for requested path "+path}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2009</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Resource created","Resource_id":resource_id,"Write Policy":write_policy_id,"Read Policy":read_policy_id}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Resource created","Resource_id":resource_id,"Write Policy":write_policy_id,"Read Policy":read_policy_id}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2010</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Error occured: +"error}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Error occured: +"error}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2011</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Operation successful","Resource":resource}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Operation successful","Resource":resource}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2012</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"Resource "resource_id" deleted"}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"Resource "resource_id" deleted"}</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2013</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Client":client,"Description":"No matching resources found for requested path "+path}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"No matching resources found for requested path "+path}</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2014</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">{"User":user,"Description":"User not authorized for resource management","Resource":resource_id}</p></td>
 </tr>
 </tbody>
 </table>
@@ -1994,7 +1998,7 @@ And one with the scope of 'protection_write' which is related to the requests to
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2021-03-22 01:21:18 UTC
+Last updated 2021-03-22 19:44:38 UTC
 </div>
 </div>
 </body>
