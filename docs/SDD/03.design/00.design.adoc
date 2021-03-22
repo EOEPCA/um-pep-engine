@@ -176,42 +176,45 @@ Subcomponent division is as follows:
 |Log Code |Structure
 
 |2001
-|{"Description":"No token found/error reading token"}
+| {"Description":"No token found/error reading token"}
 
 |2002
-|{"Description":"User not found in token"}
+| {"Description":"User not found in token"}
 
 |2103
-|{"User":user,"Client":client,"Description":"Token validated, forwarding to RM"}
+| {"User":user,"Description":"Token validated, forwarding to RM"}
 
 |2104
-|{"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
+| {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
 
 |2105
-|{"User":user,"Client":client,"Description":"No resource found, forwarding request for path "+path}
+| {"User":user,"Description":"No resource found, forwarding request for path "+path}
 
 |2106
-|{"User":user,"Client":client,"Description":"Non-disclosed exception occurred."}
+| {"User":user,"Description":"Error while redirecting to resource: "+str(exception)}
 
 |2007
-|{"User":user,"Client":client,"Description":"Returning resource list: "+resource_list}
+| {"User":user,"Description":"Returning resource list: "+resource_list}
 
 |2008
-|{"User":user,"Client":client,"Description":"No matching resources found for requested path "+path}
+| {"User":user,"Description":"No matching resources found for requested path "+path}
 
 |2009
-|{"User":user,"Client":client,"Description":"Resource created","Resource_id":resource_id,"Write Policy":write_policy_id,"Read Policy":read_policy_id}
+| {"User":user,"Description":"Resource created","Resource_id":resource_id,"Write Policy":write_policy_id,"Read Policy":read_policy_id}
 
 |2010
-|{"User":user,"Client":client,"Description":"Error occured: +"error}
+| {"User":user,"Description":"Error occured: +"error}
 
 |2011
-|{"User":user,"Client":client,"Description":"Operation successful","Resource":resource}
+| {"User":user,"Description":"Operation successful","Resource":resource}
 
 |2012
-|{"User":user,"Client":client,"Description":"Resource "+resource_id+" deleted"}
+| {"User":user,"Description":"Resource "+resource_id+" deleted"}
 
 |2013
-|{"User":user,"Client":client,"Description":"No matching resources found for requested path "+path}
+| {"User":user,"Description":"No matching resources found for requested path "+path}
+
+|2014
+| {"User":user,"Description":"User not authorized for resource management","Resource":resource_id}
 
 |===
