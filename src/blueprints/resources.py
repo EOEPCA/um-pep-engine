@@ -12,6 +12,7 @@ import logging
 def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
     logger = logging.getLogger("PEP_ENGINE")
+    log_handler = LogHandler.get_instance()
 
     @resources_bp.route("/resources", methods=["GET"])
     def get_resource_list():
@@ -30,20 +31,25 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
-                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
+                activity = {"Description":"No token found/error reading token"}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
                 return response
         except Exception as e:
             logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
+            activity = {"Description":"No token found/error reading token: "+str(e)}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
 
         if not uid:
             logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
+            activity = {"Description":"User not found in token"}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
         
         found_uid = False
@@ -58,10 +64,14 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         
         #If user-owned resources were found, return the list
         if found_uid:
+            activity = {"User":user,"Description":"Returning resource list: "+resource_list}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
             return json.dumps(resourceListToReturn)
         #Otherwise
         response.status_code = 404
         response.headers["Error"] = "No user-owned resources found!"
+        activity = {"User":user,"Description":"No matching resources found for requested path "+path}
+        logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
         return response
 
     @resources_bp.route("/resources", methods=["POST"])
@@ -77,14 +87,17 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             logger.debug(uid)
             if "NO TOKEN FOUND" in uid:
-                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
+                activity = {"Description":"No token found/error reading token"}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
                 return response
         except Exception as e:
             logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
+            activity = {"Description":"No token found/error reading token: "+str(e)}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
         
         #If UUID does not exist
@@ -92,6 +105,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
+            activity = {"Description":"User not found in token"}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
 
         resource_reply = create_resource(uid, request, uma_handler, response)
@@ -104,11 +119,17 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             policy_reply_read = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "read"), input_headers=request.headers)
             policy_reply_write = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "write"), input_headers=request.headers)
             if policy_reply_read.status_code == 200 and policy_reply_write.status_code == 200:
+                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Write Policy":policy_reply_write,"Read Policy":policy_reply_read}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             response.status_code = policy_reply_read.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
             logger.debug(response.headers["Error"])
+            activity = {"User":user,"Description":"Error occured: "+response.headers["Error"]}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
+        activity = {"User":user,"Description":"Error occured: "+resource_reply}
+        logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
         return resource_reply
 
     @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "DELETE"])
@@ -123,14 +144,17 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
-                logger.debug("Error: no token passed!")
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
+                activity = {"Description":"No token found/error reading token"}
+                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
                 return response
         except Exception as e:
             logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
+            activity = {"Description":"No token found/error reading token: "+str(e)}
+            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
         
         #If UUID does not exist
@@ -138,6 +162,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
+            activity = {"Description":"User not found in token"}
+            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
 
         try:
@@ -152,6 +178,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         except Exception as e:
             logger.debug("Error while reading token: "+str(e))
             response.status_code = 500
+            activity = {"Description":"No token found/error reading token"}
+            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
         
         #Process the remainder GET/PUT(Update)/DELETE scenarios
@@ -159,20 +187,30 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #retrieve resource
             #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
+                {"User":user,"Description":"Operation successful","Resource":resource_id}
+                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return get_resource(custom_mongo, resource_id, response)
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
                 if request.method == "PUT":
+                    {"User":user,"Description":"Operation successful","Resource":resource_id}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                     return update_resource(request, resource_id, uid, response)
                 #delete resource
                 elif request.method == "DELETE":
+                    {"User":user,"Description":"Resource "+resource_id+" deleted"}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return delete_resource(uma_handler, resource_id, response)
             else:
+                activity = {"User":user,"Description":"User not authorized for resource management","Resource":resource_id}
+                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2014,activity=activity))
                 return user_not_authorized(response)
         except Exception as e:
             logger.debug("Error while redirecting to resource: "+str(e))
             response.status_code = 500
+            activity = {"User":user,"Description":"Error occured: "+resource_reply}
+            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
 
     def create_resource(uid, request, uma_handler, response):

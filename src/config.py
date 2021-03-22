@@ -7,6 +7,7 @@ from json import load, dump
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from WellKnownHandler import WellKnownHandler
 from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
+import logging
 
 def load_config(config_path: str) -> dict:
     """
@@ -50,6 +51,9 @@ def get_config(config_path: str):
     "PEP_PDP_POLICY_ENDPOINT",
     "PEP_VERIFY_SIGNATURE"]
 
+    #Sets logger
+    logger = logging.getLogger("PEP_ENGINE")
+
     use_env_var = True
 
     for env_var in env_vars:
@@ -83,9 +87,9 @@ def get_config(config_path: str):
     # Global setting to validate RPTs received at endpoints
     api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     if api_rpt_uma_validation:
-        print("UMA RPT validation is ON.")
+        logger.debug("UMA RPT validation is ON.")
     else:
-        print("UMA RPT validation is OFF.")
+        logger.debug("UMA RPT validation is OFF.")
 
     # Generate client dynamically if one is not configured.
     if "client_id" not in g_config or "client_secret" not in g_config:
@@ -98,7 +102,7 @@ def get_config(config_path: str):
                                     responseTypes = ["code","token","id_token"],
                                     scopes = ['openid', 'uma_protection', 'permission', 'profile', 'is_operator'],
                                     token_endpoint_auth_method = ENDPOINT_AUTH_CLIENT_POST)
-        print("NEW CLIENT created with ID '"+new_client["client_id"]+"', since no client config was found on config.json or environment")
+        logger.debug("NEW CLIENT created with ID '"+new_client["client_id"]+"', since no client config was found on config.json or environment")
 
         g_config["client_id"] = new_client["client_id"]
         g_config["client_secret"] = new_client["client_secret"]
@@ -107,9 +111,9 @@ def get_config(config_path: str):
         else:
             os.environ["PEP_CLIENT_ID"] = new_client["client_id"]
             os.environ["PEP_CLIENT_SECRET"] = new_client["client_secret"]
-        print("New client saved to config!")
+        logger.debug("New client saved to config!")
     else:
-        print("Client found in config, using: "+g_config["client_id"])
+        logger.debug("Client found in config, using: "+g_config["client_id"])
 
     save_config(config_path, g_config)
 

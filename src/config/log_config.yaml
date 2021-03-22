@@ -23,7 +23,7 @@ handlers:
 
 loggers:
     PEP_ENGINE:
-        level: NOTSET
+        level: DEBUG
         handlers: [console, log_file]
         qualname: PEP_ENGINE
         propagate: false
