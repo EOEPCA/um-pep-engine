@@ -120,7 +120,7 @@ class Mongo_Handler:
             else:
                 return False
         except:
-            logger.debug('no resource with that UID associated')
+            self.logger.debug('no resource with that UID associated')
             return False
 
     def get_all_resources(self):

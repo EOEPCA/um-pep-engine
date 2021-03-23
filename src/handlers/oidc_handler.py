@@ -43,7 +43,7 @@ class OIDCHandler:
         try:
             access_token = response.json()["access_token"]
         except Exception as e:
-            logger.debug("Error while getting access_token: "+str(response.text))
+            self.logger.debug("Error while getting access_token: "+str(response.text))
             exit(-1)
         
         return access_token
@@ -79,10 +79,10 @@ class OIDCHandler:
                         result = False
 
                 if result == False:
-                    logger.debug("Verification of the signature for the JWT failed!")
+                    self.logger.debug("Verification of the signature for the JWT failed!")
                     raise Exception
                 else:
-                    logger.debug("Signature verification is correct!")
+                    self.logger.debug("Signature verification is correct!")
 
             if decoded_str_header['kid'] != "RSA1":
                 if key in decoded_str.keys():
@@ -103,7 +103,7 @@ class OIDCHandler:
 
             return user_value
         except Exception as e:
-            logger.debug("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
+            self.logger.debug("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
             return None
 
     def verify_OAuth_token(self, token, key):
@@ -114,7 +114,7 @@ class OIDCHandler:
             user = (res.json())
             return user[key]
         except:
-            logger.debug("OIDC Handler: Get User "+key+": Exception occured!")
+            self.logger.debug("OIDC Handler: Get User "+key+": Exception occured!")
             return None
 
     def verify_uid_headers(self, headers_protected, key):
