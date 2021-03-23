@@ -3,6 +3,7 @@ from flask import Blueprint, request, Response, jsonify
 from handlers.mongo_handler import Mongo_Handler
 from handlers.uma_handler import UMA_Handler, resource
 from handlers.uma_handler import rpt as class_rpt
+from handlers.log_handler import LogHandler
 from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
@@ -17,16 +18,16 @@ from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, imp
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
 import logging
-logging.getLogger().setLevel(logging.INFO)
-
 
 def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     proxy_bp = Blueprint('proxy_bp', __name__)
+    logger = logging.getLogger("PEP_ENGINE")
+    log_handler = LogHandler.get_instance()
 
     @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE"])
     def resource_request(path):
         # Check for token
-        print("Processing path: '"+path+"'")
+        logger.debug("Processing path: '"+path+"'")
         custom_mongo = Mongo_Handler("resource_db", "resources")
         rpt = request.headers.get('Authorization')
         # Get resource
@@ -45,12 +46,12 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
         if rpt:
-            print("Token found: "+rpt)
+            logger.debug("Token found: "+rpt)
             rpt = rpt.replace("Bearer ","").strip()
 
             # Validate for a specific resource
             if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or not api_rpt_uma_validation:
-                print("RPT valid, accesing ")
+                logger.debug("RPT valid, accesing ")
 
                 rpt_splitted = rpt.split('.')
                 
@@ -70,30 +71,37 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                     new_header.add(key, value)
 
                 # redirect to resource
+                activity = {"User":uid,"Resource":resource_id,"Description":"Token validated, forwarding to RM"}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2103,activity=activity))
                 return proxy_request(request, new_header)
-            print("Invalid RPT!, sending ticket")
+            logger.debug("Invalid RPT!, sending ticket")
             # In any other case, we have an invalid RPT, so send a ticket.
             # Fallthrough intentional
-        print("No auth token, or auth token is invalid")
+        logger.debug("No auth token, or auth token is invalid")
         response = Response()
         if resource_id is not None:
-            print("Matched resource: "+str(resource_id))
+            logger.debug("Matched resource: "+str(resource_id))
             # Generate ticket if token is not present        
             ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
             # Return ticket
             response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
             response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
+            activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
+            logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
             return response
         else:
-            print("No matched resource, passing through to resource server to handle")
+            logger.debug("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
             try:
                 endpoint_path = request.full_path
                 cont = get(g_config["resource_server_endpoint"]+endpoint_path, headers=request.headers).content
+                activity = {"User":uid,"Description":"No resource found, forwarding request for path "+path}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2105,activity=activity))
                 return cont
             except Exception as e:
-                print("Error while redirecting to resource: "+str(e))
                 response.status_code = 500
+                activity = {"User":user,"Description":"Error while redirecting to resource:"+str(e)}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2106,activity=activity))
                 return response
 
     def proxy_request(request, new_header):
@@ -120,7 +128,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             return response
         except Exception as e:
             response = Response()
-            print("Error while redirecting to resource: "+ traceback.format_exc(),file=sys.stderr)
+            logger.debug("Error while redirecting to resource: "+ traceback.format_exc(),file=sys.stderr)
             response.status_code = 500
             response.content = "Error while redirecting to resource: "+str(e)
             return response
