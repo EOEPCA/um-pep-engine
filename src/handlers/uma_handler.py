@@ -8,10 +8,12 @@ import base64
 import json
 import pymongo
 from datetime import datetime
+import logging
 
 class UMA_Handler:
 
     def __init__(self, wkhandler, oidc_handler, verify_ssl: bool = False ):
+        self.logger = logging.getLogger("PEP_ENGINE")
         self.wkh = wkhandler
         self.mongo= Mongo_Handler("resource_db", "resources")
         self.mongo_rpt= Mongo_Handler("rpt_db", "rpts")
@@ -31,10 +33,10 @@ class UMA_Handler:
         resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         pat = self.oidch.get_new_pat()
         new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-        print("Created resource '"+name+"' with ID :"+new_resource_id)
+        logger.debug("Created resource '"+name+"' with ID :"+new_resource_id)
         # Register resources inside the dbs
         resp=self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri)
-        if resp: print('Resource saved in DB succesfully')
+        if resp: logger.debug('Resource saved in DB succesfully')
        
         return new_resource_id
         
@@ -48,7 +50,7 @@ class UMA_Handler:
         pat = self.oidch.get_new_pat()
         new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
         resp=self.mongo.insert_resource_in_mongo(resource_id, name, ownership_id, icon_uri)
-        print("Updated resource '"+name+"' with ID :"+new_resource_id)
+        logger.debug("Updated resource '"+name+"' with ID :"+new_resource_id)
         
     def delete(self, resource_id: str):
         """
@@ -65,9 +67,9 @@ class UMA_Handler:
         try:
             resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
             resp = self.mongo.delete_in_mongo("resource_id", resource_id)
-            print("Deleted resource with ID :"+resource_id)
+            logger.debug("Deleted resource with ID :"+resource_id)
         except Exception as e:
-            print("Error while deleting resource: "+str(e))
+            logger.debug("Error while deleting resource: "+str(e))
 
 
     # Usage of Python library for query mongodb instance
@@ -89,10 +91,10 @@ class UMA_Handler:
                 result = test.verify_signature_JWT(user_rpt)
 
                 if result == False:
-                    print("Verification of the signature for the JWT failed!")
+                    logger.debug("Verification of the signature for the JWT failed!")
                     return False
                 else:
-                    print("Signature verification is correct!")
+                    logger.debug("Signature verification is correct!")
 
             payload = str(user_rpt).split(".")[1]
             paddedPayload = payload + '=' * (4 - len(payload) % 4)
@@ -192,14 +194,14 @@ class UMA_Handler:
         resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         actual_resources = resource.list(pat, resource_reg_endpoint, self.verify)
 
-        print("-----------STATUS-----------")
-        print(str(len(actual_resources))+ " Actual Resources registered in the AS, with IDS: "+str(actual_resources))
-        print("-----------LIVE INFORMATION FROM AS------")
+        logger.debug("-----------STATUS-----------")
+        logger.debug(str(len(actual_resources))+ " Actual Resources registered in the AS, with IDS: "+str(actual_resources))
+        logger.debug("-----------LIVE INFORMATION FROM AS------")
         for r in actual_resources:
             info = resource.read(pat, resource_reg_endpoint, r, secure= self.verify)
-            print(info)
-            print("++++++++++++++++")
-        print("-----------STATUS END-------")
+            logger.debug(info)
+            logger.debug("++++++++++++++++")
+        logger.debug("-----------STATUS END-------")
 
 
     def update_resources_from_as(self):

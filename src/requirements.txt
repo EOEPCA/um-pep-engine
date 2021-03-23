@@ -9,3 +9,4 @@ pycrypto==2.6.1
 pymongo
 mock
 flask-swagger-ui==3.36.0
+pyyaml

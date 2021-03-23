@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from requests import post
+import logging
 
 '''
     Class to deal with PDP Policy calls from inside the PEP
@@ -7,7 +8,8 @@ from requests import post
 class policy_handler:
 
     def __init__(self, pdp_url: str, pdp_port: int, pdp_policy_endpoint: str):
-        print("CONNECTED TO PDP AT "+pdp_url+":"+pdp_port+pdp_policy_endpoint)
+        self.logger = logging.getLogger("PEP_ENGINE")
+        logger.debug("CONNECTED TO PDP AT "+pdp_url+":"+pdp_port+pdp_policy_endpoint)
         self.url = pdp_url
         self.port = pdp_port
         self.endpoint = pdp_policy_endpoint
@@ -23,7 +25,7 @@ class policy_handler:
     '''
     def create_policy(self, policy_body, input_headers):
         headers = input_headers
-        print("PDP Headers:")
-        print(headers)
+        logger.debug("PDP Headers:")
+        logger.debug(headers)
         json = policy_body
         return post("http://"+self.url +":" + self.port + self.endpoint, headers=headers, json=json)
