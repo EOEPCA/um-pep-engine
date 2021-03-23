@@ -119,7 +119,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             policy_reply_read = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "read"), input_headers=request.headers)
             policy_reply_write = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "write"), input_headers=request.headers)
             if policy_reply_read.status_code == 200 and policy_reply_write.status_code == 200:
-                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Write Policy":policy_reply_write,"Read Policy":policy_reply_read}
+                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Write Policy":policy_reply_write.text,"Read Policy":policy_reply_read.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             response.status_code = policy_reply_read.status_code
@@ -187,19 +187,19 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #retrieve resource
             #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
-                {"User":user,"Description":"Operation successful","Resource":resource_id}
+                activity = {"User":user,"Description":"Operation successful","Resource":resource_id}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return get_resource(custom_mongo, resource_id, response)
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
                 if request.method == "PUT":
-                    {"User":user,"Description":"Operation successful","Resource":resource_id}
+                    activity = {"User":user,"Description":"Operation successful","Resource":resource_id}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                     return update_resource(request, resource_id, uid, response)
                 #delete resource
                 elif request.method == "DELETE":
-                    {"User":user,"Description":"Resource "+resource_id+" deleted"}
+                    activity = {"User":user,"Description":"Resource "+resource_id+" deleted"}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return delete_resource(uma_handler, resource_id, response)
             else:
