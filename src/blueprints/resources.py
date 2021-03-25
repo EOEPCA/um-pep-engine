@@ -131,7 +131,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
-        activity = {"User":uid,"Description":"Error occured: "+resource_reply}
+        activity = {"User":uid,"Description":"Error occured with HTTP code "+ str(resource_reply.status_code) +": "+resource_reply.headers["Error"]}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
         return resource_reply
 
@@ -191,8 +191,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #retrieve resource
             #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
-                reply = get_resource(custom_mongo, resource_id, response) 
-                activity = {"User":uid,"Description":"GET operation called","Reply":reply}
+                reply = get_resource(custom_mongo, resource_id, response)
+                if isinstance(reply, Response):
+                    activity = {"User":uid,"Description":"GET operation called","Reply":reply.headers["Error"]}
+                else:
+                    activity = {"User":uid,"Description":"GET operation called","Reply":json.dumps(reply)}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return reply
             #Update/Delete requests should only be done by resource owners or operators
@@ -200,13 +203,16 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 #update resource
                 if request.method == "PUT":
                     reply = update_resource(request, resource_id, uid, response)
-                    activity = {"User":uid,"Description":"PUT operation called","Reply":reply}
+                    if reply.status_code == 200:
+                        activity = {"User":uid,"Description":"PUT operation called","Reply":reply.text}
+                    else:
+                        activity = {"User":uid,"Description":"PUT operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                     return reply
                 #delete resource
                 elif request.method == "DELETE":
                     reply = delete_resource(uma_handler, resource_id, response)
-                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply}
+                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.text}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return reply
             else:
