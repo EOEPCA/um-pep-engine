@@ -65,13 +65,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         
         #If user-owned resources were found, return the list
         if found_uid:
-            activity = {"User":uid,"Description":"Returning resource list: "+resource_list}
+            activity = {"User":uid,"Description":"Returning resource list: "+resourceListToReturn}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
             return json.dumps(resourceListToReturn)
         #Otherwise
         response.status_code = 404
         response.headers["Error"] = "No user-owned resources found!"
-        activity = {"User":uid,"Description":"No matching resources found for requested path "+path}
+        activity = {"User":uid,"Description":"No matching resources found for user!"}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
         return response
 
@@ -191,21 +191,24 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #retrieve resource
             #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
-                activity = {"User":uid,"Description":"Operation successful","Resource":resource_id}
+                reply = get_resource(custom_mongo, resource_id, response) 
+                activity = {"User":uid,"Description":"GET operation called","Reply":reply}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
-                return get_resource(custom_mongo, resource_id, response)
+                return reply
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
                 if request.method == "PUT":
-                    activity = {"User":uid,"Description":"Operation successful","Resource":resource_id}
+                    reply = update_resource(request, resource_id, uid, response)
+                    activity = {"User":uid,"Description":"PUT operation called","Reply":reply}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
-                    return update_resource(request, resource_id, uid, response)
+                    return reply
                 #delete resource
                 elif request.method == "DELETE":
-                    activity = {"User":uid,"Description":"Resource "+resource_id+" deleted"}
+                    reply = delete_resource(uma_handler, resource_id, response)
+                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
-                    return delete_resource(uma_handler, resource_id, response)
+                    return reply
             else:
                 activity = {"User":uid,"Description":"User not authorized for resource management","Resource":resource_id}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2014,activity=activity))
@@ -213,7 +216,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         except Exception as e:
             logger.debug("Error while redirecting to resource: "+str(e))
             response.status_code = 500
-            activity = {"User":uid,"Description":"Error occured: "+resource_reply}
+            activity = {"User":uid,"Description":"Error occured: "+str(e)}
             logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
 
