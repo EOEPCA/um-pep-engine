@@ -65,7 +65,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         
         #If user-owned resources were found, return the list
         if found_uid:
-            activity = {"User":uid,"Description":"Returning resource list: "+resourceListToReturn}
+            activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(resourceListToReturn)}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
             return json.dumps(resourceListToReturn)
         #Otherwise
