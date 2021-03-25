@@ -65,13 +65,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         
         #If user-owned resources were found, return the list
         if found_uid:
-            activity = {"User":user,"Description":"Returning resource list: "+resource_list}
+            activity = {"User":uid,"Description":"Returning resource list: "+resource_list}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
             return json.dumps(resourceListToReturn)
         #Otherwise
         response.status_code = 404
         response.headers["Error"] = "No user-owned resources found!"
-        activity = {"User":user,"Description":"No matching resources found for requested path "+path}
+        activity = {"User":uid,"Description":"No matching resources found for requested path "+path}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
         return response
 
@@ -128,10 +128,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             response.status_code = policy_reply.status_code
             response.headers["Error"] = "Error when registering resource ownership policy!"
             logger.debug(response.headers["Error"])
-            activity = {"User":user,"Description":"Error occured: "+response.headers["Error"]}
+            activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
-        activity = {"User":user,"Description":"Error occured: "+resource_reply}
+        activity = {"User":uid,"Description":"Error occured: "+resource_reply}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
         return resource_reply
 
@@ -191,29 +191,29 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #retrieve resource
             #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
-                activity = {"User":user,"Description":"Operation successful","Resource":resource_id}
+                activity = {"User":uid,"Description":"Operation successful","Resource":resource_id}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return get_resource(custom_mongo, resource_id, response)
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
                 if request.method == "PUT":
-                    activity = {"User":user,"Description":"Operation successful","Resource":resource_id}
+                    activity = {"User":uid,"Description":"Operation successful","Resource":resource_id}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                     return update_resource(request, resource_id, uid, response)
                 #delete resource
                 elif request.method == "DELETE":
-                    activity = {"User":user,"Description":"Resource "+resource_id+" deleted"}
+                    activity = {"User":uid,"Description":"Resource "+resource_id+" deleted"}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return delete_resource(uma_handler, resource_id, response)
             else:
-                activity = {"User":user,"Description":"User not authorized for resource management","Resource":resource_id}
+                activity = {"User":uid,"Description":"User not authorized for resource management","Resource":resource_id}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2014,activity=activity))
                 return user_not_authorized(response)
         except Exception as e:
             logger.debug("Error while redirecting to resource: "+str(e))
             response.status_code = 500
-            activity = {"User":user,"Description":"Error occured: "+resource_reply}
+            activity = {"User":uid,"Description":"Error occured: "+resource_reply}
             logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
             return response
 

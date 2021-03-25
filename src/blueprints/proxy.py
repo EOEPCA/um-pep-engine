@@ -98,7 +98,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             except Exception as e:
                 logger.debug("Error while redirecting to resource: "+str(e))
                 response.status_code = 500
-                activity = {"User":user,"Description":"Error while redirecting to resource:"+str(e)}
+                activity = {"User":uid,"Description":"Error while redirecting to resource:"+str(e)}
                 logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2106,activity=activity))
                 return response
 
