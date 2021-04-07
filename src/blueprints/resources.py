@@ -132,7 +132,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
         return resource_reply
 
-    @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "DELETE"])
+    @resources_bp.route("/resources/<resource_id>", methods=["GET", "PUT", "DELETE", "HEAD", "PATCH"])
     def resource_operation(resource_id):
         logger.debug("Processing " + request.method + " resource request...")
         response = Response()
@@ -194,6 +194,15 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     activity = {"User":uid,"Description":"GET operation called","Reply":json.dumps(reply)}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return reply
+            #Same for HEAD requests
+            if request.method == "HEAD":
+                reply = get_resource_head(custom_mongo, resource_id, response)
+                if "Error" in reply.headers:
+                    activity = {"User":uid,"Description":"HEAD operation called","Reply":reply.headers["Error"]}
+                else:
+                    activity = {"User":uid,"Description":"HEAD operation called","Reply":json.dumps(reply)}
+                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                return reply
             #Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
                 #update resource
@@ -203,6 +212,15 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                         activity = {"User":uid,"Description":"PUT operation called","Reply":reply.text}
                     else:
                         activity = {"User":uid,"Description":"PUT operation called","Reply":reply.headers["Error"]}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                    return reply
+                #patch resource
+                if request.method == "PATCH":
+                    reply = patch_resource(request, custom_mongo, resource_id, uid, response)
+                    if reply.status_code == 200:
+                        activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.text}
+                    else:
+                        activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                     return reply
                 #delete resource
@@ -295,6 +313,47 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 response.headers["Error"] = "Invalid request"
                 return response
 
+    def patch_resource(request, custom_mongo, resource_id, uid, response):
+        '''
+        Updates a specific field in an existing resource. Returns a 200 OK, or nothing (in order to trigger a ticket generation)
+        :param uid: unique user ID used to register as owner of the resource
+        :type uid: str
+        :param resource_id: unique resource ID
+        :type resource_id: str
+        :param request: resource data in JSON format
+        :type request: Dictionary
+        :param custom_mongo: Custom handler for Mongo DB operations
+        :type custom_mongo: Object of Class custom_mongo
+        :param response: response object
+        :type response: Response
+        '''
+        resource = get_resource(custom_mongo, resource_id, response)
+        if not isinstance(resource, Response):
+            #Get data from database resource
+            mem_data = {}
+            mem_data['name'] = resource['name']
+            mem_data['icon_uri'] = resource['icon_uri']
+
+            if request.is_json:
+                data = request.get_json()
+                if "name" in data:
+                    mem_data['name'] = data['name']
+                if "icon_uri" in data:
+                    mem_data['icon_uri'] = data['icon_uri']
+
+                if data.get("resource_scopes"):
+                    if "ownership_id" in data:
+                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), mem_data.get("icon_uri"))
+                    else:
+                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"), data.get("description"), uid, mem_data.get("icon_uri"))
+                    response.status_code = 200
+                    return response
+                else:
+                    response.status_code = 500
+                    response.headers["Error"] = "Invalid request"
+                    return response
+        #TODO else
+
     def delete_resource(uma_handler, resource_id, response):
         '''
         Deletes an existing resource.
@@ -330,6 +389,28 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #We only want to return resource_id (as "_id") and name, so we prune the other entries
         resource = {"_id": resource["resource_id"], "_name": resource["name"]}
         return resource
+
+    def get_resource_head(custom_mongo, resource_id, response):
+        '''
+        Gets an existing resource HEAD from local database.
+        :param resource_id: unique resource ID
+        :type resource_id: str
+        :param custom_mongo: Custom handler for Mongo DB operations
+        :type custom_mongo: Object of Class custom_mongo
+        :param response: response object
+        :type response: Response
+        '''    
+        resource = custom_mongo.get_from_mongo("resource_id", resource_id)
+        
+        #If no resource was found, return a 404 Error
+        if not resource:
+            response.status_code = 404
+            response.headers["Error"] = "Resource not found"
+            return response
+
+        #We only intend to return response headers, not the body, so we reply with a response instead of the resource
+        response.status_code = 200    
+        return response
 
     def user_not_authorized(response):
         '''

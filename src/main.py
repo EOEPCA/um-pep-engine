@@ -39,6 +39,8 @@ logger = logging.getLogger("PEP_ENGINE")
 logger.info("==========Starting load config==========")
 ### INITIAL SETUP
 g_config, g_wkh = get_config("config/config.json")
+#Load HTTP verb mapping
+g_config = get_verb_config("config/verb_config.json")
 
 oidc_client = OIDCHandler(g_wkh,
                             client_id = g_config["client_id"],

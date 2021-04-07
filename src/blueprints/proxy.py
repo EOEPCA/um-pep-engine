@@ -24,7 +24,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     logger = logging.getLogger("PEP_ENGINE")
     log_handler = LogHandler.get_instance()
 
-    @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE"])
+    @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE","HEAD","PATCH"])
     def resource_request(path):
         # Check for token
         logger.debug("Processing path: '"+path+"'")
@@ -35,10 +35,18 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         scopes= None
         if resource_id:
             scopes = []
-            if request.method == 'GET' or request.method == 'HEAD':
-                scopes.append('protected_read')             
-            elif request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
-                scopes.append('protected_write')
+            if request.method == 'GET':
+                scopes.append('protected_get')
+            elif request.method == 'POST':
+                scopes.append('protected_post')
+            elif request.method == 'PUT':
+                scopes.append('protected_put')
+            elif request.method == 'DELETE':
+                scopes.append('protected_delete')
+            elif request.method == 'HEAD':
+                scopes.append('protected_head')
+            elif request.method == 'PATCH':
+                scopes.append('protected_patch')
         
         uid = None
         
