@@ -11,7 +11,7 @@ from string import ascii_lowercase
 from requests import get, post, put, delete
 import json
 
-from config import get_config
+from config import get_config, get_default_resources
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from handlers.oidc_handler import OIDCHandler
 from handlers.uma_handler import UMA_Handler, resource
@@ -51,10 +51,16 @@ uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 
 #Default behavior is open_access
+#Creation of default resources
 try:
-    uma_handler.create("Base Path", ["public_access"], "Base path for Open Access to PEP", "0000000000000", "/")
+    path = g_config["default_resource_path"]
+    kube_resources= get_default_resources(path)
+    for k in kube_resources['default-resources']:
+        uma_handler.create(k["name"], [k["scopes"]], k["description"], k["default_owner"], k["resource_uri"])
 except:
     pass
+
+
 #PDP Policy Handler
 pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
 

@@ -49,7 +49,8 @@ def get_config(config_path: str):
     "PEP_PDP_URL",
     "PEP_PDP_PORT",
     "PEP_PDP_POLICY_ENDPOINT",
-    "PEP_VERIFY_SIGNATURE"]
+    "PEP_VERIFY_SIGNATURE",
+    "PEP_DEFAULT_RESOURCE_PATH"]
 
     #Sets logger
     logger = logging.getLogger("PEP_ENGINE")
@@ -118,3 +119,21 @@ def get_config(config_path: str):
     save_config(config_path, g_config)
 
     return g_config, g_wkh
+
+
+def get_default_resources(str: path):
+    """
+    Loads Charts configuration file in addition with the alredy existent on the source path
+    """
+    #Sets logger
+    logger = logging.getLogger("PEP_ENGINE")
+    g_config = {}
+    # Global config objects
+    g_config = load_config(path)
+    l_config = load_config("config/default-resources.json")
+    for k in l_config['default_resources']:
+        if not any(d['name'] == k['name'] for d in g_config['default_resources']):
+            g_config['default_resources'].append(k)
+        else:
+            logger.debug("The default resource "+str(k)+" is alredy on the k8s definition")
+    return g_config

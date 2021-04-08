@@ -59,6 +59,8 @@ spec:
         - configMapRef:
             name: pep-cm
         volumeMounts:
+        - name: default-resources
+          mountPath: /data/
         - mountPath: /data/db/
           subPath: {{ .Values.global.pep }}/{{ .Values.context }}/data/db
           name: vol-pep-engine
@@ -70,3 +72,6 @@ spec:
         - name: vol-pep-engine
           persistentVolumeClaim:
             claimName: {{ .Values.volumeClaim.name }}
+        - name: default-resources
+          configMap:
+            name: custom-resources
