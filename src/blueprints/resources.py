@@ -116,9 +116,14 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
             resource_id = resource_reply["id"]
-            policy_reply_read = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "read"), input_headers=request.headers)
-            policy_reply_write = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, "write"), input_headers=request.headers)
-            if policy_reply_read.status_code == 200 and policy_reply_write.status_code == 200:
+            reply_failed = False
+            for scope in g_config["default_scopes"]:
+                def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, str(g_config[scope])), input_headers=request.headers)
+                if def_policy_reply.status_code != 200:
+                    reply_failed = True
+                    activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
+                    break
+            if not reply_failed:
                 activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Write Policy":policy_reply_write.text,"Read Policy":policy_reply_read.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
@@ -258,16 +263,12 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 if data.get("name"):
                     if  'resource_scopes' not in data.keys():
                         data['resource_scopes'] = []
-                        data['resource_scopes'].append('protected_access')
-                        data['resource_scopes'].append('protected_read')
-                        data['resource_scopes'].append('protected_write')
+                        for scope in g_config["default_scopes"]:
+                            data['resource_scopes'].append(scope)
                     else:
-                        if 'protected_access' not in data.get("resource_scopes"):
-                            data['resource_scopes'].append('protected_access')
-                        if 'protected_read' not in data.get("resource_scopes"):
-                            data['resource_scopes'].append('protected_read')
-                        if 'protected_write' not in data.get("resource_scopes"):
-                            data['resource_scopes'].append('protected_write')
+                        for scope in g_config["default_scopes"]:
+                            if scope not in data.get("resource_scopes"):
+                                data['resource_scopes'].append(scope)
 
                     return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
                 else:

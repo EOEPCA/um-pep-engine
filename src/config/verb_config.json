@@ -1,4 +1,5 @@
 {
+    "default_scopes": ["protected_get", "protected_post", "protected_put", "protected_delete", "protected_head", "protected_patch"],
     "protected_get": "get",
     "protected_post": "post",
     "protected_put": "put",
