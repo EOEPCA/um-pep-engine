@@ -231,7 +231,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 #delete resource
                 elif request.method == "DELETE":
                     reply = delete_resource(uma_handler, resource_id, response)
-                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.text}
+                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.status_code}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return reply
             else:
