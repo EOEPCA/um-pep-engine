@@ -11,7 +11,7 @@ class policy_handler:
         self.logger = logging.getLogger("PEP_ENGINE")
         self.logger.debug("CONNECTED TO PDP AT "+pdp_url+":"+str(pdp_port)+pdp_policy_endpoint)
         self.url = pdp_url
-        self.port = pdp_port
+        self.port = str(pdp_port)
         self.endpoint = pdp_policy_endpoint
 
     '''

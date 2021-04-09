@@ -115,7 +115,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #If the reply is not of type Response, the creation was successful
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
-            resource_id = resource_reply["id"]
+            resource_id = resource_reply
             reply_failed = False
             for scope in g_config["default_scopes"]:
                 def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, str(g_config[scope])), input_headers=request.headers)
@@ -124,7 +124,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
                     break
             if not reply_failed:
-                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Write Policy":policy_reply_write.text,"Read Policy":policy_reply_read.text}
+                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             response.status_code = policy_reply_read.status_code
@@ -202,10 +202,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             #Same for HEAD requests
             if request.method == "HEAD":
                 reply = get_resource_head(custom_mongo, resource_id, response)
-                if "Error" in reply.headers:
+                if reply.status_code != 200:
                     activity = {"User":uid,"Description":"HEAD operation called","Reply":reply.headers["Error"]}
                 else:
-                    activity = {"User":uid,"Description":"HEAD operation called","Reply":json.dumps(reply)}
+                    activity = {"User":uid,"Description":"HEAD operation called","Reply":"Resource found."}
                 logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
                 return reply
             #Update/Delete requests should only be done by resource owners or operators
@@ -261,7 +261,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if request.is_json:
                 data = request.get_json()
                 if data.get("name"):
-                    if  'resource_scopes' not in data.keys():
+                    if 'resource_scopes' not in data.keys():
                         data['resource_scopes'] = []
                         for scope in g_config["default_scopes"]:
                             data['resource_scopes'].append(scope)

@@ -35,7 +35,8 @@ def get_verb_config(config_path: str, g_config):
     """
     if g_config:
         verbs_config = load_config(config_path)
-        return g_config.update(verbs_config)
+        g_config.update(verbs_config)
+        return g_config
     else:
         return load_config(config_path)
     
