@@ -44,6 +44,9 @@ spec:
         envFrom:
         - configMapRef:
             name: pep-cm
+        volumeMounts:
+        - name: default-resources
+          mountPath: /data/
       - name: mongo
         imagePullPolicy: {{ .Values.image.imagePullPolicy }}
         image: mongo
@@ -59,17 +62,15 @@ spec:
         - configMapRef:
             name: pep-cm
         volumeMounts:
-        - name: default-resources
-          mountPath: /data/
         - mountPath: /data/db/
-          subPath: {{ .Values.global.pep }}/{{ .Values.context }}/data/db
-          name: vol-pep-engine
+          subPath: {{ .Values.global.pep }}/data/db
+          name: {{ .Values.volumeClaim.name }}
       hostAliases:
       - ip: {{ .Values.global.nginxIp }}
         hostnames:
         - {{ .Values.global.ep }}
       volumes:
-        - name: vol-pep-engine
+        - name: {{ .Values.volumeClaim.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.volumeClaim.name }}
         - name: default-resources

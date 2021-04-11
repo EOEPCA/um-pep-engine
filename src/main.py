@@ -55,10 +55,19 @@ uma_handler.status()
 try:
     path = g_config["default_resource_path"]
     kube_resources= get_default_resources(path)
-    for k in kube_resources['default-resources']:
-        uma_handler.create(k["name"], [k["scopes"]], k["description"], k["default_owner"], k["resource_uri"])
-except:
-    pass
+    for k in kube_resources['default_resources']:
+        id_res=""
+        if "description" in k:
+            id_res=uma_handler.create(k["name"], [k["scopes"]], k["description"], k["default_owner"], k["resource_uri"])
+        else:
+            id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", k["default_owner"], k["resource_uri"])
+        logger.info("==========New Resource for path: "+k["resource_uri"]+" with ID: "+id_res+"==========")
+    logger.info("==========Default resources inserted in DB==========")
+        
+except Exception as e:
+    
+    logger.info("==========Couldnt process the default resources==========")
+    logger.info("=========="+str(e)+"==========")
 
 
 #PDP Policy Handler

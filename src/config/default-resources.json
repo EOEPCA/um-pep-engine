@@ -1,6 +1,3 @@
 {
-  "default_resources": [
-    {"name": "Base Path", "description": "Base path for Open Access to PEP", "resource_uri": "/", "scopes": "public_access", "default_owner": "0000000000000"},
-    {"name": "Sample Resource", "resource_uri": "/workspace", "scopes": "protected_access", "default_owner": "0000000000000"}
-  ]
+  "default_resources": []
 }
