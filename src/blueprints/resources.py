@@ -120,13 +120,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             resource_id = resource_reply["id"]
             policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid), input_headers=request.headers)
             logger.debug("CODE: "+str(policy_reply.status_code))
-            logger.debug(policy_reply.text)
+            logger.debug(policy_reply.headers)
             if policy_reply.status_code == 200:
                 activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Policy":policy_reply.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             response.status_code = policy_reply.status_code
-            response.headers["Error"] = "Error when registering resource ownership policy!"
+            response.headers["Error"] = policy_reply.headers["Error"]
             logger.debug(response.headers["Error"])
             activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
@@ -212,7 +212,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 #delete resource
                 elif request.method == "DELETE":
                     reply = delete_resource(uma_handler, resource_id, response)
-                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.text}
+                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.status_code}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
                     return reply
             else:

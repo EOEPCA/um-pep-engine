@@ -84,22 +84,17 @@ class OIDCHandler:
                 else:
                     self.logger.debug("Signature verification is correct!")
 
-            if decoded_str_header['kid'] != "RSA1":
-                if key in decoded_str.keys():
-                    if decoded_str[key] != None:
-                        user_value = decoded_str[key]
-                    else:
-                        raise Exception
-                else:
+
+            user_value = None
+            if decoded_str.get(key):                   
+                user_value = decoded_str[key]
+            elif decoded_str.get("pct_claims"):      
+                if decoded_str.get("pct_claims").get(key):
                     user_value = decoded_str['pct_claims'][key]
-            else:
-                if decoded_str[key] == None:
-                    if decoded_str['pct_claims'][key][0] == None:
-                        raise Exception
-                    else:
-                        user_value = decoded_str['pct_claims'][key][0]
-                else:
-                    user_value = decoded_str[key]
+            if isinstance(user_value, list) and len(user_value) != 0 and user_value[0]:
+                user_value = user_value[0]
+            if user_value is None:
+                raise Exception
 
             return user_value
         except Exception as e:
