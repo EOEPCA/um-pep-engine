@@ -22,18 +22,6 @@ spec:
           requests:
             memory: {{ .Values.requests.serviceMemory }}
             cpu: {{ .Values.requests.serviceCpu }}
-        livenessProbe:
-          httpGet:
-            path: /oxauth/.well-known/openid-configuration
-            port: 8080
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-        readinessProbe:
-          httpGet:
-            path: /oxauth/.well-known/openid-configuration
-            port: 8080
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
         ports:
         - name: proxy-pep
           containerPort: 5566
