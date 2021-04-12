@@ -90,12 +90,7 @@
 <li><a href="#_interfaces">3.2.3. Interfaces</a></li>
 <li><a href="#_data">3.2.4. Data</a>
 <ul class="sectlevel4">
-<li><a href="#_configuration">3.2.4.1. Configuration</a>
-<ul class="sectlevel5">
-<li><a href="#_general_configuration">3.2.4.1.1. General configuration</a></li>
-<li><a href="#_default_resources_registration">3.2.4.1.2. Default resources registration</a></li>
-</ul>
-</li>
+<li><a href="#_configuration">3.2.4.1. Configuration</a></li>
 <li><a href="#_data_flow">3.2.4.2. Data flow</a></li>
 </ul>
 </li>
@@ -1501,8 +1496,6 @@ If the verification of the signature for the JWT is disabled, the code will do t
 <h4 id="_data">3.2.4. Data</h4>
 <div class="sect4">
 <h5 id="_configuration">3.2.4.1. Configuration</h5>
-<div class="sect5">
-<h6 id="_general_configuration">3.2.4.1.1. General configuration</h6>
 <div class="paragraph">
 <p>The PEP gets all its configuration from the file located under <code>config/config.json</code>.</p>
 </div>
@@ -1554,63 +1547,6 @@ If the verification of the signature for the JWT is disabled, the code will do t
 <p><strong>client_secret</strong>: string indicating the client secret for the client_id. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
 </li>
 </ul>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_default_resources_registration">3.2.4.1.2. Default resources registration</h6>
-<div class="paragraph">
-<p>The PEP reads the definition of the default resources inserted in the database from the file located under <code>config/default-resources.json</code> of the source path, but also has its own definition under the path <code>charts/pep-engine/scripts/default-resources.json</code>.</p>
-</div>
-<div class="paragraph">
-<p>The first option usage is mainly for a local deployment using Docker and a local image built from the um-pep-engine repository with no help of Helm Charts.<br>
-The second option is for a Helm Chart deployment which will mount the file as a volume directly into the <code>/data</code> path of the container. Notice that if this second option of deployment is followed, the unique resources for both files will be added to the database.</p>
-</div>
-<div class="paragraph">
-<p>An example of default resources would be as follows:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>{
-  &quot;default_resources&quot;: [
-    {&quot;name&quot;: &quot;Sample Resource&quot;, resource_uri&quot;: &quot;/&quot;, &quot;scopes&quot;: &quot;protected_access&quot;, &quot;default_owner&quot;: &lt;uuid&gt;},
-    {&quot;name&quot;: &quot;Sample Resource&quot;, resource_uri&quot;: &quot;/workspace&quot;, &quot;scopes&quot;: &quot;protected_access&quot;, &quot;default_owner&quot;: &lt;uuid&gt;}
-  ]
-}</code></pre>
-</div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Mandatory Parameters:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><strong>name</strong>: String Value</p>
-</li>
-<li>
-<p><strong>resource_uri</strong>: String Value</p>
-</li>
-<li>
-<p><strong>scopes</strong>: String Value</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>Optional Parameters (default values):</p>
-<div class="ulist">
-<ul>
-<li>
-<p><strong>default_owner</strong>: String Value &#8594; <code>"0000000000000"</code></p>
-</li>
-<li>
-<p><strong>description</strong>: String Value &#8594; <code>"Default description"</code></p>
-</li>
-</ul>
-</div>
-</li>
-</ul>
-</div>
 </div>
 </div>
 <div class="sect4">
@@ -2062,7 +1998,7 @@ And one with the scope of 'protection_write' which is related to the requests to
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2021-04-12 11:41:21 UTC
+Last updated 2021-04-12 14:28:46 UTC
 </div>
 </div>
 </body>
