@@ -32,5 +32,5 @@ data:
   {{ if .Files.Get "scripts/default-resources.json" }}
   default-resources.json: {{ .Files.Get "scripts/default-resources.json" | quote  }}
   {{ else }}
-  {{ fail "you need to supply your license file! add 'fs-license.conf' to your chart 'config' directory." }}
+  {{ fail "you need to supply a default resource JSON file! add 'default-resources.json' to your chart 'scripts' directory." }}
   {{ end }}
