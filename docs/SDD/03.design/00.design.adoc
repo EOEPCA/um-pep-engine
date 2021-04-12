@@ -45,9 +45,9 @@ This component doesn't have any internal interfaces. For a reference of external
 
 ==== Configuration
 
-The PEP gets all its configuration from the file located under `config/config.json`.
+The PEP gets all its configuration from the files located under `config/*.json`.
 
-The parameters that are accepted, and their meaning, are as follows:
+The parameters that are accepted, and their meaning, are as follows. For the `config.json` file:
 
 - **realm**: 'realm' parameter answered for each UMA ticket. Default is "eoepca"
 - **auth_server_url**: complete url (with "https") of the Authorization server.
@@ -63,6 +63,11 @@ The parameters that are accepted, and their meaning, are as follows:
 - **verify_signature**: Toggle on/off (bool) the usage of signature validation for the JWT.
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 - **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
+
+For the `verb_config.json` file:
+
+- **default_scopes**: A list of default scopes that will be registered for HTTP actions, for PDP functionality. These must match the scopes existing on the Login Service's persistence repository.
+- **list of scope-action associations**: for each of the scopes specified in the above list, there will be one entry with an associanted action-id.
 
 ==== Data flow
 
@@ -104,10 +109,10 @@ The script defines methods to:
 * **Get the ID from a URI**: Returns the id for the best candidate of the match by a given URI.
 * **Delete resources**: Receives a resource id and will find and delete the matched document, if the requesting user is a valid resource operator.
 
-This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.
+This script is manipulated by the API which would intercept the request in order to perform PUT, POST, HEAD PATCH and DELETE methods.
 The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.
-When the PEP registered a new resource this resource will contains two additional scopes: protected_read and protected_write.
-This two scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.
+When the PEP registered a new resource this resource will contains additional scopes, one for each available HTTP action in a protected_xxx format: GET, HEAD, PUT, POST, PATCH and DELETE. These default scopes, and the associated action-ids for PDP functions, can be edited in a `verb_config.json` file. 
+These scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.
 
 === Data flow
 

@@ -14,7 +14,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     logger = logging.getLogger("PEP_ENGINE")
     log_handler = LogHandler.get_instance()
 
-    @resources_bp.route("/resources", methods=["GET"])
+    @resources_bp.route("/resources", methods=["GET", "HEAD"])
     def get_resource_list():
         logger.debug("Retrieving all registered resources...")
         #gets all resources registered on local DB
@@ -66,6 +66,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         if found_uid:
             activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(resourceListToReturn)}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
+            if request.method == "HEAD":
+                return
             return json.dumps(resourceListToReturn)
         #Otherwise
         response.status_code = 404
