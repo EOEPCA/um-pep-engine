@@ -57,17 +57,19 @@ try:
     kube_resources= get_default_resources(path)
     for k in kube_resources['default_resources']:
         id_res=""
-        if "description" in k:
+        if "description" in k and "default_owner" in k:
             id_res=uma_handler.create(k["name"], [k["scopes"]], k["description"], k["default_owner"], k["resource_uri"])
-        else:
+        elif "default_owner" in k:
             id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", k["default_owner"], k["resource_uri"])
-        logger.info("==========New Resource for path: "+k["resource_uri"]+" with ID: "+id_res+"==========")
+        else:
+            id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", "0000000000000", k["resource_uri"])
+        logger.info("==========New Resource for path: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
     logger.info("==========Default resources inserted in DB==========")
         
 except Exception as e:
     
     logger.info("==========Couldnt process the default resources==========")
-    logger.info("=========="+str(e)+"==========")
+    logger.info("==========Reason: "+str(e)+"==========")
 
 
 #PDP Policy Handler
