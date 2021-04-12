@@ -127,8 +127,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
-            response.status_code = policy_reply_read.status_code
-            response.headers["Error"] = "Error when registering resource ownership policy!"
+            response.status_code = def_policy_reply.status_code
+            response.headers["Error"] = def_policy_reply.headers["Error"]
             logger.debug(response.headers["Error"])
             activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
@@ -221,7 +221,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     return reply
                 #patch resource
                 if request.method == "PATCH":
-                    reply = patch_resource(request, custom_mongo, resource_id, uid, response)
+                    # Not currently being used, PATCH operation defaulting to PUT - 04/2021
+                    # reply = patch_resource(request, custom_mongo, resource_id, uid, response)
+                    reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
                         activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.text}
                     else:
@@ -353,7 +355,6 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     response.status_code = 500
                     response.headers["Error"] = "Invalid request"
                     return response
-        #TODO else
 
     def delete_resource(uma_handler, resource_id, response):
         '''

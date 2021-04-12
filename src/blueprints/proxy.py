@@ -7,7 +7,7 @@ from handlers.log_handler import LogHandler
 from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
-from requests import get, post, put, delete
+from requests import get, post, put, delete, head, patch
 import json
 
 from WellKnownHandler import WellKnownHandler
@@ -120,9 +120,13 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             elif request.method == 'GET':
                 res = get(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
             elif request.method == 'PUT':
-                res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
+                res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)
             elif request.method == 'DELETE':
                 res = delete(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
+            elif request.method == 'HEAD':
+                res = head(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
+            elif request.method == 'PATCH':
+                res = patch(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)
             else:
                 response = Response()
                 response.status_code = 501
