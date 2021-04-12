@@ -88,15 +88,22 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         logger.debug("No auth token, or auth token is invalid")
         response = Response()
         if resource_id is not None:
-            logger.debug("Matched resource: "+str(resource_id))
-            # Generate ticket if token is not present        
-            ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-            # Return ticket
-            response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-            response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-            activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
-            logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
-            return response
+            try:
+                logger.debug("Matched resource: "+str(resource_id))
+                # Generate ticket if token is not present        
+                ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+                # Return ticket
+                response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
+                response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
+                activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
+                return response
+            except Exception as e:
+                response.status_code = int(str(e).split(":")[1].strip())
+                response.headers["Error"] = str(e)
+                activity = {"Ticket":None,"Error":str(e)}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
+                return response
         else:
             logger.debug("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
