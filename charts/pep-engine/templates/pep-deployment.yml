@@ -22,6 +22,26 @@ spec:
           requests:
             memory: {{ .Values.requests.serviceMemory }}
             cpu: {{ .Values.requests.serviceCpu }}
+        ports:
+        - name: proxy-pep
+          containerPort: 5566
+          protocol: TCP
+        - name: resources-pep
+          containerPort: 5576
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: pep-cm
+        volumeMounts:
+        - name: default-resources
+          mountPath: /data/
+      - name: mongo
+        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
+        image: mongo
+        resources:
+          requests:
+            memory: {{ .Values.requests.dbMemory }}
+            cpu: {{ .Values.requests.dbCpu }}
         livenessProbe:
           httpGet:
             path: /oxauth/.well-known/openid-configuration
@@ -35,23 +55,6 @@ spec:
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
         ports:
-        - name: proxy-pep
-          containerPort: 5566
-          protocol: TCP
-        - name: resources-pep
-          containerPort: 5576
-          protocol: TCP
-        envFrom:
-        - configMapRef:
-            name: pep-cm
-      - name: mongo
-        imagePullPolicy: {{ .Values.image.imagePullPolicy }}
-        image: mongo
-        resources:
-          requests:
-            memory: {{ .Values.requests.dbMemory }}
-            cpu: {{ .Values.requests.dbCpu }}
-        ports:
         - name: http-rp
           containerPort: 27017
           protocol: TCP
@@ -60,13 +63,16 @@ spec:
             name: pep-cm
         volumeMounts:
         - mountPath: /data/db/
-          subPath: {{ .Values.global.pep }}/{{ .Values.context }}/data/db
-          name: vol-pep-engine
+          subPath: {{ .Values.global.pep }}/data/db
+          name: {{ .Values.volumeClaim.name }}
       hostAliases:
       - ip: {{ .Values.global.nginxIp }}
         hostnames:
         - {{ .Values.global.ep }}
       volumes:
-        - name: vol-pep-engine
+        - name: {{ .Values.volumeClaim.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.volumeClaim.name }}
+        - name: default-resources
+          configMap:
+            name: custom-resources
