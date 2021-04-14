@@ -22,16 +22,25 @@ spec:
           requests:
             memory: {{ .Values.requests.serviceMemory }}
             cpu: {{ .Values.requests.serviceCpu }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.global.proxyServicePort }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.global.proxyServicePort }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
         ports:
-        - name: proxy-pep
-          containerPort: 5566
-          protocol: TCP
-        - name: resources-pep
-          containerPort: 5576
-          protocol: TCP
+        {{- range $key, $value := .Values.ports }}
+        - containerPort: {{ $value.targetPort }}
+          name: {{ $key }}
+          protocol: {{ $value.type }}
+        {{- end }}
         envFrom:
         - configMapRef:
-            name: pep-cm
+            name: {{ .Values.global.pep }}-cm
         volumeMounts:
         - name: default-resources
           mountPath: /data/
@@ -42,25 +51,13 @@ spec:
           requests:
             memory: {{ .Values.requests.dbMemory }}
             cpu: {{ .Values.requests.dbCpu }}
-        livenessProbe:
-          httpGet:
-            path: /oxauth/.well-known/openid-configuration
-            port: 8080
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-        readinessProbe:
-          httpGet:
-            path: /oxauth/.well-known/openid-configuration
-            port: 8080
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
         ports:
         - name: http-rp
           containerPort: 27017
           protocol: TCP
         envFrom:
         - configMapRef:
-            name: pep-cm
+            name: {{ .Values.global.pep }}-cm
         volumeMounts:
         - mountPath: /data/db/
           subPath: {{ .Values.global.pep }}/data/db
@@ -68,7 +65,7 @@ spec:
       hostAliases:
       - ip: {{ .Values.global.nginxIp }}
         hostnames:
-        - {{ .Values.global.ep }}
+        - {{ .Values.global.domain }}
       volumes:
         - name: {{ .Values.volumeClaim.name }}
           persistentVolumeClaim:
