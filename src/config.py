@@ -29,6 +29,19 @@ def save_config(config_path: str, data: dict):
     with open(config_path, 'w') as j:
         dump(data,j)
 
+def get_verb_config(config_path: str, g_config):
+    """
+    Loads HTTP verb-to-action-id mapping onto existing dictionary, if provided
+    """
+    if g_config:
+        verbs_config = load_config(config_path)
+        g_config.update(verbs_config)
+        return g_config
+    else:
+        return load_config(config_path)
+    
+
+
 def get_config(config_path: str):
     """
     Loads entire configuration onto memory

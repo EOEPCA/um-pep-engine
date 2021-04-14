@@ -7,7 +7,7 @@ from handlers.log_handler import LogHandler
 from werkzeug.datastructures import Headers
 from random import choice
 from string import ascii_lowercase
-from requests import get, post, put, delete
+from requests import get, post, put, delete, head, patch
 import json
 
 from WellKnownHandler import WellKnownHandler
@@ -24,7 +24,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     logger = logging.getLogger("PEP_ENGINE")
     log_handler = LogHandler.get_instance()
 
-    @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE"])
+    @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE","HEAD","PATCH"])
     def resource_request(path):
         # Check for token
         logger.debug("Processing path: '"+path+"'")
@@ -35,10 +35,18 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         scopes= None
         if resource_id:
             scopes = []
-            if request.method == 'GET' or request.method == 'HEAD':
-                scopes.append('protected_read')             
-            elif request.method == 'POST' or request.method == 'PUT' or request.method == 'DELETE':
-                scopes.append('protected_write')
+            if request.method == 'GET':
+                scopes.append('protected_get')
+            elif request.method == 'POST':
+                scopes.append('protected_post')
+            elif request.method == 'PUT':
+                scopes.append('protected_put')
+            elif request.method == 'DELETE':
+                scopes.append('protected_delete')
+            elif request.method == 'HEAD':
+                scopes.append('protected_head')
+            elif request.method == 'PATCH':
+                scopes.append('protected_patch')
         
         uid = None
         
@@ -80,15 +88,22 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         logger.debug("No auth token, or auth token is invalid")
         response = Response()
         if resource_id is not None:
-            logger.debug("Matched resource: "+str(resource_id))
-            # Generate ticket if token is not present        
-            ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
-            # Return ticket
-            response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
-            response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
-            activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
-            logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
-            return response
+            try:
+                logger.debug("Matched resource: "+str(resource_id))
+                # Generate ticket if token is not present        
+                ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
+                # Return ticket
+                response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
+                response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
+                activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
+                return response
+            except Exception as e:
+                response.status_code = int(str(e).split(":")[1].strip())
+                response.headers["Error"] = str(e)
+                activity = {"Ticket":None,"Error":str(e)}
+                logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
+                return response
         else:
             logger.debug("No matched resource, passing through to resource server to handle")
             # In this case, the PEP doesn't have that resource handled, and just redirects to it.
@@ -112,9 +127,13 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             elif request.method == 'GET':
                 res = get(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
             elif request.method == 'PUT':
-                res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)           
+                res = put(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)
             elif request.method == 'DELETE':
                 res = delete(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
+            elif request.method == 'HEAD':
+                res = head(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, stream=False)
+            elif request.method == 'PATCH':
+                res = patch(g_config["resource_server_endpoint"]+endpoint_path, headers=new_header, data=request.data, stream=False)
             else:
                 response = Response()
                 response.status_code = 501

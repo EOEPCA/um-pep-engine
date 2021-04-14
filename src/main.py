@@ -11,7 +11,7 @@ from string import ascii_lowercase
 from requests import get, post, put, delete
 import json
 
-from config import get_config, get_default_resources
+from config import get_config, get_verb_config, get_default_resources
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from handlers.oidc_handler import OIDCHandler
 from handlers.uma_handler import UMA_Handler, resource
@@ -39,6 +39,8 @@ logger = logging.getLogger("PEP_ENGINE")
 logger.info("==========Starting load config==========")
 ### INITIAL SETUP
 g_config, g_wkh = get_config("config/config.json")
+#Load HTTP verb mapping
+g_config = get_verb_config("config/verb_config.json", g_config)
 
 oidc_client = OIDCHandler(g_wkh,
                             client_id = g_config["client_id"],
