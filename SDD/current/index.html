@@ -92,7 +92,7 @@
 <ul class="sectlevel4">
 <li><a href="#_configuration">3.2.4.1. Configuration</a>
 <ul class="sectlevel5">
-<li><a href="#_general_configuration">3.2.4.1.1. General configuration</a></li>
+<li><a href="#_default_http_scopes">3.2.4.1.1. Default HTTP scopes</a></li>
 <li><a href="#_default_resources_registration">3.2.4.1.2. Default resources registration</a></li>
 </ul>
 </li>
@@ -1501,13 +1501,11 @@ If the verification of the signature for the JWT is disabled, the code will do t
 <h4 id="_data">3.2.4. Data</h4>
 <div class="sect4">
 <h5 id="_configuration">3.2.4.1. Configuration</h5>
-<div class="sect5">
-<h6 id="_general_configuration">3.2.4.1.1. General configuration</h6>
 <div class="paragraph">
-<p>The PEP gets all its configuration from the file located under <code>config/config.json</code>.</p>
+<p>The PEP gets all its configuration from the files located under <code>config/*.json</code>.</p>
 </div>
 <div class="paragraph">
-<p>The parameters that are accepted, and their meaning, are as follows:</p>
+<p>The parameters that are accepted, and their meaning, are as follows. For the <code>config.json</code> file:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -1552,6 +1550,21 @@ If the verification of the signature for the JWT is disabled, the code will do t
 </li>
 <li>
 <p><strong>client_secret</strong>: string indicating the client secret for the client_id. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
+</li>
+</ul>
+</div>
+<div class="sect5">
+<h6 id="_default_http_scopes">3.2.4.1.1. Default HTTP scopes</h6>
+<div class="paragraph">
+<p>To extend the granularity of the PDP policy checks, the PEP can append extra UMA scopes to a registering resource that correspond to supported HTTP verbs. Currently, the PEP supports GET, HEAD, POST, PUT, PATCH and DELETE verbs. For the <code>verb_config.json</code> file:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>default_scopes</strong>: A list of default scopes that will be registered for HTTP actions, for PDP functionality. These must match the scopes existing on the Login Service&#8217;s persistence repository.</p>
+</li>
+<li>
+<p><strong>list of scope-action associations</strong>: for each of the scopes specified in the above list, there will be one entry with an associanted action-id, e.g. <code>"protected_get": "get"</code></p>
 </li>
 </ul>
 </div>
@@ -1699,10 +1712,10 @@ The script defines methods to:</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>This script is manipulated by the API which would intercept the request in order to perform PUT,POST and DELETE methods.<br>
+<p>This script is manipulated by the API which would intercept the request in order to perform PUT, POST, HEAD PATCH and DELETE methods.<br>
 The GET method would be called by the reverse proxy since it will be in charge of filtering the resource with the given URI.<br>
-When the PEP registered a new resource this resource will contains two additional scopes: protected_read and protected_write.<br>
-This two scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.</p>
+When the PEP registered a new resource this resource will contains additional scopes, one for each available HTTP action in a protected_xxx format: GET, HEAD, PUT, POST, PATCH and DELETE. These default scopes, and the associated action-ids for PDP functions, can be edited in a <code>verb_config.json</code> file.<br>
+These scopes will be used to the generation of a ticket and therefore in the PDP interface to allow or deny access to a resource.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2062,7 +2075,7 @@ And one with the scope of 'protection_write' which is related to the requests to
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2021-04-14 09:23:53 UTC
+Last updated 2021-04-14 10:09:57 UTC
 </div>
 </div>
 </body>
