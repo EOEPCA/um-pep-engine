@@ -22,8 +22,9 @@ global:
   nginxIp: 10.0.2.15
   proxyServicePort: 5566
   resourcesServicePort: 5576
-  proxyHost: http://demoexample.gluu.org/service
-  resourceHost: http://demoexample.gluu.org/res
+  proxyHost: demoexample.gluu.org
+  resourceHost: demoexample.gluu.org
+  defaultResourcePath: /data/default-resources.json
 
 
 readinessProbe:
@@ -44,7 +45,7 @@ requests:
 image: 
   statefulSetReplicas: 1
   imagePullPolicy: Always
-  image: eoepca/um-pep-engine:v0.3.1
+  image: eoepca/um-pep-engine:v0.3.2
 persistence: 
   accessModes: ReadWriteMany
   dbStorageSize: 5Gi

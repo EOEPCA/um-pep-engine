@@ -11,7 +11,7 @@ spec:
   - host: {{ .Values.global.proxyHost | quote }}
     http:
       paths:
-      - path: /
+      - path: /service
         backend:
           serviceName: {{ .Values.global.pep }}
           servicePort: 5566
@@ -28,7 +28,7 @@ spec:
   - host: {{ .Values.global.resourceHost | quote }}
     http:
       paths:
-      - path: /
+      - path: /res
         backend:
           serviceName: {{ .Values.global.pep }}
           servicePort: 5576

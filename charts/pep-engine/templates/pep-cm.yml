@@ -20,3 +20,17 @@ data:
   PEP_VERIFY_SIGNATURE: {{ .Values.global.verifySignature | quote }}
   PEP_PROXY_SERVICE_PORT: {{ .Values.global.proxyServicePort | quote }}
   PEP_RESOURCES_SERVICE_PORT: {{ .Values.global.resourcesServicePort | quote }}
+  PEP_DEFAULT_RESOURCE_PATH: {{ .Values.global.defaultResourcePath | quote }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-resources  
+data:
+  {{ if .Files.Get "scripts/default-resources.json" }}
+  default-resources.json: {{ .Files.Get "scripts/default-resources.json" | quote  }}
+  {{ else }}
+  {{ fail "you need to supply a default resource JSON file! add 'default-resources.json' to your chart 'scripts' directory." }}
+  {{ end }}

@@ -64,10 +64,45 @@ The parameters that are accepted, and their meaning, are as follows. For the `co
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 - **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 
-For the `verb_config.json` file:
+===== Default HTTP scopes
+
+To extend the granularity of the PDP policy checks, the PEP can append extra UMA scopes to a registering resource that correspond to supported HTTP verbs. Currently, the PEP supports GET, HEAD, POST, PUT, PATCH and DELETE verbs. For the `verb_config.json` file:
 
 - **default_scopes**: A list of default scopes that will be registered for HTTP actions, for PDP functionality. These must match the scopes existing on the Login Service's persistence repository.
-- **list of scope-action associations**: for each of the scopes specified in the above list, there will be one entry with an associanted action-id.
+- **list of scope-action associations**: for each of the scopes specified in the above list, there will be one entry with an associanted action-id, e.g. `"protected_get": "get"`
+
+===== Default resources registration
+
+The PEP reads the definition of the default resources inserted in the database from the file located under `config/default-resources.json` of the source path, but also has its own definition under the path `charts/pep-engine/scripts/default-resources.json`.
+
+The first option usage is mainly for a local deployment using Docker and a local image built from the um-pep-engine repository with no help of Helm Charts.
+The second option is for a Helm Chart deployment which will mount the file as a volume directly into the `/data` path of the container. Notice that if this second option of deployment is followed, the unique resources for both files will be added to the database.
+
+An example of default resources would be as follows:
+
+```
+{
+  "default_resources": [
+    {"name": "Sample Resource", resource_uri": "/", "scopes": "protected_access", "default_owner": <uuid>},
+    {"name": "Sample Resource", resource_uri": "/workspace", "scopes": "protected_access", "default_owner": <uuid>}
+  ]
+}
+```
+
+* Mandatory Parameters:
+
+- **name**: String Value
+
+- **resource_uri**: String Value 
+
+- **scopes**: String Value
+
+* Optional Parameters (default values):
+
+- **default_owner**: String Value -> `"0000000000000"`
+
+- **description**: String Value -> `"Default description"`
+
 
 ==== Data flow
 
