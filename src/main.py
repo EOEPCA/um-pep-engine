@@ -65,7 +65,7 @@ try:
             id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", k["default_owner"], k["resource_uri"])
         else:
             id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", "0000000000000", k["resource_uri"])
-        logger.info("==========New Resource for path: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
+        logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
     logger.info("==========Default resources inserted in DB==========")
         
 except Exception as e:

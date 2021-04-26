@@ -2,12 +2,25 @@
 
 global:
   namespace: default
-  ep: demoexample.gluu.org
-  domain:  https://demoexample.gluu.org
+  domain: demoexample.gluu.org
   pep: pep-engine
   realm: eoepca
   serviceHost: 0.0.0.0
-  servicePort: 5566
+  proxyServicePort: 5566
+  resourcesServicePort: 5576
+  nginxIp: 10.0.2.15
+
+ports:
+  proxy-pep:
+    port: 5566
+    targetPort: 5566
+    type: TCP
+  resources-pep:
+    port: 5576
+    targetPort: 5576
+    type: TCP
+
+configMap:
   margin: 5
   sslCerts: "'false'"
   useThreads: "'true'"
@@ -15,27 +28,18 @@ global:
   resourceServer: http://ades/
   umaValidation: "'true'"
   limitUses: 1
-  pdpUrl: http://demoexample.gluu.org
   pdpPort: 5567
   pdpPolicy: /policy/
   verifySignature: "'false'"
-  nginxIp: 10.0.2.15
-  proxyServicePort: 5566
-  resourcesServicePort: 5576
-  proxyHost: demoexample.gluu.org
-  resourceHost: demoexample.gluu.org
   defaultResourcePath: /data/default-resources.json
 
-
 readinessProbe:
-  initialDelaySeconds: 150
+  initialDelaySeconds: 1
   periodSeconds: 90
 livenessProbe:
-  initialDelaySeconds: 150
+  initialDelaySeconds: 1
   periodSeconds: 90
 
-# limits:
-#   memory: 600Mi
 requests:
   serviceCpu: 2m
   serviceMemory: 50Mi
@@ -51,9 +55,6 @@ persistence:
   dbStorageSize: 5Gi
   type: DirectoryOrCreate
 
-config:
-  enabled: true
-
 # The PEP context is used to distinguish PEP instances,
 # e.g. PEP for ADES vs PEP for Catalogue etc.
 context: generic
@@ -61,16 +62,3 @@ context: generic
 # VolumeClaim values
 volumeClaim:
   name: um-pep-engine-pvc
-
-ingress:
-  enabled: true
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts:
-    - demoexample.gluu.org
-  tls: 
-   - secretName: tls-certificate
-     hosts:
-       - demoexample.gluu.org
