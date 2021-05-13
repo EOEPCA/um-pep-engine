@@ -42,6 +42,6 @@ jobs:
             nohup python3 src/main.py &
             sleep 1
       - name: Run tests Database
+        run: python tests/testMongo.py
+      - name: Run tests PEP
         run: python tests/testPEPResources.py
-      # - name: Run tests PDP
-      #   run: python tests/um_pdp_test.py
