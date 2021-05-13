@@ -32,11 +32,15 @@ jobs:
       - name: Create python env
         run: python3 -m venv env
       - name: Activate environment
+        run: source env/bin/activate
+      - name: Install requirements
+        run: pip3 install -r src/requirements.txt
+      - name: Run mongo container
+        run: sudo docker run -p 27017:27017 -d mongo
+      - name: Run main
         run: |
-          source env/bin/activate
-          pip install -r src/requirements.txt
-      # - name: Run main
-      #   run: python src/main.py
+            nohup python3 src/main.py &
+            sleep 1
       # - name: Run tests Database
       #   run: python tests/test_database.py
       # - name: Run tests PDP
