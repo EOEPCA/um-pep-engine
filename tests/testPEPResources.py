@@ -82,6 +82,7 @@ class PEPResourceTest(unittest.TestCase):
         res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         print(res)
         print(res.text)
+        print('lo siguiente es tal + /resources')
         print(self.PEP_RES_HOST+"/resources")
         if res.status_code == 200:
             return 200, res.text
