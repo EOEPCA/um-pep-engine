@@ -32,15 +32,16 @@ from Crypto.PublicKey import RSA
 import logging
 from handlers.log_handler import LogHandler
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
 log_handler = LogHandler
-log_handler.load_config("PEP", "./config/log_config.yaml")
+log_handler.load_config("PEP", dir_path+"/config/log_config.yaml")
 logger = logging.getLogger("PEP_ENGINE")
 
 logger.info("==========Starting load config==========")
 ### INITIAL SETUP
-g_config, g_wkh = get_config("config/config.json")
+g_config, g_wkh = get_config(dir_path+"/config/config.json")
 #Load HTTP verb mapping
-g_config = get_verb_config("config/verb_config.json", g_config)
+g_config = get_verb_config(dir_path+"/config/verb_config.json", g_config)
 
 oidc_client = OIDCHandler(g_wkh,
                             client_id = g_config["client_id"],
@@ -82,11 +83,11 @@ def generateRSAKeyPair():
     private_key = _rsakey.exportKey()
     public_key = _rsakey.publickey().exportKey()
 
-    file_out = open("config/private.pem", "wb+")
+    file_out = open(dir_path+"/config/private.pem", "wb+")
     file_out.write(private_key)
     file_out.close()
 
-    file_out = open("config/public.pem", "wb+")
+    file_out = open(dir_path+"/config/public.pem", "wb+")
     file_out.write(public_key)
     file_out.close()
 
@@ -104,8 +105,8 @@ resources_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) #
 # SWAGGER initiation
 SWAGGER_URL = '/swagger-ui'  # URL for exposing Swagger UI (without trailing '/')
 API_URL = "" # Our local swagger resource for PEP. Not used here as 'spec' parameter is used in config
-SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
-SWAGGER_SPEC_RESOURCES = json.load(open("./static/swagger_pep_resources_ui.json"))
+SWAGGER_SPEC_PROXY = json.load(open(dir_path+"/static/swagger_pep_proxy_ui.json"))
+SWAGGER_SPEC_RESOURCES = json.load(open(dir_path+"/static/swagger_pep_resources_ui.json"))
 SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
 
 swaggerui_proxy_blueprint = get_swaggerui_blueprint(
