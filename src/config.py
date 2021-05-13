@@ -121,7 +121,7 @@ def get_config(config_path: str):
         g_config["client_id"] = new_client["client_id"]
         g_config["client_secret"] = new_client["client_secret"]
         if use_env_var is False:
-            save_config("config/config.json", g_config)
+            save_config(config_path, g_config)
         else:
             os.environ["PEP_CLIENT_ID"] = new_client["client_id"]
             os.environ["PEP_CLIENT_SECRET"] = new_client["client_secret"]
