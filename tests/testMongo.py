@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import pymongo
 from pymongo import MongoClient
+sys.path.insert(0, '../src')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(dir_path+'/../src/')
 from src.handlers.mongo_handler import Mongo_Handler
 import pytest
 import unittest
