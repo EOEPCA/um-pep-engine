@@ -80,6 +80,9 @@ class PEPResourceTest(unittest.TestCase):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
         res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        print(res)
+        print(res.text)
+        print(self.PEP_RES_HOST+"/resources")
         if res.status_code == 200:
             return 200, res.text
         return 500, None
