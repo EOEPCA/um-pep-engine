@@ -21,13 +21,14 @@ class PEPResourceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.g_config = {}
-        with open("../src/config/config.json") as j:
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        with open(dir_path+"/../src/config/config.json") as j:
             cls.g_config = json.load(j)
 
         wkh = WellKnownHandler(cls.g_config["auth_server_url"], secure=False)
         cls.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)
 
-        _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("../src/config/private.pem"))
+        _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file(dir_path+"/../src/config/private.pem"))
         _payload = { 
                     "iss": cls.g_config["client_id"],
                     "sub": cls.g_config["client_id"],
