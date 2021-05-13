@@ -5,7 +5,7 @@ import os, sys
 sys.path.insert(0, '../src')
 dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_path+'/../src/')
-from src.handlers.mongo_handler import Mongo_Handler
+from handlers.mongo_handler import Mongo_Handler
 import pytest
 import unittest
 import mock
