@@ -8,5 +8,6 @@ pyjwkest==1.4.2
 pycrypto==2.6.1
 pymongo
 mock
+pytest==6.2.4
 flask-swagger-ui==3.36.0
 pyyaml
