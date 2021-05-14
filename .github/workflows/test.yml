@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: PDP Engine Test Workflow
+name: PEP Engine Test Workflow
 
 # Controls when the action will run. 
 on: push
@@ -43,5 +43,5 @@ jobs:
             sleep 1
       - name: Run tests Database
         run: python tests/testMongo.py
-      - name: Run tests PEP
-        run: python tests/testPEPResources.py
+      # - name: Run tests PEP
+      #   run: python tests/testPEPResources.py
