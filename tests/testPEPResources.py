@@ -52,7 +52,9 @@ class PEPResourceTest(unittest.TestCase):
         _jws_ownership = JWS(_payload_ownership, alg="RS256")
 
         cls.jwt = _jws.sign_compact(keys=[_rsajwk])
+        print(cls.jwt)
         cls.jwt_rotest = _jws_ownership.sign_compact(keys=[_rsajwk])
+        print(cls.jwt_rotest)
         #cls.scopes = 'public_access'
         cls.scopes = 'protected_access'
         cls.resourceName = "TestResourcePEP"
@@ -79,6 +81,7 @@ class PEPResourceTest(unittest.TestCase):
     def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
+        print(headers)
         res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         print(res)
         print(res.text)
@@ -173,6 +176,10 @@ class PEPResourceTest(unittest.TestCase):
         #Use a JWT token as id_token
         id_token = self.getJWT()
         id_token_ro = self.getJWT_RO()
+
+        print('hmmmm')
+        print(id_token)
+        print(id_token_ro)
 
         #Create resource
         status, self.resourceID = self.createTestResource(id_token)

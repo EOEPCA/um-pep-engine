@@ -59,7 +59,7 @@ uma_handler.status()
 #Default behavior is open_access
 #Creation of default resources
 try:
-    path = g_config["default_resource_path"]
+    path = dir_path+"/"+ g_config["default_resource_path"]
     kube_resources= get_default_resources(path)
     for k in kube_resources['default_resources']:
         id_res=""

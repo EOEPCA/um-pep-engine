@@ -19,6 +19,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         logger.debug("Retrieving all registered resources...")
         #gets all resources registered on local DB
         custom_mongo = Mongo_Handler("resource_db", "resources")
+        
+        logger.info("==========No entiendo==========")
         resources = custom_mongo.get_all_resources()
 
         rpt = request.headers.get('Authorization')
@@ -28,6 +30,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         uid = None
         try:
             head_protected = str(request.headers)
+                
             headers_protected = head_protected.split()
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
@@ -41,6 +44,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             response.status_code = 500
             response.headers["Error"] = str(e)
             activity = {"Description":"No token found/error reading token: "+str(e)}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+            
+            activity = {"Error While passing the token: "+str(uid)}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
 
@@ -80,14 +86,20 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     def resource_creation():
         logger.debug("Processing " + request.method + " resource request...")
         response = Response()
+        
+        logger.info("==========No entiendo==========")
+        
         uid = None
         #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
             head_protected = str(request.headers)
+            logger.info("==========1  "+ head_protected+"==========")
             headers_protected = head_protected.split()
-            logger.debug(head_protected)
+            logger.info("==========2 "+ str(headers_protected)+" ==========")
+
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
-            logger.debug(uid)
+            
+            logger.info("==========2  "+ uid+"==========")
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'

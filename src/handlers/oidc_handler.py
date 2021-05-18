@@ -7,6 +7,7 @@ from base64 import b64encode
 from handlers.uma_handler import UMA_Handler, resource
 from handlers.uma_handler import rpt as class_rpt
 from config import load_config
+import os, sys
 import logging
 import base64
 import json
@@ -50,6 +51,8 @@ class OIDCHandler:
 
     def verify_JWT_token(self, token, key):
         try:
+
+            self.logger.info("pues JWT decoding")
             header = str(token).split(".")[0]
             paddedHeader = header + '=' * (4 - len(header) % 4)
             decodedHeader = base64.b64decode(paddedHeader)
@@ -64,12 +67,16 @@ class OIDCHandler:
             decoded = decoded.decode('utf-8')
             decoded_str = json.loads(decoded)
 
+            self.logger.info("pues JWT decoding segundo check")
             if self.getVerificationConfig() == True:
+                self.logger.info("TRUE")
                 if decoded_str_header['kid'] != "RSA1":
+                    self.logger.info("TRUE2")
                     verificator = JWT_Verification()
                     result = verificator.verify_signature_JWT(token)
                 else:
                     #validate signature for rpt
+                    self.logger.info("FALSE 2")
                     rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/public.pem"))
                     dict_rpt_values = JWS().verify_compact(token, keys=[rsajwk], sigalg="RS256")
 
@@ -83,7 +90,8 @@ class OIDCHandler:
                     raise Exception
                 else:
                     self.logger.debug("Signature verification is correct!")
-
+            
+            self.logger.info("FALSE")
             user_value = None
             if decoded_str.get(key):                   
                 user_value = decoded_str[key]
@@ -114,6 +122,8 @@ class OIDCHandler:
     def verify_uid_headers(self, headers_protected, key):
         value = None
         token_protected = None
+        self.logger.info("entiendo? creo? wth")
+
         #Retrieve the token from the headers
         for i in headers_protected:
             if 'Bearer' in str(i):
@@ -122,8 +132,10 @@ class OIDCHandler:
         if token_protected:
             #Compares between JWT id_token and OAuth access token to retrieve the requested key-value
             if len(str(token_protected))>40:
+                self.logger.info(str(token_protected))
                 value=self.verify_JWT_token(token_protected, key)
             else:
+                self.logger.info("entiendo? creo? what the fuuuck locl")
                 value=self.verify_OAuth_token(token_protected, key)
 
             return value
@@ -131,6 +143,10 @@ class OIDCHandler:
             return 'NO TOKEN FOUND'
 
     def getVerificationConfig(self):
-        g_config = load_config("config/config.json")
+        self.logger.info("esto es el verify: ")
         
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        g_config = load_config(dir_path+"/../config/config.json")
+        
+        self.logger.info("esto es el verify: "+ str(g_config['verify_signature']))
         return g_config['verify_signature']
