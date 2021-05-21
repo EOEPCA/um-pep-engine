@@ -324,7 +324,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
             
         #We only want to return resource_id (as "_id") and name, so we prune the other entries
-        resource = {"_id": resource["resource_id"], "_name": resource["name"]}
+        resource = {"_id": resource["resource_id"], "_name": resource["name"], "_reverse_match_url": resource["reverse_match_url"]}
         return resource
 
     def user_not_authorized(response):
