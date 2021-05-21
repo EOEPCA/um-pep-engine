@@ -60,7 +60,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
                 logger.debug("Matching owned-resource found!")
                 #Add resource to return list
-                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"]})
+                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
                 found_uid = True
         
         #If user-owned resources were found, return the list
