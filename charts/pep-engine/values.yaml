@@ -18,7 +18,7 @@ global:
   limitUses: 1
   pdpUrl: http://demoexample.gluu.org
   pdpPort: 5567
-  pdpPolicy: /policy/
+  pdpPolicy: /pdp/policy/
   verifySignature: "'false'"
   nginxIp: 10.0.2.15
   proxyServicePort: 5566
