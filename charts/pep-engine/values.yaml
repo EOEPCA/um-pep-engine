@@ -29,7 +29,7 @@ configMap:
   umaValidation: "'true'"
   limitUses: 1
   pdpPort: 5567
-  pdpPolicy: /policy/
+  pdpPolicy: /pdp/policy/
   verifySignature: "'false'"
   defaultResourcePath: /data/default-resources.json
 
@@ -49,7 +49,7 @@ requests:
 image: 
   statefulSetReplicas: 1
   imagePullPolicy: Always
-  image: eoepca/um-pep-engine:v0.3.2
+  image: eoepca/um-pep-engine:v0.3.4
 persistence: 
   accessModes: ReadWriteMany
   dbStorageSize: 5Gi

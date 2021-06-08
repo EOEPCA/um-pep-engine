@@ -28,4 +28,4 @@ class policy_handler:
         self.logger.debug("PDP Headers:")
         self.logger.debug(headers)
         json = policy_body
-        return post("http://"+self.url +":" + self.port + self.endpoint, headers=headers, json=json)
+        return post(self.url + self.endpoint, headers=headers, json=json)
