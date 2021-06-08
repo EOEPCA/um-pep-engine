@@ -3,6 +3,8 @@
 global:
   namespace: default
   domain: demoexample.gluu.org
+  proxyHost: http://demoexample.gluu.org/service
+  resourceHost: http://demoexample.gluu.org/res
   pep: pep-engine
   realm: eoepca
   serviceHost: 0.0.0.0
