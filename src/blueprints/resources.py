@@ -120,7 +120,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             resource_id = resource_reply
             reply_failed = False
             for scope in g_config["default_scopes"]:
-                def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, str(g_config[scope])), input_headers=request.headers)
+                def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, scope), input_headers=request.headers)
                 if def_policy_reply.status_code != 200:
                     reply_failed = True
                     activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
@@ -429,18 +429,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     def get_default_ownership_policy_cfg(resource_id, uid, action):    
         return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
 
-    def get_default_ownership_policy_body(resource_id, uid, action):
-        name = "Default Ownership Policy of " + str(resource_id) + " with action " + action
+    def get_default_ownership_policy_body(resource_id, uid, scope):
+        name = "Default Ownership Policy of " + str(resource_id) + " with action " + str(g_config[scope])
         description = "This is the default ownership policy for created resources through PEP"
-        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, action)
+        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, str(g_config[scope]))
 
-        if action == "read":
-            scopes = ["protected_read"]
-        elif action == "write":
-            scopes = ["protected_write"]
-        else:
-            scopes = ["protected_access"]
-
-        return {"name": name, "description": description, "config": policy_cfg, "scopes": scopes}
+        return {"name": name, "description": description, "config": policy_cfg, "scopes": [str(scope)]}
 
     return resources_bp
