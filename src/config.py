@@ -148,5 +148,5 @@ def get_default_resources(path: str):
         if not any(d['resource_uri'] == k['resource_uri'] for d in g_config['default_resources']):
             g_config['default_resources'].append(k)      
         else:
-            logger.debug("The default resource "+str(k)+" is alredy on the k8s definition")
+            logger.debug("The default resource "+str(k)+" is already on the k8s definition")
     return g_config

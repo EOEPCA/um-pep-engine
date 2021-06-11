@@ -54,24 +54,6 @@ uma_handler.status()
 
 #Default behavior is open_access
 #Creation of default resources
-try:
-    path = g_config["default_resource_path"]
-    kube_resources= get_default_resources(path)
-    for k in kube_resources['default_resources']:
-        id_res=""
-        if "description" in k and "default_owner" in k:
-            id_res=uma_handler.create(k["name"], [k["scopes"]], k["description"], k["default_owner"], k["resource_uri"])
-        elif "default_owner" in k:
-            id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", k["default_owner"], k["resource_uri"])
-        else:
-            id_res=uma_handler.create(k["name"], [k["scopes"]], "Default description", "0000000000000", k["resource_uri"])
-        logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
-    logger.info("==========Default resources inserted in DB==========")
-        
-except Exception as e:
-    
-    logger.info("==========Couldnt process the default resources==========")
-    logger.info("==========Reason: "+str(e)+"==========")
 
 
 #PDP Policy Handler
@@ -155,6 +137,42 @@ def run_resources_app():
         port=int(g_config["resources_service_port"]),
         host=g_config["service_host"]
     )
+#Create default resources and policies associated
+def deploy_default_resources():
+    try:
+        path = g_config["default_resource_path"]
+        kube_resources= get_default_resources(path)
+        for k in kube_resources['default_resources']:
+            id_res=""
+            owship=None
+            elif "default_owner" in k:
+                owship=k["default_owner"]
+            else:
+                owship="0000000000000"
+            _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/private.pem"))
+            _payload_ownership = { 
+                "iss": g_config["client_id"],
+                "sub": str(owship),
+                "aud": "",
+                "user_name": "admin",
+                "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                "exp": int(time.time())+3600,
+                "isOperator": False
+            }
+            _jws_ownership = JWS(_payload_ownership, alg="RS256")
+            jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
+            headers = { 'content-type': "application/json", "Authorization": "Bearer "+ str(jwt) }
+            payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"] }
+            res = requests.post(g_config["service_host"]+"/resources", headers=headers, json=payload, verify=False)
+            id_res = res.text
+            logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
+        logger.info("==========Default resources inserted in DB==========")
+            
+    except Exception as e:
+        
+        logger.info("==========Couldnt process the default resources==========")
+        logger.info("==========Reason: "+str(e)+"==========")
+
 
 if __name__ == '__main__':
     # Executing the Threads seperatly.
@@ -162,3 +180,4 @@ if __name__ == '__main__':
     resource_thread = threading.Thread(target=run_resources_app)
     proxy_thread.start()
     resource_thread.start()
+    deploy_default_resources()
