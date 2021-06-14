@@ -10,7 +10,7 @@ from random import choice
 from string import ascii_lowercase
 from requests import get, post, put, delete
 import json
-
+import time
 from config import get_config, get_verb_config, get_default_resources
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from handlers.oidc_handler import OIDCHandler
@@ -145,7 +145,7 @@ def deploy_default_resources():
         for k in kube_resources['default_resources']:
             id_res=""
             owship=None
-            elif "default_owner" in k:
+            if "default_owner" in k:
                 owship=k["default_owner"]
             else:
                 owship="0000000000000"
@@ -157,7 +157,7 @@ def deploy_default_resources():
                 "user_name": "admin",
                 "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
                 "exp": int(time.time())+3600,
-                "isOperator": False
+                "isOperator": True
             }
             _jws_ownership = JWS(_payload_ownership, alg="RS256")
             jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
