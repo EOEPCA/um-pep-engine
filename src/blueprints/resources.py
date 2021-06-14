@@ -123,14 +123,17 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, str(g_config[scope])), input_headers=request.headers)
                 if def_policy_reply.status_code != 200:
                     reply_failed = True
-                    activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
+                    #activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
                     break
             if not reply_failed:
                 activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             response.status_code = def_policy_reply.status_code
-            response.headers["Error"] = def_policy_reply.headers["Error"]
+            if "Error" in def_policy_reply.headers:
+                response.headers["Error"] = def_policy_reply.headers["Error"]
+            else:
+                response.headers["Error"] = "Un-parseable error coming from server"
             logger.debug(response.headers["Error"])
             activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
