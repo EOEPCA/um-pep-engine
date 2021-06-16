@@ -62,3 +62,4 @@ context: generic
 # VolumeClaim values
 volumeClaim:
   name: um-pep-engine-pvc
+  create: true

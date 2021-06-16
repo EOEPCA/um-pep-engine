@@ -8,10 +8,10 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: {{ .Values.global.domain | quote }}
+  - host: {{ printf "%s.%s" .Values.context .Values.global.domain | quote }}
     http:
       paths:
-      - path: /service
+      - path: /
         backend:
           serviceName: {{ .Values.global.pep }}
           servicePort: {{ .Values.global.proxyServicePort }}
@@ -25,10 +25,10 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: {{ .Values.global.domain | quote }}
+  - host: {{ printf "%s-pepapi.%s" .Values.context .Values.global.domain | quote }}
     http:
       paths:
-      - path: /res
+      - path: /
         backend:
           serviceName: {{ .Values.global.pep }}
           servicePort: {{ .Values.global.resourcesServicePort }}
