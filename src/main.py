@@ -143,31 +143,39 @@ def deploy_default_resources():
     try:
         path = g_config["default_resource_path"]
         kube_resources= get_default_resources(path)
+        if(not kube_resources):
+            logger.info("==========No Default resources detected==========")
+            return
+        logger.info("==========Default resources operation started==========")
         for k in kube_resources['default_resources']:
-            id_res=""
-            owship=None
-            if "default_owner" in k:
-                owship=k["default_owner"]
-            else:
-                owship="0000000000000"
-            _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/private.pem"))
-            _payload_ownership = { 
-                "iss": g_config["client_id"],
-                "sub": str(owship),
-                "aud": "",
-                "user_name": "admin",
-                "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                "exp": int(time.time())+3600,
-                "isOperator": True
-            }
-            _jws_ownership = JWS(_payload_ownership, alg="RS256")
-            jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
-            headers = { 'content-type': "application/json", "Authorization": "Bearer "+ str(jwt) }
-            payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"] }
-            res = post("http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources", headers=headers, json=payload, verify=False)
-            id_res = res.text
-            logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
-        logger.info("==========Default resources inserted in DB==========")
+            try:
+                id_res=""
+                owship=None
+                if "default_owner" in k:
+                    owship=k["default_owner"]
+                else:
+                    owship="0000000000000"
+                _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/private.pem"))
+                _payload_ownership = { 
+                    "iss": g_config["client_id"],
+                    "sub": str(owship),
+                    "aud": "",
+                    "user_name": "admin",
+                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                    "exp": int(time.time())+3600,
+                    "isOperator": True
+                }
+                _jws_ownership = JWS(_payload_ownership, alg="RS256")
+                jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
+                headers = { 'content-type': "application/json", "Authorization": "Bearer "+ str(jwt) }
+                payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"] }
+                res = post("http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources", headers=headers, json=payload, verify=False)
+                id_res = res.text
+                logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
+            except as e:
+                logger.info("==========Default resources operation threw an exception for resource "+k["name"]+"==========")
+                logger.info(str(e))
+        logger.info("==========Default resources operation completed==========")
             
     except Exception as e:
         
