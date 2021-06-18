@@ -172,7 +172,7 @@ def deploy_default_resources():
                 res = post("http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources", headers=headers, json=payload, verify=False)
                 id_res = res.text
                 logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
-            except as e:
+            except Exception as e:
                 logger.info("==========Default resources operation threw an exception for resource "+k["name"]+"==========")
                 logger.info(str(e))
         logger.info("==========Default resources operation completed==========")
