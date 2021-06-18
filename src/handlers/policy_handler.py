@@ -24,7 +24,9 @@ class policy_handler:
         Returns: HTTP reply from PDP Policy Endpoint
     '''
     def create_policy(self, policy_body, input_headers):
-        headers = input_headers
+        headers = dict(input_headers)
+        # Necessary to remove "Host" from headers because of redirects, otherwise you get a 404 error
+        headers.pop("Host", None)
         self.logger.debug("PDP Headers:")
         self.logger.debug(headers)
         json = policy_body

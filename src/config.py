@@ -142,11 +142,15 @@ def get_default_resources(path: str):
     logger = logging.getLogger("PEP_ENGINE")
     g_config = {}    
     # Global config objects
+    # If path is the same as default one, return default values
+    if path == "./config/default-resources.json":
+        return load_config(path)
+    # If paths are different, merge both files and return dict
     g_config = load_config(path)
-    l_config = load_config("config/default-resources.json")
+    l_config = load_config("./config/default-resources.json")
     for k in l_config['default_resources']:
         if not any(d['resource_uri'] == k['resource_uri'] for d in g_config['default_resources']):
-            g_config['default_resources'].append(k)      
+            g_config['default_resources'].append(k)
         else:
-            logger.debug("The default resource "+str(k)+" is alredy on the k8s definition")
+            logger.debug("The default resource "+str(k)+" is already on the k8s definition")
     return g_config
