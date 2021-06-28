@@ -430,12 +430,25 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
     def get_default_ownership_policy_cfg(resource_id, uid, action):    
         return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
+    
+    def get_default_resource_policy_cfg(resource_id, action):    
+        return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"isOperator" : True } }] }] }
 
     def get_default_ownership_policy_body(resource_id, uid, scope):
         name = "Default Ownership Policy of " + str(resource_id) + " with action " + str(g_config[scope])
         description = "This is the default ownership policy for created resources through PEP"
-        policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, str(g_config[scope]))
+        if check_default_ownership(uid):
+            policy_cfg = get_default_resource_policy_cfg(resource_id, str(g_config[scope]))
+        else:
+            policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, str(g_config[scope]))
 
         return {"name": name, "description": description, "config": policy_cfg, "scopes": [str(scope)]}
+
+    def check_default_ownership(uid):
+        for character in uid:
+            if character != '0':
+                return False
+        return True
+
 
     return resources_bp
