@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: PEP Engine BB Workflow
+name: PEP Container Creation
 
 # Controls when the action will run. 
 on: push
@@ -27,14 +27,14 @@ jobs:
         with:
           python-version: 3.6.9
       # Runs a set of commands using the runners shell
-      - name: Testing
-        run: |
-          sudo apt-get install jq python3-venv
-          pip install -r ./src/requirements.txt
+      # - name: Testing
+      #   run: |
+      #     sudo apt-get install jq python3-venv
+      #     pip install -r ./src/requirements.txt
       #   python3 ./src/main.py
       # Uncomment below if wanted Dockerhub Publication
-      # - name: Container Creation and Publishing
-      #   run: ./gh_actions/containerCreation.sh um-pep-engine
+      - name: Container Creation
+        run: ./gh_actions/containerCreation.sh um-pep-engine
       # - name: Smoke and Acceptance Test
       #   run: ./gh_actions/acceptanceTest.sh um-pep-engine 8080 7000
       # - name: Release Container
