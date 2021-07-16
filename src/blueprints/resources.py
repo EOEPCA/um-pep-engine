@@ -117,7 +117,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #If the reply is not of type Response, the creation was successful
         #Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
-            resource_id = resource_reply
+            resource_id = resource_reply["id"]
             reply_failed = False
             for scope in g_config["default_scopes"]:
                 def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, scope), input_headers=request.headers)
@@ -276,7 +276,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                             if scope not in data.get("resource_scopes"):
                                 data['resource_scopes'].append(scope)
 
-                    return uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    data["ownership_id"] = uid
+                    data["id"] = resource_id
+                    return data
                 else:
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
@@ -428,14 +431,23 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response
 
-    def get_default_ownership_policy_cfg(resource_id, uid, action):    
-        return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
+    def get_default_ownership_policy_cfg(resource_id, uid, action):
+        if check_default_ownership(uid):
+            return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"isOperator" : True } }] }] }
+        else:
+            return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
 
     def get_default_ownership_policy_body(resource_id, uid, scope):
         name = "Default Ownership Policy of " + str(resource_id) + " with action " + str(g_config[scope])
         description = "This is the default ownership policy for created resources through PEP"
         policy_cfg = get_default_ownership_policy_cfg(resource_id, uid, str(g_config[scope]))
-
         return {"name": name, "description": description, "config": policy_cfg, "scopes": [str(scope)]}
+
+    def check_default_ownership(uid):
+        for character in uid:
+            if character != '0':
+                return False
+        return True
+
 
     return resources_bp
