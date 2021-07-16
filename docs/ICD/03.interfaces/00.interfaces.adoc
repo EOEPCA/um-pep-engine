@@ -207,6 +207,100 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+[.proxyPathHead]
+==== Proxy HEAD
+    
+`HEAD /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers and query parameters
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/HEAD/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/HEAD/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/HEAD/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/HEAD/HEAD.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/HEAD/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [.proxyPathPost]
 ==== Proxy POST
@@ -395,6 +489,101 @@ ifdef::internal-generation[]
 ===== Implementation
 
 // markup not found, no include::{specDir}proxy/\{path\}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+[.proxyPathPatch]
+==== Proxy PATCH
+    
+`PATCH /proxy/{path}`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}proxy/\{path\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}proxy/\{path\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :proxy/{path}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}proxy/\{path\}/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]
@@ -787,6 +976,102 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+[.resourcesResourceIdHead]
+==== Resource HEAD (ID)
+    
+`HEAD /resources/{resource_id}`
+
+Retrieve a specific owned resource
+
+===== Description 
+
+This operation retrieves information about an owned resource.
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/HEAD/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| resource_id 
+| Unique Resource ID  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+<<resource>>
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<resource>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/HEAD/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/HEAD/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/{resource_id}/HEAD/HEAD.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/HEAD/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [.resourcesResourceIdPut]
 ==== Resource PUT (ID)
@@ -897,6 +1182,120 @@ ifdef::internal-generation[]
 ===== Implementation
 
 // markup not found, no include::{specDir}resources/\{resource_id\}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+[.resourcesResourceIdPatch]
+==== Resource PATCH (ID)
+    
+`PATCH /resources/{resource_id}`
+
+Patches an existing Resource reference in the Platform
+Currently, only support for this method is presented, and requires and functions the same as PUT.
+
+===== Description 
+
+This operation updates an existing 'owned' resource reference. 
+
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| resource_id 
+| Unique Resource ID  
+| X 
+ 
+
+|===         
+
+===== Body Parameter
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Resource 
+|  <<Resource>> 
+| X 
+|  
+|  
+
+|===         
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| UNAUTHORIZED
+|  <<>>
+
+
+| 404
+| NOT FOUND
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/\{resource_id\}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/{resource_id}/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/\{resource_id\}/PATCH/implementation.adoc[opts=optional]
 
 
 endif::internal-generation[]

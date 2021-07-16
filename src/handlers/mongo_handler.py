@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import pymongo
+import logging
 
 class Mongo_Handler:
 
     def __init__(self, database, database_obj, **kwargs):
+        self.logger = logging.getLogger("PEP_ENGINE")
         self.modified = []
         self.__dict__.update(kwargs)
         self.myclient = pymongo.MongoClient('localhost', 27017)
@@ -118,7 +120,7 @@ class Mongo_Handler:
             else:
                 return False
         except:
-            print('no resource with that UID associated')
+            self.logger.debug('no resource with that UID associated')
             return False
 
     def get_all_resources(self):

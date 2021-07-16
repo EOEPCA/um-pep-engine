@@ -10,8 +10,8 @@ from random import choice
 from string import ascii_lowercase
 from requests import get, post, put, delete
 import json
-
-from config import get_config
+import time
+from config import get_config, get_verb_config, get_default_resources
 from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
 from handlers.oidc_handler import OIDCHandler
 from handlers.uma_handler import UMA_Handler, resource
@@ -24,16 +24,24 @@ import os
 import sys
 import traceback
 import threading
+import datetime
 
 from jwkest.jws import JWS
 from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
 from jwkest.jwk import load_jwks
 from Crypto.PublicKey import RSA
 import logging
-logging.getLogger().setLevel(logging.INFO)
+from handlers.log_handler import LogHandler
 
+log_handler = LogHandler
+log_handler.load_config("PEP", "./config/log_config.yaml")
+logger = logging.getLogger("PEP_ENGINE")
+
+logger.info("==========Starting load config==========")
 ### INITIAL SETUP
 g_config, g_wkh = get_config("config/config.json")
+#Load HTTP verb mapping
+g_config = get_verb_config("config/verb_config.json", g_config)
 
 oidc_client = OIDCHandler(g_wkh,
                             client_id = g_config["client_id"],
@@ -46,10 +54,9 @@ uma_handler = UMA_Handler(g_wkh, oidc_client, g_config["check_ssl_certs"])
 uma_handler.status()
 
 #Default behavior is open_access
-try:
-    uma_handler.create("Base Path", ["public_access"], "Base path for Open Access to PEP", "0000000000000", "/")
-except:
-    pass
+#Creation of default resources
+
+
 #PDP Policy Handler
 pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
 
@@ -69,6 +76,7 @@ def generateRSAKeyPair():
     return private_key
 
 private_key = generateRSAKeyPair()
+logger.info("==========Configuration loaded==========")
 
 proxy_app = Flask(__name__)
 proxy_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
@@ -104,10 +112,13 @@ swaggerui_resources_blueprint = get_swaggerui_blueprint(
 # Register api blueprints (module endpoints)
 resources_app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
 proxy_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+logger.info("==========Resources endpoint Loaded==========")
 
 # SWAGGER UI respective bindings
 resources_app.register_blueprint(swaggerui_resources_blueprint)
 proxy_app.register_blueprint(swaggerui_proxy_blueprint)
+logger.info("==========Proxy endpoint Loaded==========")
+logger.info("==========Startup complete. PEP Engine is available!==========")
 
 # Define run methods for both Flask instances
 # Start reverse proxy for proxy endpoint
@@ -127,6 +138,50 @@ def run_resources_app():
         port=int(g_config["resources_service_port"]),
         host=g_config["service_host"]
     )
+#Create default resources and policies associated
+def deploy_default_resources():
+    try:
+        path = g_config["default_resource_path"]
+        kube_resources= get_default_resources(path)
+        if(not kube_resources):
+            logger.info("==========No Default resources detected==========")
+            return
+        logger.info("==========Default resources operation started==========")
+        for k in kube_resources['default_resources']:
+            try:
+                id_res=""
+                owship=None
+                if "default_owner" in k:
+                    owship=k["default_owner"]
+                else:
+                    owship="0000000000000"
+                _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/private.pem"))
+                _payload_ownership = { 
+                    "iss": g_config["client_id"],
+                    "sub": str(owship),
+                    "aud": "",
+                    "user_name": "admin",
+                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+                    "exp": int(time.time())+3600,
+                    "isOperator": True
+                }
+                _jws_ownership = JWS(_payload_ownership, alg="RS256")
+                jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
+                headers = { 'content-type': "application/json", "Authorization": "Bearer "+ str(jwt) }
+                payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"] }
+                res = post("http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources", headers=headers, json=payload, verify=False)
+                id_res = res.text
+                logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
+            except Exception as e:
+                logger.info("==========Default resources operation threw an exception for resource "+k["name"]+"==========")
+                logger.info(str(e))
+        logger.info("==========Default resources operation completed==========")
+            
+    except Exception as e:
+        
+        logger.info("==========Couldnt process the default resources==========")
+        logger.info("==========Reason: "+str(e)+"==========")
+
 
 if __name__ == '__main__':
     # Executing the Threads seperatly.
@@ -134,3 +189,4 @@ if __name__ == '__main__':
     resource_thread = threading.Thread(target=run_resources_app)
     proxy_thread.start()
     resource_thread.start()
+    deploy_default_resources()

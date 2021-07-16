@@ -1,7 +1,9 @@
+{{ if .Values.volumeClaim.create }}
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: eoepca-pep-pv-host
+  name: {{ .Values.volumeClaim.name }}
   labels:
     eoepca_type: userman
 spec:
@@ -10,5 +12,6 @@ spec:
   accessModes:
     - {{ .Values.persistence.accessModes }}
   hostPath:
-    path: "/kubedata/userman"
+    path: "/data/"
     type: {{ .Values.persistence.type }}
+{{ end }}

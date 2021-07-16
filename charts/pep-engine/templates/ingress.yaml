@@ -1,4 +1,4 @@
-
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -6,18 +6,16 @@ metadata:
   
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
-  - host: {{ .Values.global.proxyHost | quote }}
+  - host: {{ printf "%s.%s" .Values.context .Values.global.domain | quote }}
     http:
       paths:
       - path: /
         backend:
-          serviceName: pep-engine
-          servicePort: 5566
-
+          serviceName: {{ .Values.global.pep }}
+          servicePort: {{ .Values.global.proxyServicePort }}
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -25,17 +23,12 @@ metadata:
   
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
-  - host: {{ .Values.global.resourcesHost | quote }}
+  - host: {{ printf "%s-pepapi.%s" .Values.context .Values.global.domain | quote }}
     http:
       paths:
       - path: /
         backend:
-          serviceName: pep-engine
-          servicePort: 5576
-         
-  
- 
+          serviceName: {{ .Values.global.pep }}
+          servicePort: {{ .Values.global.resourcesServicePort }}

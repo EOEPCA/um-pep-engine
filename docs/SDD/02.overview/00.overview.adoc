@@ -161,19 +161,20 @@ This section contains:
 
 image::../images/PEPFlow2.png[top=5%, align=right, pdfwidth=6.5in]
 
-=== Self Authentication & Registration
+=== PEP-UC-001: Self Authentication & Registration
 (Represented in the above graph by the request to Login Service in the section "PEP Authentication" )
 
-The PEP has an internal UMA Client used for alll the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.
+The PEP has an internal UMA Client used for all the necessary UMA requests. This client is completely auto-managed even to the point of self-registration, so no pre-configuration is needed in order to run a PEP instance.
 
-=== Ticket generation
+=== PEP-UC-002: Ticket generation
 
 (Represented in the above graph by the request to Login Service called "Request for ticket")
 
 The PEP generates appropiate tickets for access attempts to a resource, which can later be consumed and checked by the Authorization Server in order to give proper clearance to access that same resource.
-Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource. 
+Ticket generation as per the UMA 2.0 standard, are only valid for that requested it and for that specific resource. When the ticket is generated, this ticket will contains a specific scope which it depends on the
+HTTP verb obtained. This scope in the ticket could be 'protected_read' or 'protected_write'. 
 
-=== Resource protection & RPT validation
+=== PEP-UC-003: Resource protection & RPT validation
 
 The PEP when presented with an RPT in an `Authorization` HTTP header, will check the validity of this token for the requested resource. This token is valid for a limited time, for a specific user, and for a specific resource. This makes attacks via copying an RPT extremely inneficient for an attacker. The validation of the rpt token was extended by including a new parameter that allows to establish the number of uses of the rpt. To store the rpts that will be used will be stored in the database with the number of uses that the rpt has.
 
@@ -183,9 +184,29 @@ This behaviour, which is analogous to a blacklist approach (we only deny access 
 On the other hand, this baseline functionality is desirable to allow PEP-chaining, and allows for more complex workflows in the future.
 
 
-=== Request Forwarding with JWT header
+=== PEP-UC-004: Request Forwarding with JWT header
  
 After validating the RPT we proceed to verify the signature of the JWT if the signature verification is enabled in the environment variables and the we pass the JWT to the request header in the request to the resource server.
 If the header has a RPT as token we make a call to the introspection endpoint (/oxauth/restv1/rpt/status) passing through parameters the RPT and the pat. Returning a JSON with the information for that token, called claims, where the user name can appear, for example.
 Then we proceed to generate this JSON to the format of JWT using an asymmetric cryptography, in this case using RSA with a private key. And then pass this JWT as a header in the request to the resource server.
 If the verification of the signature for the JWT is disabled, the code will do the introspection steps in the case of a RPT, and then will add the JWT to the request header without verifying the token signature.
+
+image::../images/PEPEndpoints.png[top=5%, align=center, pdfwidth=6.5in]
+This diagram covers the following use cases:
+
+=== PEP-UC-005: Resource Management
+
+The PEP allows for calls done on specific API endpoints for resource management. The currently available options are:
+* Create resource
+* Get resource (based on resource ID)
+* Get all available resources (based on user id)
+* Modify resource
+* Delete resource
+
+=== PEP-UC-006: Default protection of resources
+
+A new dynamically (via CRUD operations) registered resource will have a default protection policy indexed to it. For this goal, the PEP will contact the Policy Decision Point in order to register said policy, associate it with this resource and establish user ownership.
+
+=== PEP-UC-007: Policy Enforcement Point API
+
+The current implemented functionalities can be consulted through a specific OpenAPI webpage, available at the PEP level.

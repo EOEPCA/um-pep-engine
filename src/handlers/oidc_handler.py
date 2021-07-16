@@ -23,6 +23,7 @@ from requests import post, get
 class OIDCHandler:
 
     def __init__(self, wkh, client_id: str, client_secret: str, redirect_uri: str, scopes, verify_ssl: bool = False):
+        self.logger = logging.getLogger("PEP_ENGINE")
         self.client_id = client_id
         self.client_secret = client_secret
         self.verify_ssl = verify_ssl
@@ -42,7 +43,7 @@ class OIDCHandler:
         try:
             access_token = response.json()["access_token"]
         except Exception as e:
-            print("Error while getting access_token: "+str(response.text))
+            self.logger.debug("Error while getting access_token: "+str(response.text))
             exit(-1)
         
         return access_token
@@ -78,31 +79,25 @@ class OIDCHandler:
                         result = False
 
                 if result == False:
-                    print("Verification of the signature for the JWT failed!")
+                    self.logger.debug("Verification of the signature for the JWT failed!")
                     raise Exception
                 else:
-                    print("Signature verification is correct!")
+                    self.logger.debug("Signature verification is correct!")
 
-            if decoded_str_header['kid'] != "RSA1":
-                if key in decoded_str.keys():
-                    if decoded_str[key] != None:
-                        user_value = decoded_str[key]
-                    else:
-                        raise Exception
-                else:
+            user_value = None
+            if decoded_str.get(key):                   
+                user_value = decoded_str[key]
+            elif decoded_str.get("pct_claims"):      
+                if decoded_str.get("pct_claims").get(key):
                     user_value = decoded_str['pct_claims'][key]
-            else:
-                if decoded_str[key] == None:
-                    if decoded_str['pct_claims'][key][0] == None:
-                        raise Exception
-                    else:
-                        user_value = decoded_str['pct_claims'][key][0]
-                else:
-                    user_value = decoded_str[key]
+            if isinstance(user_value, list) and len(user_value) != 0 and user_value[0]:
+                user_value = user_value[0]
+            if user_value is None:
+                raise Exception
 
             return user_value
         except Exception as e:
-            print("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
+            self.logger.debug("Authenticated RPT Resource. No Valid JWT id token passed! " +str(e))
             return None
 
     def verify_OAuth_token(self, token, key):
@@ -113,7 +108,7 @@ class OIDCHandler:
             user = (res.json())
             return user[key]
         except:
-            print("OIDC Handler: Get User "+key+": Exception occured!")
+            self.logger.debug("OIDC Handler: Get User "+key+": Exception occured!")
             return None
 
     def verify_uid_headers(self, headers_protected, key):
