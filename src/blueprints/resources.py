@@ -121,7 +121,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             reply_failed = False
             #If the public or authenticated scopes were used to register resource, skip policy registration
             if is_public_or_authenticated(request.get_json()):
-                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy: None, Public/Authenticated access"}
+                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":"None, Public/Authenticated access"}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
                 return resource_reply
             #else, continue with ownership policies for default scopes
