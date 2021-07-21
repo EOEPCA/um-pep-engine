@@ -58,8 +58,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             rpt = rpt.replace("Bearer ","").strip()
 
             # Validate for a specific resource
-            if uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or not api_rpt_uma_validation:
-                logger.debug("RPT valid, accesing ")
+            if (uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": ["public_access"] }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
+              uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": ["Authenticated"] }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
+              uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
+              not api_rpt_uma_validation):
+                logger.debug("RPT valid, accessing ")
 
                 rpt_splitted = rpt.split('.')
                 
