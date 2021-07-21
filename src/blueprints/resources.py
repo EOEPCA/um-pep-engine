@@ -119,6 +119,12 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         if not isinstance(resource_reply, Response):
             resource_id = resource_reply["id"]
             reply_failed = False
+            #If the public or authenticated scopes were used to register resource, skip policy registration
+            if is_public_or_authenticated(request.get_json()):
+                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Policy":"None, Public/Authenticated access"}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
+                return resource_reply
+            #else, continue with ownership policies for default scopes
             for scope in g_config["default_scopes"]:
                 def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, scope), input_headers=request.headers)
                 if def_policy_reply.status_code != 200:
@@ -271,7 +277,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                         data['resource_scopes'] = []
                         for scope in g_config["default_scopes"]:
                             data['resource_scopes'].append(scope)
-                    else:
+                    #Skip default scopes if registering scope is public or authenticated access
+                    elif not is_public_or_authenticated(data):
                         for scope in g_config["default_scopes"]:
                             if scope not in data.get("resource_scopes"):
                                 data['resource_scopes'].append(scope)
@@ -449,5 +456,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 return False
         return True
 
+    def is_public_or_authenticated(data):
+        return any(x in data['resource_scopes'] for x in ["public_access", "Authenticated"])
 
     return resources_bp
