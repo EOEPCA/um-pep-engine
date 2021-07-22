@@ -33,7 +33,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         path = request.headers.get('X-Original-Uri')
         http_method = request.headers.get('X-Original-Method')
         # Get resource
-        resource_id = custom_mongo.get_id_from_uri("/"+path)
+        resource_id = custom_mongo.get_id_from_uri(path)
         scopes= None
         if resource_id:
             scopes = []
@@ -83,7 +83,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                 for key, value in headers_splitted.items():
                     new_header.add(key, value)
 
-                # redirect to resource
+                # RPT validated, redirect to PEP resources endpoint for authorization
                 activity = {"User":uid,"Resource":resource_id,"Description":"Token validated, proceeding to authorization"}
                 logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
                 return authorize_request(request, new_header, http_method, resource_id)
@@ -120,7 +120,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     def authorize_request(request, new_header, http_method, resource_id):
         try:
             endpoint_path = new_header.get('X-Original-Uri')
-            #TODO needs review for partial mode
             pep_resources_endpoint = "http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources"
             if http_method == 'POST':
                 res = post(pep_resources_endpoint, headers=new_header, data=request.data, stream=False)           
@@ -138,19 +137,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                 response = Response()
                 response.status_code = 501
                 return response
-            #TODO needs rework for partial mode
             excluded_headers = ['transfer-encoding']
             headers = [(name, value) for (name, value) in     res.raw.headers.items() if name.lower() not in excluded_headers]
             response = Response(res.content, res.status_code, headers)
-            if "Location" in response.headers:
-                response.autocorrect_location_header = False
-                response.headers["Location"] = response.headers["Location"].replace(g_config["resource_server_endpoint"], '')
             return response
         except Exception as e:
             response = Response()
-            logger.debug("Error while redirecting to resource: "+ traceback.format_exc(),file=sys.stderr)
+            logger.debug("Error while processing authorization: "+ traceback.format_exc(),file=sys.stderr)
             response.status_code = 500
-            response.content = "Error while redirecting to resource: "+str(e)
+            response.content = "Error while processing authorization: "+str(e)
             return response
 
     def create_jwt(payload, p_key):
