@@ -63,7 +63,8 @@ def get_config(config_path: str):
     "PEP_PDP_PORT",
     "PEP_PDP_POLICY_ENDPOINT",
     "PEP_VERIFY_SIGNATURE",
-    "PEP_DEFAULT_RESOURCE_PATH"]
+    "PEP_DEFAULT_RESOURCE_PATH",
+    "PEP_WORKING_MODE"]
 
     #Sets logger
     logger = logging.getLogger("PEP_ENGINE")

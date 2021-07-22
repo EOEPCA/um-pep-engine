@@ -20,6 +20,7 @@ from handlers.mongo_handler import Mongo_Handler
 from handlers.policy_handler import policy_handler
 import blueprints.resources as resources
 import blueprints.proxy as proxy
+import blueprints.authorize as authorize
 import os
 import sys
 import traceback
@@ -60,6 +61,9 @@ uma_handler.status()
 #PDP Policy Handler
 pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
 
+def is_partial_mode_enabled():
+    return g_config["working mode"] == "PARTIAL"
+
 def generateRSAKeyPair():
     _rsakey = RSA.generate(2048)
     private_key = _rsakey.exportKey()
@@ -78,8 +82,8 @@ def generateRSAKeyPair():
 private_key = generateRSAKeyPair()
 logger.info("==========Configuration loaded==========")
 
-proxy_app = Flask(__name__)
-proxy_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
+ext_interface_app = Flask(__name__)
+ext_interface_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
 
 resources_app = Flask(__name__)
 resources_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) # Random key
@@ -87,19 +91,24 @@ resources_app.secret_key = ''.join(choice(ascii_lowercase) for i in range(30)) #
 # SWAGGER initiation
 SWAGGER_URL = '/swagger-ui'  # URL for exposing Swagger UI (without trailing '/')
 API_URL = "" # Our local swagger resource for PEP. Not used here as 'spec' parameter is used in config
-SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
-SWAGGER_SPEC_RESOURCES = json.load(open("./static/swagger_pep_resources_ui.json"))
 SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
 
-swaggerui_proxy_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={  # Swagger UI config overrides
-        'app_name': SWAGGER_APP_NAME,
-        'spec': SWAGGER_SPEC_PROXY
-    },
-)
+#Partial mode check
+if is_partial_mode_enabled():
+    #TODO
+#Full mode enabled
+else:
+    SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
+    swaggerui_proxy_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={  # Swagger UI config overrides
+            'app_name': SWAGGER_APP_NAME,
+            'spec': SWAGGER_SPEC_PROXY
+        },
+    )
 
+SWAGGER_SPEC_RESOURCES = json.load(open("./static/swagger_pep_resources_ui.json"))
 swaggerui_resources_blueprint = get_swaggerui_blueprint(
     SWAGGER_URL,
     API_URL,
@@ -111,19 +120,23 @@ swaggerui_resources_blueprint = get_swaggerui_blueprint(
 
 # Register api blueprints (module endpoints)
 resources_app.register_blueprint(resources.construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config))
-proxy_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+# Mode load
+if is_partial_mode_enabled():
+    ext_interface_app.register_blueprint(authorize.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
+else:
+    ext_interface_app.register_blueprint(proxy.construct_blueprint(oidc_client, uma_handler, g_config, private_key))
 logger.info("==========Resources endpoint Loaded==========")
 
 # SWAGGER UI respective bindings
 resources_app.register_blueprint(swaggerui_resources_blueprint)
-proxy_app.register_blueprint(swaggerui_proxy_blueprint)
+ext_interface_app.register_blueprint(swaggerui_proxy_blueprint)
 logger.info("==========Proxy endpoint Loaded==========")
 logger.info("==========Startup complete. PEP Engine is available!==========")
 
 # Define run methods for both Flask instances
 # Start reverse proxy for proxy endpoint
-def run_proxy_app():
-    proxy_app.run(
+def run_ext_interface_app():
+    ext_interface_app.run(
         debug=False,
         threaded=True,
         port=int(g_config["proxy_service_port"]),
@@ -185,8 +198,8 @@ def deploy_default_resources():
 
 if __name__ == '__main__':
     # Executing the Threads seperatly.
-    proxy_thread = threading.Thread(target=run_proxy_app)
+    ext_interface_thread = threading.Thread(target=run_ext_interface_app)
     resource_thread = threading.Thread(target=run_resources_app)
-    proxy_thread.start()
+    ext_interface_thread.start()
     resource_thread.start()
     deploy_default_resources()
