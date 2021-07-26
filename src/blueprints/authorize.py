@@ -30,8 +30,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         logger.debug("Processing authorization request...")
         custom_mongo = Mongo_Handler("resource_db", "resources")
         rpt = request.headers.get('Authorization')
-        path = request.headers.get('X-Original-Uri')
-        http_method = request.headers.get('X-Original-Method')
+        if "X-Original-Uri" in request.headers:
+            path = request.headers.get('X-Original-Uri')
+        else:
+            path = ""
+        if "X-Original-Method" in request.headers:
+            http_method = request.headers.get('X-Original-Method')
+        else:
+            #Defaults to GET method if X-Original-Method is not sent
+            http_method = "GET"
         # Get resource
         resource_id = custom_mongo.get_id_from_uri(path)
         scopes= None
@@ -59,7 +66,32 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             logger.debug("Token found: "+rpt)
             rpt = rpt.replace("Bearer ","").strip()
 
-            # Validate for a specific resource
+            #If HTTP method is POST, this is a resource registration so no rpt validation is done.
+            if (http_method == "POST" or not api_rpt_uma_validation):
+                logger.debug("Authorizing resource registration")
+
+                rpt_splitted = rpt.split('.')
+                
+                if  len(rpt_splitted) == 3:
+                    jwt_rpt_response = rpt
+                else:
+                    introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
+                    pat = oidc_client.get_new_pat()
+                    rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+                    jwt_rpt_response = create_jwt(rpt_class, private_key)
+                    
+                headers_splitted = split_headers(str(request.headers))
+                headers_splitted['Authorization'] = "Bearer "+str(jwt_rpt_response)
+
+                new_header = Headers()
+                for key, value in headers_splitted.items():
+                    new_header.add(key, value)
+
+                activity = {"User":uid,"Resource":resource_id,"Description":"Authorizing resource registration"}
+                logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
+                return authorize_request(request, new_header, http_method, resource_id)
+
+            # Validate for a specific resource for any other HTTP method call
             if (uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": ["public_access"] }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
               uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": ["Authenticated"] }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
               uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": scopes }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or

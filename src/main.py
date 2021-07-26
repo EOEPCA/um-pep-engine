@@ -62,7 +62,7 @@ uma_handler.status()
 pdp_policy_handler = policy_handler(pdp_url=g_config["pdp_url"], pdp_port=g_config["pdp_port"], pdp_policy_endpoint=g_config["pdp_policy_endpoint"])
 
 def is_partial_mode_enabled():
-    return g_config["working mode"] == "PARTIAL"
+    return g_config["working_mode"] == "PARTIAL"
 
 def generateRSAKeyPair():
     _rsakey = RSA.generate(2048)
@@ -95,7 +95,17 @@ SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
 
 #Partial mode check
 if is_partial_mode_enabled():
-    #TODO
+    print("SWAGGERUI NOT AVAILABLE")
+    #TODO swaggerui implementation
+    SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
+    swaggerui_proxy_blueprint = get_swaggerui_blueprint(
+        SWAGGER_URL,
+        API_URL,
+        config={  # Swagger UI config overrides
+            'app_name': SWAGGER_APP_NAME,
+            'spec': SWAGGER_SPEC_PROXY
+        },
+    )
 #Full mode enabled
 else:
     SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
