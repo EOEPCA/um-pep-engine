@@ -62,34 +62,10 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         #If UUID exists and resource requested has same UUID
         api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
+        response = Response()
         if rpt:
             logger.debug("Token found: "+rpt)
             rpt = rpt.replace("Bearer ","").strip()
-
-            #If HTTP method is POST, this is a resource registration so no rpt validation is done.
-            if (http_method == "POST" or not api_rpt_uma_validation):
-                logger.debug("Authorizing resource registration")
-
-                rpt_splitted = rpt.split('.')
-                
-                if  len(rpt_splitted) == 3:
-                    jwt_rpt_response = rpt
-                else:
-                    introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
-                    pat = oidc_client.get_new_pat()
-                    rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
-                    jwt_rpt_response = create_jwt(rpt_class, private_key)
-                    
-                headers_splitted = split_headers(str(request.headers))
-                headers_splitted['Authorization'] = "Bearer "+str(jwt_rpt_response)
-
-                new_header = Headers()
-                for key, value in headers_splitted.items():
-                    new_header.add(key, value)
-
-                activity = {"User":uid,"Resource":resource_id,"Description":"Authorizing resource registration"}
-                logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
-                return authorize_request(request, new_header, http_method, resource_id)
 
             # Validate for a specific resource for any other HTTP method call
             if (uma_handler.validate_rpt(rpt, [{"resource_id": resource_id, "resource_scopes": ["public_access"] }], int(g_config["s_margin_rpt_valid"]), int(g_config["rpt_limit_uses"]), g_config["verify_signature"]) or
@@ -98,32 +74,15 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
               not api_rpt_uma_validation):
                 logger.debug("RPT valid, accessing ")
 
-                rpt_splitted = rpt.split('.')
-                
-                if  len(rpt_splitted) == 3:
-                    jwt_rpt_response = rpt
-                else:
-                    introspection_endpoint=g_wkh.get(TYPE_UMA_V2, KEY_UMA_V2_INTROSPECTION_ENDPOINT)
-                    pat = oidc_client.get_new_pat()
-                    rpt_class = class_rpt.introspect(rpt=rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
-                    jwt_rpt_response = create_jwt(rpt_class, private_key)
-                    
-                headers_splitted = split_headers(str(request.headers))
-                headers_splitted['Authorization'] = "Bearer "+str(jwt_rpt_response)
-
-                new_header = Headers()
-                for key, value in headers_splitted.items():
-                    new_header.add(key, value)
-
-                # RPT validated, redirect to PEP resources endpoint for authorization
-                activity = {"User":uid,"Resource":resource_id,"Description":"Token validated, proceeding to authorization"}
+                # RPT validated, allow nginx to redirect request to Resource Server
+                activity = {"User":uid,"Resource":resource_id,"Description":"Token validated"}
                 logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
-                return authorize_request(request, new_header, http_method, resource_id)
+                response.status_code = 200
+                return response
             logger.debug("Invalid RPT!, sending ticket")
             # In any other case, we have an invalid RPT, so send a ticket.
             # Fallthrough intentional
         logger.debug("No auth token, or auth token is invalid")
-        response = Response()
         if resource_id is not None:
             try:
                 logger.debug("Matched resource: "+str(resource_id))
@@ -147,37 +106,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             response.status_code = 400
             activity = {"User":uid,"Description":"No resource found, rejecting authorization request."}
             logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2105,activity=activity))
-            return response
-
-    def authorize_request(request, new_header, http_method, resource_id):
-        try:
-            endpoint_path = new_header.get('X-Original-Uri')
-            pep_resources_endpoint = "http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources"
-            if http_method == 'POST':
-                res = post(pep_resources_endpoint, headers=new_header, data=request.data, stream=False)           
-            elif http_method == 'GET':
-                res = get(pep_resources_endpoint+"/"+resource_id, headers=new_header, stream=False)
-            elif http_method == 'PUT':
-                res = put(pep_resources_endpoint+"/"+resource_id, headers=new_header, data=request.data, stream=False)
-            elif http_method == 'DELETE':
-                res = delete(pep_resources_endpoint+"/"+resource_id, headers=new_header, stream=False)
-            elif http_method == 'HEAD':
-                res = head(pep_resources_endpoint+"/"+resource_id, headers=new_header, stream=False)
-            elif http_method == 'PATCH':
-                res = patch(pep_resources_endpoint+"/"+resource_id, headers=new_header, data=request.data, stream=False)
-            else:
-                response = Response()
-                response.status_code = 501
-                return response
-            excluded_headers = ['transfer-encoding']
-            headers = [(name, value) for (name, value) in     res.raw.headers.items() if name.lower() not in excluded_headers]
-            response = Response(res.content, res.status_code, headers)
-            return response
-        except Exception as e:
-            response = Response()
-            logger.debug("Error while processing authorization: "+ traceback.format_exc(),file=sys.stderr)
-            response.status_code = 500
-            response.content = "Error while processing authorization: "+str(e)
             return response
 
     def create_jwt(payload, p_key):

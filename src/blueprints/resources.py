@@ -224,7 +224,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 if request.method == "PUT":
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PUT operation called","Reply":reply.text}
+                        activity = {"User":uid,"Description":"PUT operation called","Reply":"OK"}
                     else:
                         activity = {"User":uid,"Description":"PUT operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
@@ -235,7 +235,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     # reply = patch_resource(request, custom_mongo, resource_id, uid, response)
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.text}
+                        activity = {"User":uid,"Description":"PATCH operation called","Reply":"OK"}
                     else:
                         activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
