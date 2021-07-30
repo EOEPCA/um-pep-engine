@@ -101,10 +101,10 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                 logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2104,activity=activity))
                 return response
         else:
-            logger.debug("No matched resource, cannot handle authorization.")
-            # In this case, the PEP doesn't have that resource handled, and in this partial mode it simply rejects the request with a 400 Bad Request
-            response.status_code = 400
-            activity = {"User":uid,"Description":"No resource found, rejecting authorization request."}
+            logger.debug("No matched resource, forward to Resource Server.")
+            # In this case, the PEP doesn't have that resource handled, so it replies a 200 so the request is forwarded to the Resource Server
+            response.status_code = 200
+            activity = {"User":uid,"Description":"No resource found, forwarding to Resource Server."}
             logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2105,activity=activity))
             return response
 
