@@ -95,28 +95,18 @@ SWAGGER_APP_NAME = "Policy Enforcement Point Interfaces"
 
 #Partial mode check
 if is_partial_mode_enabled():
-    print("SWAGGERUI NOT AVAILABLE")
-    #TODO swaggerui implementation
-    SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
-    swaggerui_proxy_blueprint = get_swaggerui_blueprint(
-        SWAGGER_URL,
-        API_URL,
-        config={  # Swagger UI config overrides
-            'app_name': SWAGGER_APP_NAME,
-            'spec': SWAGGER_SPEC_PROXY
-        },
-    )
+    SWAGGER_SPEC_EXT_INTERFACE = json.load(open("./static/swagger_pep_authenticate_ui.json"))
 #Full mode enabled
 else:
-    SWAGGER_SPEC_PROXY = json.load(open("./static/swagger_pep_proxy_ui.json"))
-    swaggerui_proxy_blueprint = get_swaggerui_blueprint(
-        SWAGGER_URL,
-        API_URL,
-        config={  # Swagger UI config overrides
-            'app_name': SWAGGER_APP_NAME,
-            'spec': SWAGGER_SPEC_PROXY
-        },
-    )
+    SWAGGER_SPEC_EXT_INTERFACE = json.load(open("./static/swagger_pep_proxy_ui.json"))
+swaggerui_proxy_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={  # Swagger UI config overrides
+        'app_name': SWAGGER_APP_NAME,
+        'spec': SWAGGER_SPEC_EXT_INTERFACE
+    },
+)
 
 SWAGGER_SPEC_RESOURCES = json.load(open("./static/swagger_pep_resources_ui.json"))
 swaggerui_resources_blueprint = get_swaggerui_blueprint(
