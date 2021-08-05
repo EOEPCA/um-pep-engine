@@ -125,7 +125,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                     return response
                 except Exception as e:
                     #Resource is not registered with any known scope, throw generalized exception
-                    raise Exception("An error occurred while requesting permission for a resource: no valid scopes found for specified resource")
+                    raise Exception("An error occurred while requesting permission for a resource: 500: no valid scopes found for specified resource")
             except Exception as e:
                 response.status_code = int(str(e).split(":")[1].strip())
                 response.headers["Error"] = str(e)
