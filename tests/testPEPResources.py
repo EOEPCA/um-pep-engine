@@ -35,9 +35,12 @@ class PEPResourceTest(unittest.TestCase):
                     "user_name": "admin",
                     "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
                     "exp": int(time.time())+3600,
-                    "isOperator": False
+                    "isOperator": True
                 }
         _jws = JWS(_payload, alg="RS256")
+
+        # Needs to generate test user for this. Insert user inum instead of user name
+        cls.delegated_user_id = ""
 
         _payload_ownership = { 
                     "iss": cls.g_config["client_id"],
@@ -77,6 +80,14 @@ class PEPResourceTest(unittest.TestCase):
 
     def createTestResource(self, id_token="filler"):
         payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
+        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        if res.status_code == 200:
+            return 200, res.text
+        return 500, None
+
+    def createDelegatedTestResource(self, id_token="filler"):
+        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName, "uuid": self.delegated_user_id}
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
         res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
@@ -267,7 +278,16 @@ class PEPResourceTest(unittest.TestCase):
         print("Access Enforcement")
         self.access_enforcement(id_token)
         print("=======================")
+        del status, reply
+        print("")
+
+        #Create delegated resource onto a second user
+        print("Create delegated resource: Delegating resource for user: "+self.delegated_user_id)
+        status, self.resourceID = self.createDelegatedTestResource(id_token)
+        self.assertEqual(status, 200)
+        print("Create delegated resource: Delegated resource created with id: "+self.resourceID)
         del status, reply, id_token
+        print("=======================")
         print("")
 
 if __name__ == '__main__':
