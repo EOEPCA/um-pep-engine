@@ -57,7 +57,7 @@ class PEPResourceTest(unittest.TestCase):
         cls.jwt_rotest = _jws_ownership.sign_compact(keys=[_rsajwk])
         #cls.scopes = 'public_access'
         cls.scopes = 'protected_access'
-        cls.resourceName = "TestResourcePEP"
+        cls.resourceName = "TestResourcePEP3"
         cls.PEP_HOST = "http://localhost:5566"
         cls.PEP_RES_HOST = "http://localhost:5576"
        
@@ -286,7 +286,7 @@ class PEPResourceTest(unittest.TestCase):
         status, self.resourceID = self.createDelegatedTestResource(id_token)
         self.assertEqual(status, 200)
         print("Create delegated resource: Delegated resource created with id: "+self.resourceID)
-        del status, reply, id_token
+        del status
         print("=======================")
         print("")
 
