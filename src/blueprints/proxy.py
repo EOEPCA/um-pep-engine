@@ -101,7 +101,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                     response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
                     response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
                     activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
-                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2104,activity=activity))
+                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
                     return response
                 except Exception as e:
                     pass #Resource is not registered with default scopes
@@ -111,7 +111,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                     response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
                     response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
                     activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
-                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2104,activity=activity))
+                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
                     return response
                 except Exception as e:
                     pass #Resource is not registered with "Authenticated" scope
@@ -121,7 +121,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                     response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
                     response.status_code = 401 # Answer with "Unauthorized" as per the standard spec.
                     activity = {"Ticket":ticket,"Description":"Invalid token, generating ticket for resource:"+resource_id}
-                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2104,activity=activity))
+                    logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
                     return response
                 except Exception as e:
                     #Resource is not registered with any known scope, throw generalized exception
