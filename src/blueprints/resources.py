@@ -111,6 +111,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
 
+
         resource_reply = create_resource(uid, request, uma_handler, response)
         logger.debug("Creating resource!")
         logger.debug(resource_reply)
@@ -272,24 +273,30 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             if request.is_json:
                 data = request.get_json()
-                if data.get("name"):
-                    if 'resource_scopes' not in data.keys():
-                        data['resource_scopes'] = []
-                        for scope in g_config["default_scopes"]:
-                            data['resource_scopes'].append(scope)
-                    #Skip default scopes if registering scope is public or authenticated access
-                    elif not is_public_or_authenticated(data):
-                        for scope in g_config["default_scopes"]:
-                            if scope not in data.get("resource_scopes"):
+                custom_mongo = Mongo_Handler("resource_db", "resources")
+                if custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
+                    if data.get("name"):
+                        if 'resource_scopes' not in data.keys():
+                            data['resource_scopes'] = []
+                            for scope in g_config["default_scopes"]:
                                 data['resource_scopes'].append(scope)
+                        #Skip default scopes if registering scope is public or authenticated access
+                        elif not is_public_or_authenticated(data):
+                            for scope in g_config["default_scopes"]:
+                                if scope not in data.get("resource_scopes"):
+                                    data['resource_scopes'].append(scope)
 
-                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
-                    data["ownership_id"] = uid
-                    data["id"] = resource_id
-                    return data
+                        resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                        data["ownership_id"] = uid
+                        data["id"] = resource_id
+                        return data
+                    else:
+                        response.status_code = 500
+                        response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
+                        return response
                 else:
-                    response.status_code = 500
-                    response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
+                    response.status_code = 401
+                    response.headers["Error"] = "Ownership for parent resource does not match with the parsed JWT"
                     return response
             else: 
                 response.status_code = 415
