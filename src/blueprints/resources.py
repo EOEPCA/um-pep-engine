@@ -87,6 +87,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             headers_protected = head_protected.split()
             logger.debug(head_protected)
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
             logger.debug(uid)
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
@@ -111,8 +112,19 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
 
+        #Above query returns a None in case of Exception, following condition asserts False for that case
+        if not is_operator:
+            is_operator = False
+        
+        data = request.get_json()
+        custom_mongo = Mongo_Handler("resource_db", "resources")
 
-        resource_reply = create_resource(uid, request, uma_handler, response)
+        if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
+            resource_reply = create_resource(uid, request, uma_handler, response)
+        else:
+            response.status_code = 401
+            response.headers["Error"] = "Ownership for parent resource does not match with the parsed JWT"
+            return response
         logger.debug("Creating resource!")
         logger.debug(resource_reply)
         #If the reply is not of type Response, the creation was successful
@@ -273,30 +285,24 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             if request.is_json:
                 data = request.get_json()
-                custom_mongo = Mongo_Handler("resource_db", "resources")
-                if custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
-                    if data.get("name"):
-                        if 'resource_scopes' not in data.keys():
-                            data['resource_scopes'] = []
-                            for scope in g_config["default_scopes"]:
+                if data.get("name"):
+                    if 'resource_scopes' not in data.keys():
+                        data['resource_scopes'] = []
+                        for scope in g_config["default_scopes"]:
+                            data['resource_scopes'].append(scope)
+                    #Skip default scopes if registering scope is public or authenticated access
+                    elif not is_public_or_authenticated(data):
+                        for scope in g_config["default_scopes"]:
+                            if scope not in data.get("resource_scopes"):
                                 data['resource_scopes'].append(scope)
-                        #Skip default scopes if registering scope is public or authenticated access
-                        elif not is_public_or_authenticated(data):
-                            for scope in g_config["default_scopes"]:
-                                if scope not in data.get("resource_scopes"):
-                                    data['resource_scopes'].append(scope)
 
-                        resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
-                        data["ownership_id"] = uid
-                        data["id"] = resource_id
-                        return data
-                    else:
-                        response.status_code = 500
-                        response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
-                        return response
+                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    data["ownership_id"] = uid
+                    data["id"] = resource_id
+                    return data
                 else:
-                    response.status_code = 401
-                    response.headers["Error"] = "Ownership for parent resource does not match with the parsed JWT"
+                    response.status_code = 500
+                    response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
                     return response
             else: 
                 response.status_code = 415

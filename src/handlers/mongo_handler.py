@@ -30,7 +30,7 @@ class Mongo_Handler:
             Return boolean result 
         '''
         #In case the first url is '/'
-        if str(url) == '/': return True
+        if str(url) == '/': return False
         col = self.db[self.db_obj]
         found = col.find_one({ "reverse_match_url": url })
         if found:
@@ -43,7 +43,7 @@ class Mongo_Handler:
             if next_url:
                 return self.verify_previous_uri_ownership(uid, next_url)
             #In case no resource was registered before for that user and path
-            else: return True
+            else: return False
 
 
 
