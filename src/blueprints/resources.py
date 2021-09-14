@@ -123,7 +123,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             resource_reply = create_resource(uid, request, uma_handler, response)
         else:
             response.status_code = 401
-            response.headers["Error"] = "Ownership for parent resource does not match with the parsed JWT"
+            response.headers["Error"] = "Operator constraint, no authorization for given UID"
             return response
         logger.debug("Creating resource!")
         logger.debug(resource_reply)
