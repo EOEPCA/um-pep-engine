@@ -86,8 +86,14 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
             logger.debug(head_protected)
-            uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
+            #Above query returns a None in case of Exception, following condition asserts False for that case
+            if not is_operator:
+                is_operator = False
+            if is_operator and "uuid" in request.get_json():
+                uid = request.get_json()["uuid"]
+            else:
+                uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             logger.debug(uid)
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
