@@ -118,7 +118,19 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
             return response
 
-        resource_reply = create_resource(uid, request, uma_handler, response)
+        #Above query returns a None in case of Exception, following condition asserts False for that case
+        if not is_operator:
+            is_operator = False
+        
+        data = request.get_json()
+        custom_mongo = Mongo_Handler("resource_db", "resources")
+
+        if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
+            resource_reply = create_resource(uid, request, uma_handler, response)
+        else:
+            response.status_code = 401
+            response.headers["Error"] = "Operator constraint, no authorization for given UID"
+            return response
         logger.debug("Creating resource!")
         logger.debug(resource_reply)
         #If the reply is not of type Response, the creation was successful

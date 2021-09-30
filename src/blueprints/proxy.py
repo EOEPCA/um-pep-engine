@@ -24,6 +24,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     logger = logging.getLogger("PEP_ENGINE")
     log_handler = LogHandler.get_instance()
 
+    @proxy_bp.route('/', defaults={'path': ''}, methods=["GET","POST","PUT","DELETE","HEAD","PATCH"])
     @proxy_bp.route("/<path:path>", methods=["GET","POST","PUT","DELETE","HEAD","PATCH"])
     def resource_request(path):
         # Check for token
@@ -47,9 +48,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                 scopes.append('protected_head')
             elif request.method == 'PATCH':
                 scopes.append('protected_patch')
-        
         uid = None
-        
         #If UUID exists and resource requested has same UUID
         api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
@@ -93,7 +92,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         if resource_id is not None:
             try:
                 logger.debug("Matched resource: "+str(resource_id))
-                # Generate ticket if token is not present        
+                # Generate ticket if token is not present
                 ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": scopes }])
                 # Return ticket
                 response.headers["WWW-Authenticate"] = "UMA realm="+g_config["realm"]+",as_uri="+g_config["auth_server_url"]+",ticket="+ticket
