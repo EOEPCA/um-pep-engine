@@ -24,6 +24,30 @@ class Mongo_Handler:
         else:
             return False
 
+    def verify_previous_uri_ownership(self, uid, url):
+        '''
+            Recursive check of a resource existance by matching the reverse_match_uri and the subpath within of a specific UID
+            Return boolean result 
+        '''
+        #In case the first url is '/'
+        if str(url) == '/': return False
+        col = self.db[self.db_obj]
+        found = col.find_one({ "reverse_match_url": url })
+        if found:
+            if str(found['ownership_id']) == str(uid):
+                return True
+            else: return False
+        else:
+            next_url= '/'.join(str(url).split('/')[0:-1])
+            #If is not '/'
+            if next_url:
+                return self.verify_previous_uri_ownership(uid, next_url)
+            #In case no resource was registered before for that user and path
+            else: return False
+
+
+
+
     def get_from_mongo(self, mongo_key, mongo_value):
         '''
             Gets an existing object from the database, or None if not found
