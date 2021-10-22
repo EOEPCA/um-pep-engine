@@ -174,7 +174,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             return response
         except Exception as e:
             response = Response()
-            logger.debug("Error while redirecting to resource: "+ traceback.format_exc(),file=sys.stderr)
+            logger.debug("Error while redirecting to resource: "+ str(e))
             response.status_code = 500
             response.content = "Error while redirecting to resource: "+str(e)
             return response
