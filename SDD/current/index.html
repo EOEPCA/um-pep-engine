@@ -47,7 +47,8 @@
 <li><a href="#_exposed_interfaces">2.2.1. Exposed Interfaces</a>
 <ul class="sectlevel4">
 <li><a href="#_https_reverse_proxy_listener">2.2.1.1. HTTP(S) (Reverse Proxy Listener)</a></li>
-<li><a href="#_https_to_resource_server">2.2.1.2. HTTP(S) (to Resource Server)</a></li>
+<li><a href="#_https_nginx_proxy_listener">2.2.1.2. HTTP(S) (Nginx Proxy Listener)</a></li>
+<li><a href="#_https_to_resource_server">2.2.1.3. HTTP(S) (to Resource Server)</a></li>
 </ul>
 </li>
 <li><a href="#_consumed_interfaces">2.2.2. Consumed Interfaces</a>
@@ -76,6 +77,7 @@
 <li><a href="#_pep_uc_005_resource_management">2.5.5. PEP-UC-005: Resource Management</a></li>
 <li><a href="#_pep_uc_006_default_protection_of_resources">2.5.6. PEP-UC-006: Default protection of resources</a></li>
 <li><a href="#_pep_uc_007_policy_enforcement_point_api">2.5.7. PEP-UC-007: Policy Enforcement Point API</a></li>
+<li><a href="#_pep_uc_008_policy_enforcement_point_partial_mode">2.5.8. PEP-UC-008: Policy Enforcement Point PARTIAL mode</a></li>
 </ul>
 </li>
 </ul>
@@ -1083,7 +1085,7 @@ In case the request is accompained by a header using a valid RPT in the format <
 <h5 id="_https_reverse_proxy_listener">2.2.1.1. HTTP(S) (Reverse Proxy Listener)</h5>
 <div class="paragraph">
 <p>An HTTP listener, which can be configured through the config file.<br>
-This is the only input interface to interact directly with the PEP from outside, and is managed by the reverse proxy.</p>
+This is the only input interface to interact directly with the PEP from outside when in FULL mode, and is managed by the reverse proxy.</p>
 </div>
 <div class="paragraph">
 <p>The default listener for this interface is <code>/pep/&lt;path-to-resource&gt;</code>.</p>
@@ -1093,9 +1095,22 @@ This is the only input interface to interact directly with the PEP from outside,
 </div>
 </div>
 <div class="sect4">
-<h5 id="_https_to_resource_server">2.2.1.2. HTTP(S) (to Resource Server)</h5>
+<h5 id="_https_nginx_proxy_listener">2.2.1.2. HTTP(S) (Nginx Proxy Listener)</h5>
 <div class="paragraph">
-<p>The PEP will contact via HTTP with the configured Resource Server whenever a valid request with a valid RPT is done, or whenever RPT is not needed to access the resource.</p>
+<p>An HTTP listener, which can be configured through the config file.<br>
+This is the only input interface to interact directly with the PEP from outside when in PARTIAL mode, and is managed by the authorize api.</p>
+</div>
+<div class="paragraph">
+<p>The default listener for this interface is <code>/pep/authorize</code>.</p>
+</div>
+<div class="paragraph">
+<p>This interface will parse the path and the headers in order to assert authentication and authorization of the client requesting the resource, reporting back the results.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_https_to_resource_server">2.2.1.3. HTTP(S) (to Resource Server)</h5>
+<div class="paragraph">
+<p>The PEP (when in FULL mode) will contact via HTTP with the configured Resource Server whenever a valid request with a valid RPT is done, or whenever RPT is not needed to access the resource.</p>
 </div>
 <div class="paragraph">
 <p>The PEP will make a request to the RS, and will return the answer verbatim to the client that requested it, effectively acting like a transparent proxy from the client&#8217;s point of view. This allows the mentioned desired behaviour of being able to protect anything just placing the PEP "in front of" the resource to protect.</p>
@@ -1397,6 +1412,12 @@ If the verification of the signature for the JWT is disabled, the code will do t
 <div class="paragraph">
 <p>The current implemented functionalities can be consulted through a specific OpenAPI webpage, available at the PEP level.</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_pep_uc_008_policy_enforcement_point_partial_mode">2.5.8. PEP-UC-008: Policy Enforcement Point PARTIAL mode</h4>
+<div class="paragraph">
+<p>The PEP is also capable of functioning in a PARTIAL mode, where the reverse proxy is disabled and is delegated to an external nginx instance. In this mode, the PEP provides an authorization endpoint that can be called for RPT validation and ticket generation, informing the nginx instance of the replies.</p>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1457,7 +1478,10 @@ If the verification of the signature for the JWT is disabled, the code will do t
 <div class="sect3">
 <h4 id="_overview_and_purpose">3.2.1. Overview and Purpose</h4>
 <div class="paragraph">
-<p>The Flask-based reverse proxy serves as the interface for input queries. This reverse proxy is in charge of recieving the queries and returning the appropiate HTTP response.</p>
+<p>The Flask-based reverse proxy serves as the interface for input queries. This reverse proxy is in charge of receiving the queries and returning the appropiate HTTP response.</p>
+</div>
+<div class="paragraph">
+<p>This is the default behaviour of the PEP when working in FULL mode. There is an alternate mode, PARTIAL, where the reverse proxy functionality is delegated to an external nginx instance, and the PEP itself works in an authorization api fashion, validating RPTs and issuing access tickets for requests, informing the caller of the result of said actions.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1544,6 +1568,9 @@ If the verification of the signature for the JWT is disabled, the code will do t
 </li>
 <li>
 <p><strong>verify_signature</strong>: Toggle on/off (bool) the usage of signature validation for the JWT.</p>
+</li>
+<li>
+<p><strong>working_mode</strong>: PEP working mode, FULL or PARTIAL.</p>
 </li>
 <li>
 <p><strong>client_id</strong>: string indicating a client_id for an already registered and configured client. <strong>This parameter is optional</strong>. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.</p>
@@ -2075,7 +2102,7 @@ And one with the scope of 'protection_write' which is related to the requests to
 <div id="footer">
 <div id="footer-text">
 Version 0.1<br>
-Last updated 2021-10-27 14:28:48 UTC
+Last updated 2021-11-02 09:15:01 UTC
 </div>
 </div>
 </body>
