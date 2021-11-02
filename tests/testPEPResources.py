@@ -83,7 +83,7 @@ class PEPResourceTest(unittest.TestCase):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
         res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
-            return 200, res.text
+            return 200, res.json()["id"]
         return 500, None
 
     def createDelegatedTestResource(self, id_token="filler"):

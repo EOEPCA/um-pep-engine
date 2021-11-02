@@ -59,7 +59,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
                 logger.debug("Matching owned-resource found!")
                 #Add resource to return list
-                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"]})
+                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
                 found_uid = True
         
         #If user-owned resources were found, return the list
@@ -243,7 +243,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 if request.method == "PUT":
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PUT operation called","Reply":reply.text}
+                        activity = {"User":uid,"Description":"PUT operation called","Reply":"OK"}
                     else:
                         activity = {"User":uid,"Description":"PUT operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
@@ -254,7 +254,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     # reply = patch_resource(request, custom_mongo, resource_id, uid, response)
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.text}
+                        activity = {"User":uid,"Description":"PATCH operation called","Reply":"OK"}
                     else:
                         activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.headers["Error"]}
                     logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
@@ -422,7 +422,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
             
         #We only want to return resource_id (as "_id") and name, so we prune the other entries
-        resource = {"_id": resource["resource_id"], "_name": resource["name"]}
+        resource = {"_id": resource["resource_id"], "_name": resource["name"], "_reverse_match_url": resource["reverse_match_url"]}
         return resource
 
     def get_resource_head(custom_mongo, resource_id, response):

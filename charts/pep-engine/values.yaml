@@ -32,6 +32,7 @@ configMap:
   pdpPolicy: /pdp/policy/
   verifySignature: "'false'"
   defaultResourcePath: /data/default-resources.json
+  workingMode: "FULL"
 
 readinessProbe:
   initialDelaySeconds: 1
