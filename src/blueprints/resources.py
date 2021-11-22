@@ -29,75 +29,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
-            uid = oidc_client.verify_uid_headers(headers_protected, "sub")
-            if "NO TOKEN FOUND" in uid:
-                response.status_code = 401
-                response.headers["Error"] = 'no token passed!'
-                activity = {"Description":"No token found/error reading token"}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
-                return response
-        except Exception as e:
-            logger.debug("Error While passing the token: "+str(uid))
-            response.status_code = 500
-            response.headers["Error"] = str(e)
-            activity = {"Description":"No token found/error reading token: "+str(e)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
-            return response
-
-        if not uid:
-            logger.debug("UID for the user not found")
-            response.status_code = 401
-            response.headers["Error"] = 'Could not get the UID for the user'
-            activity = {"Description":"User not found in token"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
-            return response
-        
-        found_uid = False
-        #We will search for any resources that are owned by the user that is making this call
-        for rsrc in resources:
-            #If UUID exists and owns the requested resource
-            if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
-                logger.debug("Matching owned-resource found!")
-                #Add resource to return list
-                resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
-                found_uid = True
-        
-        #If user-owned resources were found, return the list
-        if found_uid:
-            activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(resourceListToReturn)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
-            if request.method == "HEAD":
-                return
-            return json.dumps(resourceListToReturn)
-        #Otherwise
-        response.status_code = 404
-        response.headers["Error"] = "No user-owned resources found!"
-        activity = {"User":uid,"Description":"No matching resources found for user!"}
-        logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
-        return response
-
-
-    @resources_bp.route("/resources?path=<path>", methods=["GET"])
-    def get_resource_by_path(path):
-        logger.debug("Retrieving resource by path "+str(path)+"...")
-        #gets all resources registered on local DB
-        custom_mongo = Mongo_Handler("resource_db", "resources")
-        
-
-        rpt = request.headers.get('Authorization')
-        response = Response()
-        resourceListToReturn = []
-
-        uid = None
-        try:
-            head_protected = str(request.headers)
-            headers_protected = head_protected.split()
             is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
             #Above query returns a None in case of Exception, following condition asserts False for that case
             if not is_operator:
                 is_operator = False
-            else:
-                uid = oidc_client.verify_uid_headers(headers_protected, "sub")
+            uid = oidc_client.verify_uid_headers(headers_protected, "sub")
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
@@ -121,22 +57,45 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
         
         found_uid = False
-        #We will search for any resources that are owned by the user that is making this call
-        resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))
+
+        path = request.args.get('path')
+        if path:
+            resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))            
+            if resource:
+                activity = {"User":uid,"Description":"Returning matched resource: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
+                if request.method == "HEAD":
+                    return
+                return {'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]}
+            else:
+                response.status_code = 404
+                response.headers["Error"] = "No user-owned resources found!"
+                activity = {"User":uid,"Description":"No matching resources found for user!"}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
+                return response
+        else:
+            #We will search for any resources that are owned by the user that is making this call
+            for rsrc in resources:
+                #If UUID exists and owns the requested resource
+                if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
+                    logger.debug("Matching owned-resource found!")
+                    #Add resource to return list
+                    resourceListToReturn.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
+                    found_uid = True
         
         #If user-owned resources were found, return the list
-        if found_uid or is_operator:
+        if found_uid:
             activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(resourceListToReturn)}
             logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
             if request.method == "HEAD":
                 return
-            return json.dumps(resource)
+            return json.dumps(resourceListToReturn)
         #Otherwise
         response.status_code = 404
         response.headers["Error"] = "No user-owned resources found!"
         activity = {"User":uid,"Description":"No matching resources found for user!"}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
-        return response    
+        return response
 
     @resources_bp.route("/resources", methods=["POST"])
     def resource_creation():
