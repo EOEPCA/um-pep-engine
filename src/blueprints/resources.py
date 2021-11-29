@@ -62,7 +62,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         if path:
             resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))            
             if resource:
-                activity = {"User":uid,"Description":"Returning matched resource: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
+                activity = {"User":uid,"Description":"Returning matched resource by path: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
                 if request.method == "HEAD":
                     return

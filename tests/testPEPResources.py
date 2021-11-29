@@ -105,6 +105,17 @@ class PEPResourceTest(unittest.TestCase):
             return 404, res.headers["Error"]
         return 500, None
 
+    def getResourceByPath(self, id_token="filler"):
+        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
+        res = requests.get(self.PEP_RES_HOST+"/resources?path=/", headers=headers, verify=False)
+        if res.status_code == 401:
+            return 401, res.headers["Error"]
+        if res.status_code == 200:
+            return 200, res.json()
+        if res.status_code == 404:
+            return 404, res.headers["Error"]
+        return 500, None
+
     def deleteResource(self, id_token="filler"):
         headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
         res = requests.delete(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)

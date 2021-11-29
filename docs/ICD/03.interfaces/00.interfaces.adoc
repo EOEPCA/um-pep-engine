@@ -1248,6 +1248,96 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+===== Filter by path
+    
+`GET /resources?path=<PATH>`
+
+Get the resource with the path specified
+
+===== Description 
+
+This operation returns the resource filtered by ownership ID and the path passed as argument in the URL. Ownership ID is extracted from the OpenID Connect Token
+
+
+// markup not found, no include::{specDir}resources/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+====== URL Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| reverse_match_url of resource  
+| - 
+ 
+
+|===    
+
+
+===== Return Type
+
+JSON
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+| JSON 
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [.resourcesPost]
 ==== Resources POST
