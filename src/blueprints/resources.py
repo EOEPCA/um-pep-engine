@@ -7,6 +7,7 @@ from handlers.uma_handler import rpt as class_rpt
 from handlers.mongo_handler import Mongo_Handler
 from handlers.policy_handler import policy_handler
 from handlers.log_handler import LogHandler
+from config import get_terms
 import logging
 
 def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
@@ -480,9 +481,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
     def get_default_ownership_policy_cfg(resource_id, uid, action):
         if check_default_ownership(uid):
-            return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"isOperator" : True } }] }] }
+            return { "resource_id": resource_id, "T&C": get_terms(g_config["default_terms_path"]), "action": action, "rules": [{ "AND": [ {"EQUAL": {"isOperator" : True } }] }] }
         else:
-            return { "resource_id": resource_id, "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
+            return { "resource_id": resource_id, "T&C": get_terms(g_config["default_terms_path"]), "action": action, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
 
     def get_default_ownership_policy_body(resource_id, uid, scope):
         name = "Default Ownership Policy of " + str(resource_id) + " with action " + str(g_config[scope])

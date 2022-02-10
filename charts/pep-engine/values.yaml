@@ -31,7 +31,8 @@ configMap:
   pdpPort: 5567
   pdpPolicy: /pdp/policy/
   verifySignature: "'false'"
-  defaultResourcePath: /data/default-resources.json
+  defaultResourcePath: /data/resources/default-resources.json
+  defaultTermsPath: /data/terms/default-terms.json
   workingMode: "FULL"
 
 readinessProbe:

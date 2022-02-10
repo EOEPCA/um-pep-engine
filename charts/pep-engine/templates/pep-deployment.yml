@@ -43,7 +43,9 @@ spec:
             name: {{ .Values.global.pep }}-cm
         volumeMounts:
         - name: default-resources
-          mountPath: /data/
+          mountPath: /data/resources/
+        - name: default-terms
+          mountPath: /data/terms/
       - name: mongo
         imagePullPolicy: {{ .Values.image.imagePullPolicy }}
         image: mongo
@@ -73,3 +75,6 @@ spec:
         - name: default-resources
           configMap:
             name: custom-resources
+        - name: default-terms
+          configMap:
+            name: custom-terms

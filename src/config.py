@@ -64,6 +64,7 @@ def get_config(config_path: str):
     "PEP_PDP_POLICY_ENDPOINT",
     "PEP_VERIFY_SIGNATURE",
     "PEP_DEFAULT_RESOURCE_PATH",
+    "PEP_DEFAULT_TERMS_PATH",
     "PEP_WORKING_MODE"]
 
     #Sets logger
@@ -98,7 +99,7 @@ def get_config(config_path: str):
 
     # Global handlers
     g_wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)
-
+    
     # Global setting to validate RPTs received at endpoints
     api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     if api_rpt_uma_validation:
@@ -154,4 +155,26 @@ def get_default_resources(path: str):
             g_config['default_resources'].append(k)
         else:
             logger.debug("The default resource "+str(k)+" is already on the k8s definition")
+    return g_config
+
+def get_terms(path: str):
+    """
+    Gets the default terms and conditions to associate to each resource policy
+    """
+    #Sets logger
+    logger = logging.getLogger("PEP_ENGINE")
+    g_config = {}    
+    # Global config objects
+    # If path is the same as default one, return default values
+    if path == "./config/default-terms.json":
+        return load_config(path)
+    # If paths are different, merge both files and return dict
+    g_config = load_config(path)
+    l_config = load_config("./config/default-terms.json")
+    for k in l_config:
+        if not any(d == k for d in g_config):
+            g_config.append(k)
+        else:
+            logger.debug("The default T&C "+str(k)+" is already on the k8s definition")
+    logger.info("CONFIG HECHA?")
     return g_config

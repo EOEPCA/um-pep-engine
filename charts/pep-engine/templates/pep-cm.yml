@@ -21,6 +21,7 @@ data:
   PEP_PROXY_SERVICE_PORT: {{ .Values.global.proxyServicePort | quote }}
   PEP_RESOURCES_SERVICE_PORT: {{ .Values.global.resourcesServicePort | quote }}
   PEP_DEFAULT_RESOURCE_PATH: {{ .Values.configMap.defaultResourcePath | quote }}
+  PEP_DEFAULT_TERMS_PATH: {{ .Values.configMap.defaultTermsPath | quote }}
   PEP_WORKING_MODE: {{ .Values.configMap.workingMode | quote }}
 
 ---
@@ -32,6 +33,19 @@ metadata:
 data:
   {{ if .Files.Get "scripts/default-resources.json" }}
   default-resources.json: {{ .Files.Get "scripts/default-resources.json" | quote  }}
+  {{ else }}
+  {{ fail "you need to supply a default resource JSON file! add 'default-resources.json' to your chart 'scripts' directory." }}
+  {{ end }}
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-terms  
+data:
+  {{ if .Files.Get "scripts/default-terms.json" }}
+  default-terms.json: {{ .Files.Get "scripts/default-terms.json" | quote  }}
   {{ else }}
   {{ fail "you need to supply a default resource JSON file! add 'default-resources.json' to your chart 'scripts' directory." }}
   {{ end }}
