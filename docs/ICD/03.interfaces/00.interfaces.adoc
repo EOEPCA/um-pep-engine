@@ -588,6 +588,581 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+[.PolicyAuthorize]
+=== PolicyAuthorize
+
+
+[.authorizePathDelete]
+==== Authorize DELETE
+    
+`DELETE /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers
+
+
+// markup not found, no include::{specDir}authorize/}/DELETE/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/DELETE/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/DELETE/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/DELETE/DELETE.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/DELETE/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.authorizePathGet]
+==== Authorize GET
+    
+`GET /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers and query parameters
+
+
+// markup not found, no include::{specDir}authorize/}/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+[.authorizePathHead]
+==== Authorize HEAD
+    
+`HEAD /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers and query parameters
+
+
+// markup not found, no include::{specDir}authorize/}/HEAD/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/HEAD/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/HEAD/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/HEAD/HEAD.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/HEAD/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+[.authorizePathPost]
+==== Authorize POST
+    
+`POST /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}authorize/}/POST/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/POST/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/POST/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/POST/POST.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/POST/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+
+[.authorizePathPut]
+==== Authorize PUT
+    
+`PUT /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}authorize/}/PUT/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/PUT/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/PUT/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/PUT/PUT.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/PUT/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
+
+[.authorizePathPatch]
+==== Authorize PATCH
+    
+`PATCH /authorize`
+
+Request to Back-End Service
+
+===== Description 
+
+This operation propagates all headers, query parameters and body
+
+
+// markup not found, no include::{specDir}authorize/}/PATCH/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+====== Path Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| Path to the Back-End Service  
+| X 
+ 
+
+|===         
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| RPT Token generated through UMA Flow  
+| - 
+ 
+
+|===         
+
+
+
+===== Return Type
+
+
+
+-
+
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+|  <<>>
+
+
+| 401
+| Unauthorized access request.
+|  <<>>
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}authorize/}/PATCH/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}authorize/}/PATCH/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :authorize/PATCH/PATCH.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}authorize/}/PATCH/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [.Resources]
 === Resources
@@ -673,6 +1248,96 @@ ifdef::internal-generation[]
 
 endif::internal-generation[]
 
+===== Filter by path
+    
+`GET /resources?path=<PATH>`
+
+Get the resource with the path specified
+
+===== Description 
+
+This operation returns the resource filtered by ownership ID and the path passed as argument in the URL. Ownership ID is extracted from the OpenID Connect Token
+
+
+// markup not found, no include::{specDir}resources/GET/spec.adoc[opts=optional]
+
+
+
+===== Parameters
+
+
+
+
+====== Header Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| Authorization 
+| JWT or Bearer Token  
+| - 
+ 
+
+|===         
+
+====== URL Parameters
+
+[cols="2,3,1"]
+|===         
+|Name| Description| Required
+
+| path 
+| reverse_match_url of resource  
+| - 
+ 
+
+|===    
+
+
+===== Return Type
+
+JSON
+
+
+===== Content Type
+
+* application/json
+
+===== Responses
+
+.http response codes
+[cols="2,3,1"]
+|===         
+| Code | Message | Datatype 
+
+
+| 200
+| OK
+| JSON 
+
+|===         
+
+===== Samples
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-request.adoc[opts=optional]
+
+
+// markup not found, no include::{snippetDir}resources/GET/http-response.adoc[opts=optional]
+
+
+
+// file not found, no * wiremock data link :resources/GET/GET.json[]
+
+
+ifdef::internal-generation[]
+===== Implementation
+
+// markup not found, no include::{specDir}resources/GET/implementation.adoc[opts=optional]
+
+
+endif::internal-generation[]
 
 [.resourcesPost]
 ==== Resources POST

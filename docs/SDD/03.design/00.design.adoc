@@ -22,7 +22,9 @@ When a breakdown is necessary, a general overview of the building block can be g
 
 == Reverse Proxy Service
 === Overview and Purpose
-The Flask-based reverse proxy serves as the interface for input queries. This reverse proxy is in charge of recieving the queries and returning the appropiate HTTP response. 
+The Flask-based reverse proxy serves as the interface for input queries. This reverse proxy is in charge of receiving the queries and returning the appropiate HTTP response.
+
+This is the default behaviour of the PEP when working in FULL mode. There is an alternate mode, PARTIAL, where the reverse proxy functionality is delegated to an external nginx instance, and the PEP itself works in an authorization api fashion, validating RPTs and issuing access tickets for requests, informing the caller of the result of said actions.
 
 === Software Reuse and Dependencies
 
@@ -61,6 +63,7 @@ The parameters that are accepted, and their meaning, are as follows. For the `co
 - **debug_mode**: Toggle on/off (bool) a debug mode of Flask. In a production environment, this should be false.
 - **resource_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
 - **verify_signature**: Toggle on/off (bool) the usage of signature validation for the JWT.
+- **working_mode**: PEP working mode, FULL or PARTIAL.
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 - **client_secret**: string indicating the client secret for the client_id. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.
 
@@ -140,7 +143,7 @@ Included with the PEP there is a script at the source path that performs queries
 It is developed to generate a database called 'resource_db' in case it does not exist. The collection used for the storage of the documents is called 'resources'.
 The script defines methods to:
 
-* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries. For updated operations, it is also capable of querying the OIDC endpoint of the Authorization Server to query if the request was performed by a valid resource operator.
+* **Insert resource data**: Generates a document with the resource data received as input and if it already exists, it gets updated. The main parameters of the resource would be an auto-generated id provided by mongo which identify each document in the database, the resource ID provided by the login-service, and the match url which will define the endpoint of the resource. This would be mandatory parameters in order to perform other kind of queries. For updated operations, it is also capable of querying the OIDC endpoint of the Authorization Server to query if the request was performed by a valid resource operator. As an operator all resources are available for register and update, but in case the one registering a resource is a user, it will need to ask for an operator to first register a resource in its name. After that all resources derived from the resource asigned will be allowed to register by taht user.
 * **Get the ID from a URI**: Returns the id for the best candidate of the match by a given URI.
 * **Delete resources**: Receives a resource id and will find and delete the matched document, if the requesting user is a valid resource operator.
 

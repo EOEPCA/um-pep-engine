@@ -26,7 +26,7 @@ class UMA_Handler:
         Creates a new resource IF A RESOURCE WITH THAT ICON_URI DOESN'T EXIST YET.
         Will throw an exception if it exists
         """
-
+        self.logger.debug("Creating resource through UMA Handler")
         if self.resource_exists(icon_uri):
             raise Exception("Resource already exists for URI "+icon_uri)
 
