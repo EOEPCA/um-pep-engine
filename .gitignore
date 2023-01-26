@@ -64,3 +64,6 @@ env/
 
 # Secret keys
 *pem
+
+# Intellij
+.idea
