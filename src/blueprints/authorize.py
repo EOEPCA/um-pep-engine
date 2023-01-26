@@ -1,7 +1,6 @@
 from flask import Blueprint, request, Response
 from handlers.mongo_handler import Mongo_Handler
 from handlers.log_handler import LogHandler
-import json
 
 import logging
 
