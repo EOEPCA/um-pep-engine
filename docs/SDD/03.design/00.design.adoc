@@ -86,8 +86,8 @@ An example of default resources would be as follows:
 ```
 {
   "default_resources": [
-    {"name": "Sample Resource", resource_uri": "/", "scopes": "protected_access", "default_owner": <uuid>},
-    {"name": "Sample Resource", resource_uri": "/workspace", "scopes": "protected_access", "default_owner": <uuid>}
+    {"name": "Sample Resource", resource_uri": "/", "scopes": "protected_access", "default_owner": <uuid>, "T&C": []},
+    {"name": "Sample Resource", resource_uri": "/workspace", "scopes": "protected_access", "default_owner": <uuid>, "T&C": []}
   ]
 }
 ```
