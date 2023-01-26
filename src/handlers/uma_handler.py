@@ -6,7 +6,6 @@ from jwt_verification.signature_verification import JWT_Verification
 from typing import List
 import base64
 import json
-import pymongo
 from datetime import datetime
 import logging
 
@@ -30,13 +29,17 @@ class UMA_Handler:
         if self.resource_exists(icon_uri):
             raise Exception("Resource already exists for URI "+icon_uri)
 
-        resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-        pat = self.oidch.get_new_pat()
-        new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-        self.logger.debug("Created resource '"+name+"' with ID :"+new_resource_id)
-        # Register resources inside the dbs
-        resp=self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri)
-        if resp: self.logger.debug('Resource saved in DB succesfully')
+        if not 'open' in scopes:
+            resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+            pat = self.oidch.get_new_pat()
+            new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
+            self.logger.debug("Created resource '"+name+"' with ID :"+new_resource_id)
+
+        resp = self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri)
+        if resp: 
+            self.logger.debug('Resource saved in DB succesfully')
+        else:
+            self.logger.debug('Failed to save resource on DB')
        
         return new_resource_id
         
@@ -46,28 +49,49 @@ class UMA_Handler:
         Can throw exceptions
         """
         
-        resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-        pat = self.oidch.get_new_pat()
-        new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-        resp=self.mongo.insert_resource_in_mongo(resource_id, name, ownership_id, icon_uri)
-        self.logger.debug("Updated resource '"+name+"' with ID :"+new_resource_id)
-        
+        self.logger.debug("Updating resource through UMA Handler")
+
+        if not 'open' in scopes:
+            resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+            pat = self.oidch.get_new_pat()
+            new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
+            self.logger.debug("Updated resource '"+name+"' with ID :"+new_resource_id)
+
+        resp = self.mongo.insert_resource_in_mongo(resource_id, name, ownership_id, icon_uri)
+        if resp: 
+            self.logger.debug('Resource updated in DB succesfully')
+        else:
+            self.logger.debug('Failed to update resource on DB')
+
     def delete(self, resource_id: str):
         """
         Deletes an existing resource.
         Can throw exceptions
         """        
         
-        id = self.get_resource(resource_id)["_id"]
+        self.logger.debug("Deleting resource through UMA Handler")
+
+        resource = self.get_resource(resource_id)
+
+        id = resource["_id"]
         if id is None:
             raise Exception("Resource for ID "+resource_id+" does not exist")
 
-        resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-        pat = self.oidch.get_new_pat()
+        if not 'open' in resource.get("resource_scopes"):
+            resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+            pat = self.oidch.get_new_pat()
+            try:
+                resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
+                self.logger.debug("Deleted resource with ID :" + resource_id)
+            except Exception as e:
+                self.logger.debug("Failed to delete resource. " + str(e))
+
         try:
-            resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
             resp = self.mongo.delete_in_mongo("resource_id", resource_id)
-            self.logger.debug("Deleted resource with ID :"+resource_id)
+            if resp: 
+                self.logger.debug('Resource deleted from DB succesfully')
+            else:
+                self.logger.debug('Failed to delete resource from DB')
         except Exception as e:
             self.logger.debug("Error while deleting resource: "+str(e))
 
@@ -151,7 +175,8 @@ class UMA_Handler:
         pat = self.oidch.get_new_pat()
         resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
         r=self.mongo.get_id_from_uri(icon_uri)
-        if not r: return False
+        if not r: 
+            return False
         data = resource.read(pat, resource_reg_endpoint, r, self.verify)
         if "icon_uri" in data and data["icon_uri"] == icon_uri:
             return True
