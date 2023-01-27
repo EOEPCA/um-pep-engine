@@ -8,6 +8,7 @@ import base64
 import json
 from datetime import datetime
 import logging
+import uuid
 
 class UMA_Handler:
 
@@ -29,13 +30,15 @@ class UMA_Handler:
         if self.resource_exists(icon_uri):
             raise Exception("Resource already exists for URI "+icon_uri)
 
+        new_resource_id = ""
         if not 'open' in scopes:
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()
             new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
             self.logger.debug("Created resource '"+name+"' with ID :"+new_resource_id)
-
-        resp = self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri)
+        else:
+            new_resource_id = str(uuid.uuid4())
+        resp = self.mongo.insert_resource_in_mongo(new_resource_id, name, ownership_id, icon_uri, scopes)
         if resp: 
             self.logger.debug('Resource saved in DB succesfully')
         else:

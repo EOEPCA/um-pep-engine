@@ -8,20 +8,15 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
     logger = logging.getLogger("PEP_ENGINE")
     log_handler = LogHandler.get_instance()
+    custom_mongo = Mongo_Handler("resource_db", "resources")
 
     @resources_bp.route("/resources", methods=["GET", "HEAD"])
     def get_resource_list():
         logger.debug("Retrieving all registered resources...")
-        #gets all resources registered on local DB
-        custom_mongo = Mongo_Handler("resource_db", "resources")
-        resources = custom_mongo.get_all_resources()
-        open_resources = filter(lambda resource: 'open' in resource.get('resource_scopes'), resources)
-
         response = Response()
-        resource_list_to_return = []
-
+        
+        # get uid
         uid = None
-        found_token = True
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
@@ -30,75 +25,69 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if not is_operator:
                 is_operator = False
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
-            if "NO TOKEN FOUND" in uid:
-                found_token = False
-                if not len(open_resources):
-                    response.status_code = 401
-                    response.headers["Error"] = 'no token passed!'
-                    activity = {"Description":"No token found/error reading token"}
-                    logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
-                    return response
         except Exception as e:
-            logger.debug("Error While passing the token: "+str(uid))
-            found_token = False
-            if not len(open_resources):
-                response.status_code = 500
-                response.headers["Error"] = str(e)
-                activity = {"Description":"No token found/error reading token: "+str(e)}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
-                return response
-
-        if found_token and not uid and not is_operator:
-            logger.debug("UID for the user not found")
-            response.status_code = 401
-            response.headers["Error"] = 'Could not get the UID for the user'
-            activity = {"Description":"User not found in token"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
+            logger.debug("Error while parsing token: " + str(uid))
+            response.status_code = 500
+            response.headers["Error"] = str(e)
+            activity = {"Description":"Error reading token: " + str(e)}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
-        
-        found_uid = False
 
         path = request.args.get('path')
         if path:
-            resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))            
-            if resource:
-                activity = {"User":uid,"Description":"Returning matched resource by path: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
-                if request.method == "HEAD":
-                    return
-                return {'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]}
-            else:
+            # get one resource
+            resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))         
+            if not resource:
                 response.status_code = 404
                 response.headers["Error"] = "No user-owned resources found!"
                 activity = {"User":uid,"Description":"No matching resources found for user!"}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
                 return response
-        else:
-            #We will search for any resources that are owned by the user that is making this call
-            for rsrc in resources:
-                #If UUID exists and owns the requested resource
-                if uid and custom_mongo.verify_uid(rsrc["resource_id"], uid):
-                    logger.debug("Matching owned-resource found!")
-                    #Add resource to return list
-                    resource_list_to_return.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
-                    found_uid = True
 
-        if not found_uid and not len(open_resources):
-            response.status_code = 404
-            response.headers["Error"] = "No user-owned resources found!"
-            activity = {"User":uid,"Description":"No matching resources found for user!"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
-            return response
+            validated, reason = authenticate_user_for_resource(custom_mongo, uid, is_operator, resource)
+            if not validated and reason:
+                response.status_code = 401
+                response.headers["Error"] = reason
+                activity = {"Description": reason}
+                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+                return response
 
-        for rsrc in open_resources:
-            resource_list_to_return.append({'_id': rsrc["resource_id"], '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
+            activity = {"User":uid,"Description":"Returning matched resource by path: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
+            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
+            if request.method == "HEAD":
+                return
 
-        activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(resource_list_to_return)}
+            return {'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]}
+
+        # gets all resources registered on local DB
+        resources = custom_mongo.get_all_resources()
+        valid_resources = []
+        for rsrc in resources:
+            authenticated, reason = authenticate_user_for_resource(custom_mongo, uid, is_operator, rsrc)
+            if authenticated:
+                id = rsrc['resource_id']
+                logger.debug("Matched resource: " + id)
+                valid_resources.append({'_id': id, '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
+
+        activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(valid_resources)}
         logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
         if request.method == "HEAD":
             return
-        return json.dumps(resource_list_to_return)
+
+        return json.dumps(valid_resources)
     
+    def authenticate_user_for_resource(custom_mongo, uid, is_operator, resource):
+        scopes = resource.get('scopes', [])
+        if 'open' in scopes:
+            return True, None
+        if "NO TOKEN FOUND" in uid:
+            return False, 'No token found'
+        if not is_operator:
+            return False, 'User is not an operator'
+        if not custom_mongo.verify_uid(resource['resource_id'], uid):
+            return False, 'No permissions'
+        return True, None
+
     @resources_bp.route("/resources", methods=["POST"])
     def resource_creation():
         logger.debug("Processing " + request.method + " resource request...")
@@ -147,7 +136,6 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         if not is_operator:
             is_operator = False
 
-        custom_mongo = Mongo_Handler("resource_db", "resources")
         if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
             resource_reply = create_resource(uid, request, uma_handler, response)
         else:
@@ -197,7 +185,6 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     def resource_operation(resource_id):
         logger.debug("Processing " + request.method + " resource request...")
         response = Response()
-        custom_mongo = Mongo_Handler("resource_db", "resources")
         uid = None
         #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
