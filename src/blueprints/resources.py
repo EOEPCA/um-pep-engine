@@ -15,7 +15,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         #gets all resources registered on local DB
         custom_mongo = Mongo_Handler("resource_db", "resources")
         resources = custom_mongo.get_all_resources()
-        open_resources = filter(lambda resource: 'open' in resource.get('resource_scopes'), resources)
+        open_resources = list(filter(lambda resource: 'open' in resource.get('resource_scopes'), resources))
 
         response = Response()
         resource_list_to_return = []
