@@ -14,7 +14,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     def get_resource_list():
         logger.debug("Retrieving all registered resources...")
         response = Response()
-        
+
         # get uid
         uid = None
         try:
@@ -36,7 +36,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         path = request.args.get('path')
         if path:
             # get one resource
-            resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))         
+            resource = custom_mongo.get_from_mongo("reverse_match_url", str(path))
             if not resource:
                 response.status_code = 404
                 response.headers["Error"] = "No user-owned resources found!"
@@ -75,7 +75,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return
 
         return json.dumps(valid_resources)
-    
+
     def authenticate_user_for_resource(custom_mongo, uid, is_operator, resource):
         scopes = resource.get('scopes', [])
         if 'open' in scopes:
@@ -115,7 +115,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 response.headers["Error"] = 'no token passed!'
                 activity = {"Description":"No token found/error reading token"}
                 logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
-                return response   
+                return response
         except Exception as e:
             logger.debug("Error While passing the token: "+str(uid))
             response.status_code = 500
@@ -136,7 +136,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         if not is_operator:
             is_operator = False
 
-        if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")): 
+        if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")):
             resource_reply = create_resource(uid, request, uma_handler, response)
         else:
             response.status_code = 401
@@ -204,7 +204,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             activity = {"Description":"No token found/error reading token: "+str(e)}
             logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
-        
+
         #If UUID does not exist
         if not uid:
             logger.debug("UID for the user not found")
@@ -229,7 +229,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             activity = {"Description":"No token found/error reading token"}
             logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
             return response
-        
+
         #Process the remainder GET/PUT(Update)/DELETE scenarios
         try:
             #retrieve resource
@@ -324,7 +324,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     response.status_code = 500
                     response.headers["Error"] = "Invalid data passed on URL called for resource creation!"
                     return response
-            else: 
+            else:
                 response.status_code = 415
                 response.headers["Error"] = "Content-Type must be application/json"
                 return response
@@ -426,15 +426,15 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         :type custom_mongo: Object of Class custom_mongo
         :param response: response object
         :type response: Response
-        '''    
+        '''
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
-        
+
         #If no resource was found, return a 404 Error
         if not resource:
             response.status_code = 404
             response.headers["Error"] = "Resource not found"
             return response
-            
+
         #We only want to return resource_id (as "_id") and name, so we prune the other entries
         resource = {"_id": resource["resource_id"], "_name": resource["name"], "_reverse_match_url": resource["reverse_match_url"]}
         return resource
@@ -448,9 +448,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         :type custom_mongo: Object of Class custom_mongo
         :param response: response object
         :type response: Response
-        '''    
+        '''
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
-        
+
         #If no resource was found, return a 404 Error
         if not resource:
             response.status_code = 404
@@ -458,7 +458,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return response
 
         #We only intend to return response headers, not the body, so we reply with a response instead of the resource
-        response.status_code = 200    
+        response.status_code = 200
         return response
 
     def user_not_authorized(response):
@@ -466,7 +466,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         Method to generate error response when user does not have sufficient edit/delete privileges.
         :param response: response object
         :type response: Response
-        '''  
+        '''
         response.status_code = 403
         response.headers["Error"] = 'User lacking sufficient access privileges'
         return response

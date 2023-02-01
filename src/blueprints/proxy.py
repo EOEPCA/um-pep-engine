@@ -142,6 +142,8 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
         resource_scopes = resource.get('resource_scopes') if resource else None
         if 'open' in resource_scopes:
+            activity = {"Resource":resource_id,"Description":"Open resource, forwarding to RM"}
+            logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2103,activity=activity))
             headers_splitted = split_headers(str(request.headers))
             new_header = Headers()
             for key, value in headers_splitted.items():
@@ -164,12 +166,19 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             elif request.method == 'PATCH':
                 scopes.append('protected_patch')
 
+        rpt = request.headers.get('Authorization')
+        if not rpt:
+            response.status_code = 401
+            activity = {"Description: Token not found"}
+            logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=request.method,log_code=2104,activity=activity))
+            return response
+        logger.debug("Token found: "+rpt)
+        rpt = rpt.replace("Bearer ","").strip()
+
         uid = None
         # If UUID exists and resource requested has same UUID
         api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
-        rpt = request.headers.get('Authorization')
-        logger.debug("Token found: "+rpt)
-        rpt = rpt.replace("Bearer ","").strip()
+
         # Validate for a specific resource
         s_margin_rpt_valid = int(g_config["s_margin_rpt_valid"])
         rpt_limit_uses = int(g_config["rpt_limit_uses"])
