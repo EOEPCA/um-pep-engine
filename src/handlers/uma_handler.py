@@ -77,7 +77,7 @@ class UMA_Handler:
         self.logger.debug("Deleting resource through UMA Handler")
 
         resource = self.get_resource(resource_id)
-
+        self.logger.debug("Deleting registered resource..." + str(resource))
         id = resource["_id"]
         if id is None:
             raise Exception("Resource for ID "+resource_id+" does not exist")
@@ -86,8 +86,10 @@ class UMA_Handler:
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()
             try:
-                resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
-                self.logger.debug("Deleted resource with ID :" + resource_id)
+                n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
+                self.logger.debug("Deleted resource in IDP... " + str(n))
+                resp = self.mongo.delete_in_mongo("resource_id", resource_id)
+                self.logger.debug("Deleted resource with ID :" + resource_id+ " and with response: "+ str(resp))
             except Exception as e:
                 self.logger.debug("Failed to delete resource. " + str(e))
 
