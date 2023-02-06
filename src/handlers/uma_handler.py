@@ -75,14 +75,17 @@ class UMA_Handler:
         """
 
         self.logger.debug("Deleting resource through UMA Handler")
-
+        mongo_resource= self.mongo.get_from_mongo("resource_id", resource_id)
         resource = self.get_resource(resource_id)
         self.logger.debug("Deleting registered resource..." + str(resource))
         id = resource["_id"]
         if id is None:
-            raise Exception("Resource for ID "+resource_id+" does not exist")
+            try:
+               id= mongo_resource["_id"]
+            except Exception as e:
+                self.logger.debug("Resource for ID "+resource_id+" does not exist")
 
-        if not 'open' in resource.get("resource_scopes"):
+        if not 'open' in mongo_resource.get("resource_scopes"):
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()
             try:
