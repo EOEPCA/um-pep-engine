@@ -1,22 +1,7 @@
-import json
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, request, Response
 from handlers.mongo_handler import Mongo_Handler
-from handlers.uma_handler import UMA_Handler, resource
-from handlers.uma_handler import rpt as class_rpt
 from handlers.log_handler import LogHandler
-from werkzeug.datastructures import Headers
-from random import choice
-from string import ascii_lowercase
-from requests import get, post, put, delete, head, patch
-import json
 
-from WellKnownHandler import WellKnownHandler
-from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
-
-from jwkest.jws import JWS
-from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
-from jwkest.jwk import load_jwks
-from Crypto.PublicKey import RSA
 import logging
 
 def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
@@ -28,6 +13,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
     def resource_request():
         # Check for token
         logger.debug("Processing authorization request...")
+        response = Response()
         custom_mongo = Mongo_Handler("resource_db", "resources")
         rpt = request.headers.get('Authorization')
         if "X-Original-Uri" in request.headers:
@@ -41,6 +27,13 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             http_method = "GET"
         # Get resource
         resource_id = custom_mongo.get_id_from_uri(path)
+        resource = custom_mongo.get_from_mongo("resource_id", resource_id)
+        if 'open' in resource.get('resource_scopes'):
+            activity = {"Resource":resource_id,"Description":"Scope is open"}
+            logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
+            response.status_code = 200
+            return response
+
         scopes= None
         if resource_id:
             scopes = []
@@ -62,7 +55,6 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         #If UUID exists and resource requested has same UUID
         api_rpt_uma_validation = g_config["api_rpt_uma_validation"]
     
-        response = Response()
         if rpt:
             logger.debug("Token found: "+rpt)
             rpt = rpt.replace("Bearer ","").strip()
@@ -132,24 +124,5 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
             activity = {"User":uid,"Description":"No resource found, forwarding to Resource Server."}
             logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2105,activity=activity))
             return response
-
-    def create_jwt(payload, p_key):
-        rsajwk = RSAKey(kid="RSA1", key=import_rsa_key(p_key))
-        jws = JWS(payload, alg="RS256")
-        return jws.sign_compact(keys=[rsajwk])
-
-    def split_headers(headers):
-        headers_tmp = headers.splitlines()
-        d = {}
-
-        for h in headers_tmp:
-            h = h.split(': ')
-            if len(h) < 2:
-                continue
-            field=h[0]
-            value= h[1]
-            d[field] = value
-
-        return d
     
     return authorize_bp
