@@ -28,7 +28,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         # Get resource
         resource_id = custom_mongo.get_id_from_uri(path)
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
-        if 'open' in resource.get('resource_scopes'):
+        if "scopes" in resource and 'open' in resource.get('scopes'):
             activity = {"Resource":resource_id,"Description":"Scope is open"}
             logger.info(log_handler.format_message(subcomponent="AUTHORIZE",action_id="HTTP",action_type=http_method,log_code=2103,activity=activity))
             response.status_code = 200

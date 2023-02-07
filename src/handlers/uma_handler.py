@@ -84,7 +84,6 @@ class UMA_Handler:
                id= mongo_resource["_id"]
             except Exception as e:
                 self.logger.debug("Resource for ID "+resource_id+" does not exist")
-
         if not 'open' in mongo_resource.get("resource_scopes"):
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()

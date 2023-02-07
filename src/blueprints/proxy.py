@@ -40,9 +40,11 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
                 response.status_code = 500
                 activity = {"User":uid,"Description":"Error while redirecting to resource:"+str(e)}
                 logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2106,activity=activity))
-                return response   
-        resource_scopes = resource.get('resource_scopes')
-        if 'open' in resource_scopes:
+                return response
+        resource_scopes = None
+        if "scopes" in resource:
+            resource_scopes = resource.get('scopes')
+        if resource_scopes and 'open' in resource_scopes:
             headers_splitted = split_headers(str(request.headers))
             new_header = Headers()
             for key, value in headers_splitted.items():
@@ -140,8 +142,10 @@ def construct_blueprint(oidc_client, uma_handler, g_config, private_key):
         # Get resource
         resource_id = custom_mongo.get_id_from_uri("/"+path)
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
-        resource_scopes = resource.get('resource_scopes') if resource else None
-        if 'open' in resource_scopes:
+        resource_scopes=None
+        if resource and "scopes" in resource:
+            resource_scopes = resource.get('scopes') if resource else None
+        if resource_scopes and 'open' in resource_scopes:
             activity = {"Resource":resource_id,"Description":"Open resource, forwarding to RM"}
             logger.info(log_handler.format_message(subcomponent="PROXY",action_id="HTTP",action_type=request.method,log_code=2103,activity=activity))
             headers_splitted = split_headers(str(request.headers))
