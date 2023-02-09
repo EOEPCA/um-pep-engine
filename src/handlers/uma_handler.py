@@ -84,17 +84,23 @@ class UMA_Handler:
                id= mongo_resource["_id"]
             except Exception as e:
                 self.logger.debug("Resource for ID "+resource_id+" does not exist")
-        if not 'open' in mongo_resource.get("resource_scopes"):
+        if 'scopes' in mongo_resource:
+            if not 'open' in mongo_resource.get("scopes"):
+                resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+                pat = self.oidch.get_new_pat()
+                try:
+                    n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
+                    self.logger.debug("Deleted resource in IDP... " + str(n))
+                except Exception as e:
+                    self.logger.debug("Failed to delete resource. " + str(e))
+        else:
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()
             try:
                 n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
                 self.logger.debug("Deleted resource in IDP... " + str(n))
-                resp = self.mongo.delete_in_mongo("resource_id", resource_id)
-                self.logger.debug("Deleted resource with ID :" + resource_id+ " and with response: "+ str(resp))
             except Exception as e:
                 self.logger.debug("Failed to delete resource. " + str(e))
-
         try:
             resp = self.mongo.delete_in_mongo("resource_id", resource_id)
             if resp:
