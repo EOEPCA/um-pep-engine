@@ -58,6 +58,8 @@ class UMA_Handler:
 
         if not 'open' in scopes:
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+            if resource_registration_endpoint[-1] is not "/":
+                resource_registration_endpoint += "/"
             pat = self.oidch.get_new_pat()
             new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
             self.logger.debug("Updated resource '"+name+"' with ID :"+new_resource_id)
@@ -76,31 +78,27 @@ class UMA_Handler:
 
         self.logger.debug("Deleting resource through UMA Handler")
         mongo_resource= self.mongo.get_from_mongo("resource_id", resource_id)
-        resource = self.get_resource(resource_id)
-        self.logger.debug("Deleting registered resource..." + str(resource))
-        id = resource["_id"]
-        if id is None:
-            try:
-               id= mongo_resource["_id"]
-            except Exception as e:
-                self.logger.debug("Resource for ID "+resource_id+" does not exist")
-        if 'scopes' in mongo_resource:
-            if not 'open' in mongo_resource.get("scopes"):
-                resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-                pat = self.oidch.get_new_pat()
-                try:
-                    n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
-                    self.logger.debug("Deleted resource in IDP... " + str(n))
-                except Exception as e:
-                    self.logger.debug("Failed to delete resource. " + str(e))
-        else:
+        res_id=None
+        try:
+            res_id= mongo_resource["_id"]
+        except Exception as e:
+            self.logger.debug("Resource for ID "+resource_id+" does not exist")
+        try:
+            scope_list= mongo_resource["scopes"]
+        except Exception as e:
+            self.logger.debug("No scopes for ID "+resource_id+". Update the PEP version and clean the old resources")
+
+        if not 'open' in mongo_resource.get("scopes"):
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
+            if resource_registration_endpoint[-1] is not "/":
+                resource_registration_endpoint += "/"
             pat = self.oidch.get_new_pat()
             try:
                 n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
-                self.logger.debug("Deleted resource in IDP... " + str(n))
+                self.logger.info("Deleted resource in IDP... " + str(n))
             except Exception as e:
                 self.logger.debug("Failed to delete resource. " + str(e))
+
         try:
             resp = self.mongo.delete_in_mongo("resource_id", resource_id)
             if resp:
