@@ -62,7 +62,7 @@ class OIDCHandler:
             if self.getVerificationConfig() == True:
                 if decoded_str_header['kid'] != "RSA1":
                     verificator = JWT_Verification()
-                    result = verificator.verify_signature_JWT(token)
+                    result = verificator.verify_signature_jwt(token)
                 else:
                     # validate signature for rpt
                     rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("config/public.pem"))

@@ -132,7 +132,7 @@ class UMA_Handler:
         if len(rpt_splitted) == 3:
             if verify_signature == True:
                 test = JWT_Verification()
-                result = test.verify_signature_JWT(user_rpt)
+                result = test.verify_signature_jwt(user_rpt)
 
                 if result == False:
                     self.logger.debug("Verification of the signature for the JWT failed!")
