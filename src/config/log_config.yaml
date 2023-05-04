@@ -2,28 +2,28 @@ version: 1
 disable_existing_loggers: true
 
 formatters:
-    verbose:
-        format: '%(asctime)s:%(levelname)s:%(message)s'
-        datefmt: '%Y-%m-%dT%H:%M:%S%z'
+  verbose:
+    format: '%(asctime)s:%(levelname)s:%(message)s'
+    datefmt: '%Y-%m-%dT%H:%M:%S%z'
 
 handlers:
-    console:
-        class: logging.StreamHandler
-        level: INFO
-        formatter: verbose
-        stream: ext://sys.stdout
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: verbose
+    stream: ext://sys.stdout
 
-    log_file:
-        class: logging.handlers.RotatingFileHandler
-        filename: ./logs/pep_engine.log
-        formatter: verbose
-        level: DEBUG
-        maxBytes: 1073741824   ## 1 GB log file size before rotation
-        backupCount: 10        ## Saves 10 most recent log files
+  log_file:
+    class: logging.handlers.RotatingFileHandler
+    filename: ./logs/pep_engine.log
+    formatter: verbose
+    level: DEBUG
+    maxBytes: 1073741824   ## 1 GB log file size before rotation
+    backupCount: 10        ## Saves 10 most recent log files
 
 loggers:
-    PEP_ENGINE:
-        level: DEBUG
-        handlers: [console, log_file]
-        qualname: PEP_ENGINE
-        propagate: false
+  PEP_ENGINE:
+    level: DEBUG
+    handlers: [ console, log_file ]
+    qualname: PEP_ENGINE
+    propagate: false

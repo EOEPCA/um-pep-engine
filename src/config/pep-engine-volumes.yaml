@@ -75,14 +75,14 @@ kind: PersistentVolume
 metadata:
   name: pep-engine-logs
   labels:
-      pep-engine: logs
+    pep-engine: logs
 spec:
   capacity:
     storage: 10M
   accessModes:
     - ReadWriteOnce
   hostPath:
-      path: "/data/pep-engine/logs"
+    path: "/data/pep-engine/logs"
 
 ---
 
@@ -91,14 +91,14 @@ kind: PersistentVolume
 metadata:
   name: pep-engine-lib-ext
   labels:
-      pep-engine: lib-ext
+    pep-engine: lib-ext
 spec:
   capacity:
     storage: 10M
   accessModes:
     - ReadWriteOnce
   hostPath:
-      path: "/data/pep-engine/custom/libs"
+    path: "/data/pep-engine/custom/libs"
 
 ---
 
@@ -107,14 +107,14 @@ kind: PersistentVolume
 metadata:
   name: pep-engine-custom-static
   labels:
-      pep-engine: custom-static
+    pep-engine: custom-static
 spec:
   capacity:
     storage: 10M
   accessModes:
     - ReadWriteOnce
   hostPath:
-      path: "/data/pep-engine/custom/static"
+    path: "/data/pep-engine/custom/static"
 
 ---
 
@@ -123,7 +123,7 @@ kind: PersistentVolume
 metadata:
   name: pep-engine-custom-pages
   labels:
-      pep-engine: custom-pages
+    pep-engine: custom-pages
 spec:
   capacity:
     storage: 10M

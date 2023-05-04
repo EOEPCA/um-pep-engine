@@ -1,26 +1,12 @@
-import json
-import os.path
-import requests
-from hashlib import md5
-import urllib3
 import base64
+import json
+
+import requests
+import urllib3
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-from Cryptodome.PublicKey import RSA
-from jwkest.ecc import P256
-from jwkest.ecc import P384
-from jwkest.ecc import P521
-
-import jwkest
-from jwkest import jws, b64d_enc_dec
-from jwkest import b64d, b64e
-
-from jwkest.jwk import SYMKey, KEYS
-from jwkest.jwk import ECKey
-from jwkest.jwk import import_rsa_key_from_file
-from jwkest.jwk import RSAKey
-from jwkest.jws import SIGNER_ALGS, factory
-from jwkest.jws import JWSig
+from jwkest.jwk import KEYS
 from jwkest.jws import JWS
 from config import load_config
 
@@ -47,16 +33,16 @@ class JWT_Verification():
     def getKeys_JWT(self):
         g_config = load_config("./config/config.json")
 
-        headers = { 'content-type': "application/json", "cache-control": "no-cache" }
-        res = requests.get(g_config["auth_server_url"]+"/oxauth/restv1/jwks", headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache"}
+        res = requests.get(g_config["auth_server_url"] + "/oxauth/restv1/jwks", headers=headers, verify=False)
 
         json_dict = json.loads(res.text)
         return json_dict
-    
+
     def decode_JWT(self, jwt):
         payload = str(jwt).split(".")[1]
         paddedPayload = payload + '=' * (4 - len(payload) % 4)
         decoded = base64.b64decode(paddedPayload)
         decoded_json = json.loads(decoded)
-        
+
         return decoded_json

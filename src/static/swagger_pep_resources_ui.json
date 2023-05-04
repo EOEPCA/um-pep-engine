@@ -1,232 +1,255 @@
 {
-  "openapi" : "3.0.0",
-  "info" : {
-    "version" : "1.0.0",
-    "title" : "Policy Enforcement Point Interfaces",
-    "description" : "This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. <br> <br> Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. <br> <br> As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters."
-  },
-  "tags" : [ {
-    "name" : "Resources",
-    "description" : "Operations to create, modify or delete resources"
-  } ],
-  "paths" : {
-    "/resources" : {
-      "parameters" : [ {
-        "in" : "header",
-        "name" : "Authorization",
-        "description" : "JWT or Bearer Token",
-        "schema" : {
-          "type" : "string"
-        }
-      } ],
-      "get" : {
-        "tags" : [ "Resources" ],
-        "summary" : "List all owned resources",
-        "description" : "This operation lists all resources filtered by ownership ID. Ownership ID is extracted from the OpenID Connect Token",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "type" : "array",
-                  "items" : {
-                    "$ref" : "#/components/schemas/resource"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post" : {
-        "tags" : [ "Resources" ],
-        "summary" : "Creates a new Resource reference in the Platform",
-        "description" : "This operation generates a new resource reference object that can be protected. Ownership ID is set to the unique ID of the End-User",
-        "requestBody" : {
-          "required" : true,
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/new_resource"
-              }
-            }
-          }
-        },
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/resource"
-                }
-              }
-            }
-          },
-          "401" : {
-            "description" : "UNAUTHORIZED"
-          },
-          "404" : {
-            "description" : "NOT FOUND"
-          }
-        }
-      }
+    "openapi": "3.0.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Policy Enforcement Point Interfaces",
+        "description": "This OpenAPI Document describes the endpoints exposed by Policy Enforcement Point Building Block deployments. <br> <br> Using this API will allow to register resources that can be protected using both the Login Service and the Policy Decision Point and access them through the Policy Enforcement Endpoint. <br> <br> As an example this documentation uses \"proxy\" as the configured base URL for Policy Enforcement, but this can be manipulated through configuration parameters."
     },
-    "/resources/{resource_id}" : {
-      "parameters" : [ {
-        "in" : "path",
-        "name" : "resource_id",
-        "description" : "Unique Resource ID",
-        "required" : true,
-        "schema" : {
-          "type" : "string"
+    "tags": [
+        {
+            "name": "Resources",
+            "description": "Operations to create, modify or delete resources"
         }
-      }, {
-        "in" : "header",
-        "name" : "Authorization",
-        "description" : "JWT or Bearer Token",
-        "schema" : {
-          "type" : "string"
-        }
-      } ],
-      "get" : {
-        "tags" : [ "Resources" ],
-        "summary" : "Retrieve a specific owned resource",
-        "description" : "This operation retrieves information about an owned resource.",
-        "responses" : {
-          "200" : {
-            "description" : "OK",
-            "content" : {
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/resource"
+    ],
+    "paths": {
+        "/resources": {
+            "parameters": [
+                {
+                    "in": "header",
+                    "name": "Authorization",
+                    "description": "JWT or Bearer Token",
+                    "schema": {
+                        "type": "string"
+                    }
                 }
-              }
+            ],
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "List all owned resources",
+                "description": "This operation lists all resources filtered by ownership ID. Ownership ID is extracted from the OpenID Connect Token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/resource"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Creates a new Resource reference in the Platform",
+                "description": "This operation generates a new resource reference object that can be protected. Ownership ID is set to the unique ID of the End-User",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/new_resource"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/resource"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
             }
-          },
-          "404" : {
-            "description" : "NOT FOUND"
-          }
-        }
-      },
-      "put" : {
-        "tags" : [ "Resources" ],
-        "summary" : "Updates an existing Resource reference in the Platform",
-        "description" : "This operation updates an existing 'owned' resource reference. ",
-        "requestBody" : {
-          "required" : true,
-          "content" : {
-            "application/json" : {
-              "schema" : {
-                "$ref" : "#/components/schemas/resource"
-              }
-            }
-          }
         },
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "description" : "UNAUTHORIZED"
-          },
-          "404" : {
-            "description" : "NOT FOUND"
-          }
-        }
-      },
-      "delete" : {
-        "tags" : [ "Resources" ],
-        "summary" : "Deletes an owned Resource Reference from the Platform",
-        "description" : "This operation removes an existing Resource reference owned by the user.",
-        "responses" : {
-          "200" : {
-            "description" : "OK"
-          },
-          "401" : {
-            "description" : "UNAUTHORIZED"
-          },
-          "404" : {
-            "description" : "NOT FOUND"
-          }
-        }
-      }
-    }
-  },
-  "components" : {
-    "responses" : {
-      "UMAUnauthorized" : {
-        "description" : "Unauthorized access request.",
-        "headers" : {
-          "WWW-Authenticate" : {
-            "schema" : {
-              "type" : "string"
+        "/resources/{resource_id}": {
+            "parameters": [
+                {
+                    "in": "path",
+                    "name": "resource_id",
+                    "description": "Unique Resource ID",
+                    "required": true,
+                    "schema": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "in": "header",
+                    "name": "Authorization",
+                    "description": "JWT or Bearer Token",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Retrieve a specific owned resource",
+                "description": "This operation retrieves information about an owned resource.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/resource"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
             },
-            "description" : "'UMA_realm=\"example\",as_uri=\"https://as.example.com\",ticket=\"016f84e8-f9b9-11e0-bd6f-0021cc6004de\"'"
-          }
+            "put": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Updates an existing Resource reference in the Platform",
+                "description": "This operation updates an existing 'owned' resource reference. ",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/resource"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Resources"
+                ],
+                "summary": "Deletes an owned Resource Reference from the Platform",
+                "description": "This operation removes an existing Resource reference owned by the user.",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "UNAUTHORIZED"
+                    },
+                    "404": {
+                        "description": "NOT FOUND"
+                    }
+                }
+            }
         }
-      }
     },
-    "schemas" : {
-      "new_resource" : {
-        "type" : "object",
-        "properties" : {
-          "name" : {
-            "description" : "Human readable name for the resource",
-            "type" : "string",
-            "example" : "My Beautiful Resource"
-          },
-          "icon_uri" : {
-            "description" : "Protected uri of the resource.\n",
-            "type" : "string",
-            "example" : "/wps3/processes/"
-          },
-          "scopes" : {
-            "description" : "List of scopes associated with the resource",
-            "type" : "array",
-            "items" : {
-              "type" : "string"
+    "components": {
+        "responses": {
+            "UMAUnauthorized": {
+                "description": "Unauthorized access request.",
+                "headers": {
+                    "WWW-Authenticate": {
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "'UMA_realm=\"example\",as_uri=\"https://as.example.com\",ticket=\"016f84e8-f9b9-11e0-bd6f-0021cc6004de\"'"
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "new_resource": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "description": "Human readable name for the resource",
+                        "type": "string",
+                        "example": "My Beautiful Resource"
+                    },
+                    "icon_uri": {
+                        "description": "Protected uri of the resource.\n",
+                        "type": "string",
+                        "example": "/wps3/processes/"
+                    },
+                    "scopes": {
+                        "description": "List of scopes associated with the resource",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "public",
+                            "myOtherAttr"
+                        ]
+                    }
+                }
             },
-            "example" : [ "public", "myOtherAttr" ]
-          }
+            "resource": {
+                "type": "object",
+                "properties": {
+                    "ownership_id": {
+                        "description": "UUID of the Owner End-User",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "d290f1ee-6c54-4b01-90e6-288571188183"
+                    },
+                    "id": {
+                        "description": "UUID of the resource",
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+                    },
+                    "name": {
+                        "description": "Human readable name for the resource",
+                        "type": "string",
+                        "example": "My Beautiful Resource"
+                    },
+                    "icon_uri": {
+                        "description": "Protected uri of the resource.\n",
+                        "type": "string",
+                        "example": "/wps3/processes/"
+                    },
+                    "scopes": {
+                        "description": "List of scopes associated with the resource",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "public",
+                            "myOtherAttr"
+                        ]
+                    }
+                }
+            }
         }
-      },
-      "resource" : {
-        "type" : "object",
-        "properties" : {
-          "ownership_id" : {
-            "description" : "UUID of the Owner End-User",
-            "type" : "string",
-            "format" : "uuid",
-            "example" : "d290f1ee-6c54-4b01-90e6-288571188183"
-          },
-          "id" : {
-            "description" : "UUID of the resource",
-            "type" : "string",
-            "format" : "uuid",
-            "example" : "d290f1ee-6c54-4b01-90e6-d701748f0851"
-          },
-          "name" : {
-            "description" : "Human readable name for the resource",
-            "type" : "string",
-            "example" : "My Beautiful Resource"
-          },
-          "icon_uri" : {
-            "description" : "Protected uri of the resource.\n",
-            "type" : "string",
-            "example" : "/wps3/processes/"
-          },
-          "scopes" : {
-            "description" : "List of scopes associated with the resource",
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            },
-            "example" : [ "public", "myOtherAttr" ]
-          }
-        }
-      }
     }
-  }
 }

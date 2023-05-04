@@ -1,8 +1,10 @@
-from flask import Blueprint, request, Response
 import json
-from handlers.mongo_handler import Mongo_Handler
-from handlers.log_handler import LogHandler
 import logging
+
+from flask import Blueprint, request, Response
+from handlers.log_handler import LogHandler
+from handlers.mongo_handler import Mongo_Handler
+
 
 def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
     resources_bp = Blueprint('resources_bp', __name__)
@@ -21,7 +23,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
             is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
-            #Above query returns a None in case of Exception, following condition asserts False for that case
+            # Above query returns a None in case of Exception, following condition asserts False for that case
             if not is_operator:
                 is_operator = False
             uid = oidc_client.verify_uid_headers(headers_protected, "sub")
@@ -29,8 +31,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             logger.debug("Error while parsing token: " + str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
-            activity = {"Description":"Error reading token: " + str(e)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+            activity = {"Description": "Error reading token: " + str(e)}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                           log_code=2001, activity=activity))
             return response
 
         path = request.args.get('path')
@@ -40,8 +44,10 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if not resource:
                 response.status_code = 404
                 response.headers["Error"] = "No user-owned resources found!"
-                activity = {"User":uid,"Description":"No matching resources found for user!"}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2008,activity=activity))
+                activity = {"User": uid, "Description": "No matching resources found for user!"}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2008, activity=activity))
                 return response
 
             validated, reason = authenticate_user_for_resource(custom_mongo, uid, is_operator, resource)
@@ -49,15 +55,22 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 response.status_code = 401
                 response.headers["Error"] = reason
                 activity = {"Description": reason}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2001, activity=activity))
                 return response
 
-            activity = {"User":uid,"Description":"Returning matched resource by path: "+ str({'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]})}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
+            activity = {"User": uid, "Description": "Returning matched resource by path: " + str(
+                {'_id': resource["resource_id"], '_name': resource["name"],
+                 '_reverse_match_url': resource["reverse_match_url"]})}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                           log_code=2007, activity=activity))
             if request.method == "HEAD":
                 return
 
-            return {'_id': resource["resource_id"], '_name': resource["name"], '_reverse_match_url': resource["reverse_match_url"]}
+            return {'_id': resource["resource_id"], '_name': resource["name"],
+                    '_reverse_match_url': resource["reverse_match_url"]}
 
         # gets all resources registered on local DB
         resources = custom_mongo.get_all_resources()
@@ -67,10 +80,12 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if authenticated:
                 id = rsrc['resource_id']
                 logger.debug("Matched resource: " + id)
-                valid_resources.append({'_id': id, '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
+                valid_resources.append(
+                    {'_id': id, '_name': rsrc["name"], '_reverse_match_url': rsrc["reverse_match_url"]})
 
-        activity = {"User":uid,"Description":"Returning resource list: "+json.dumps(valid_resources)}
-        logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2007,activity=activity))
+        activity = {"User": uid, "Description": "Returning resource list: " + json.dumps(valid_resources)}
+        logger.info(log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2007, activity=activity))
         if request.method == "HEAD":
             return
 
@@ -96,13 +111,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         data = request.get_json()
 
         uid = None
-        #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
+        # Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
             logger.debug(head_protected)
             is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
-            #Above query returns a None in case of Exception, following condition asserts False for that case
+            # Above query returns a None in case of Exception, following condition asserts False for that case
             if not is_operator:
                 is_operator = False
             if is_operator and "uuid" in request.get_json():
@@ -113,30 +128,36 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
-                activity = {"Description":"No token found/error reading token"}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+                activity = {"Description": "No token found/error reading token"}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2001, activity=activity))
                 return response
         except Exception as e:
-            logger.debug("Error While passing the token: "+str(uid))
+            logger.debug("Error While passing the token: " + str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
-            activity = {"Description":"No token found/error reading token: "+str(e)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+            activity = {"Description": "No token found/error reading token: " + str(e)}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                           log_code=2001, activity=activity))
             return response
 
         if not uid:
             logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
-            activity = {"Description":"User not found in token"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
+            activity = {"Description": "User not found in token"}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                           log_code=2002, activity=activity))
             return response
 
-        #Above query returns a None in case of Exception, following condition asserts False for that case
+        # Above query returns a None in case of Exception, following condition asserts False for that case
         if not is_operator:
             is_operator = False
 
-        if is_operator or custom_mongo.verify_previous_uri_ownership(uid,data.get("icon_uri")):
+        if is_operator or custom_mongo.verify_previous_uri_ownership(uid, data.get("icon_uri")):
             resource_reply = create_resource(uid, request, uma_handler, response)
         else:
             response.status_code = 401
@@ -145,28 +166,36 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         logger.debug("Creating resource!")
         logger.debug(resource_reply)
         config = []
-        #If the reply is not of type Response, the creation was successful
-        #Here we register a default ownership policy to the new resource, with the PDP
+        # If the reply is not of type Response, the creation was successful
+        # Here we register a default ownership policy to the new resource, with the PDP
         if not isinstance(resource_reply, Response):
             if "T&C" in data:
-                config=data.get("T&C")
+                config = data.get("T&C")
 
             resource_id = resource_reply["id"]
             reply_failed = False
-            #If the public or authenticated scopes were used to register resource, skip policy registration
+            # If the public or authenticated scopes were used to register resource, skip policy registration
             if is_public_or_authenticated_or_open(request.get_json()):
-                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,"Policy":"None, Public/Authenticated access"}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
+                activity = {"User": uid, "Description": "Resource created", "Resource_id": resource_id,
+                            "Policy": "None, Public/Authenticated access"}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2009, activity=activity))
                 return resource_reply
-            #else, continue with ownership policies for default scopes
+            # else, continue with ownership policies for default scopes
             for scope in g_config["default_scopes"]:
-                def_policy_reply = pdp_policy_handler.create_policy(policy_body=get_default_ownership_policy_body(resource_id, uid, scope, config), input_headers=request.headers)
+                def_policy_reply = pdp_policy_handler.create_policy(
+                    policy_body=get_default_ownership_policy_body(resource_id, uid, scope, config),
+                    input_headers=request.headers)
                 if def_policy_reply.status_code != 200:
                     reply_failed = True
                     break
             if not reply_failed:
-                activity = {"User":uid,"Description":"Resource created","Resource_id":resource_id,str(g_config[scope])+" Policy":def_policy_reply.text}
-                logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2009,activity=activity))
+                activity = {"User": uid, "Description": "Resource created", "Resource_id": resource_id,
+                            str(g_config[scope]) + " Policy": def_policy_reply.text}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2009, activity=activity))
                 return resource_reply
             response.status_code = def_policy_reply.status_code
             if "Error" in def_policy_reply.headers:
@@ -174,11 +203,16 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             else:
                 response.headers["Error"] = "Un-parseable error coming from server"
             logger.debug(response.headers["Error"])
-            activity = {"User":uid,"Description":"Error occured: "+response.headers["Error"]}
-            logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
+            activity = {"User": uid, "Description": "Error occured: " + response.headers["Error"]}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                           log_code=2010, activity=activity))
             return response
-        activity = {"User":uid,"Description":"Error occured with HTTP code "+ str(resource_reply.status_code) +": "+resource_reply.headers["Error"]}
-        logger.info(log_handler.format_message(subcomponent="RESOURCES",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
+        activity = {"User": uid,
+                    "Description": "Error occured with HTTP code " + str(resource_reply.status_code) + ": " +
+                                   resource_reply.headers["Error"]}
+        logger.info(log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
+                                               log_code=2010, activity=activity))
         return resource_reply
 
     @resources_bp.route("/resources/<resource_id>", methods=["PUT", "DELETE", "HEAD", "PATCH"])
@@ -186,7 +220,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         logger.debug("Processing " + request.method + " resource request...")
         response = Response()
         uid = None
-        #Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
+        # Inspect JWT token (UMA) or query OIDC userinfo endpoint (OAuth) for user id
         try:
             head_protected = str(request.headers)
             headers_protected = head_protected.split()
@@ -194,101 +228,126 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             if "NO TOKEN FOUND" in uid:
                 response.status_code = 401
                 response.headers["Error"] = 'no token passed!'
-                activity = {"Description":"No token found/error reading token"}
-                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+                activity = {"Description": "No token found/error reading token"}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                               log_code=2001, activity=activity))
                 return response
         except Exception as e:
-            logger.debug("Error While passing the token: "+str(uid))
+            logger.debug("Error While passing the token: " + str(uid))
             response.status_code = 500
             response.headers["Error"] = str(e)
-            activity = {"Description":"No token found/error reading token: "+str(e)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+            activity = {"Description": "No token found/error reading token: " + str(e)}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                           log_code=2001, activity=activity))
             return response
 
-        #If UUID does not exist
+        # If UUID does not exist
         if not uid:
             logger.debug("UID for the user not found")
             response.status_code = 401
             response.headers["Error"] = 'Could not get the UID for the user'
-            activity = {"Description":"User not found in token"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2002,activity=activity))
+            activity = {"Description": "User not found in token"}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                           log_code=2002, activity=activity))
             return response
 
         try:
-            #otherwise continue with validations
-            #Is this user the resource's owner?
+            # otherwise continue with validations
+            # Is this user the resource's owner?
             is_owner = custom_mongo.verify_uid(resource_id, uid)
-            #Is this user an operator?
+            # Is this user an operator?
             is_operator = oidc_client.verify_uid_headers(headers_protected, "isOperator")
-            #Above query returns a None in case of Exception, following condition asserts False for that case
+            # Above query returns a None in case of Exception, following condition asserts False for that case
             if not is_operator:
                 is_operator = False
         except Exception as e:
-            logger.debug("Error while reading token: "+str(e))
+            logger.debug("Error while reading token: " + str(e))
             response.status_code = 500
-            activity = {"Description":"No token found/error reading token"}
-            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2001,activity=activity))
+            activity = {"Description": "No token found/error reading token"}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                           log_code=2001, activity=activity))
             return response
 
-        #Process the remainder GET/PUT(Update)/DELETE scenarios
+        # Process the remainder GET/PUT(Update)/DELETE scenarios
         try:
-            #retrieve resource
-            #This is outside owner/operator check as reading authorization should be solely determined by rpt validation
+            # retrieve resource
+            # This is outside owner/operator check as reading authorization should be solely determined by rpt validation
             if request.method == "GET":
                 reply = get_resource(custom_mongo, resource_id, response)
                 if isinstance(reply, Response):
-                    activity = {"User":uid,"Description":"GET operation called","Reply":reply.headers["Error"]}
+                    activity = {"User": uid, "Description": "GET operation called", "Reply": reply.headers["Error"]}
                 else:
-                    activity = {"User":uid,"Description":"GET operation called","Reply":json.dumps(reply)}
-                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                    activity = {"User": uid, "Description": "GET operation called", "Reply": json.dumps(reply)}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                               log_code=2011, activity=activity))
                 return reply
-            #Same for HEAD requests
+            # Same for HEAD requests
             if request.method == "HEAD":
                 reply = get_resource_head(custom_mongo, resource_id, response)
                 if reply.status_code != 200:
-                    activity = {"User":uid,"Description":"HEAD operation called","Reply":reply.headers["Error"]}
+                    activity = {"User": uid, "Description": "HEAD operation called", "Reply": reply.headers["Error"]}
                 else:
-                    activity = {"User":uid,"Description":"HEAD operation called","Reply":"Resource found."}
-                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                    activity = {"User": uid, "Description": "HEAD operation called", "Reply": "Resource found."}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                               log_code=2011, activity=activity))
                 return reply
-            #Update/Delete requests should only be done by resource owners or operators
+            # Update/Delete requests should only be done by resource owners or operators
             if is_owner or is_operator:
-                #update resource
+                # update resource
                 if request.method == "PUT":
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PUT operation called","Reply":"OK"}
+                        activity = {"User": uid, "Description": "PUT operation called", "Reply": "OK"}
                     else:
-                        activity = {"User":uid,"Description":"PUT operation called","Reply":reply.headers["Error"]}
-                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                        activity = {"User": uid, "Description": "PUT operation called", "Reply": reply.headers["Error"]}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP",
+                                                           action_type=request.method, log_code=2011,
+                                                           activity=activity))
                     return reply
-                #patch resource
+                # patch resource
                 if request.method == "PATCH":
                     # Not currently being used, PATCH operation defaulting to PUT - 04/2021
                     # reply = patch_resource(request, custom_mongo, resource_id, uid, response)
                     reply = update_resource(request, resource_id, uid, response)
                     if reply.status_code == 200:
-                        activity = {"User":uid,"Description":"PATCH operation called","Reply":"OK"}
+                        activity = {"User": uid, "Description": "PATCH operation called", "Reply": "OK"}
                     else:
-                        activity = {"User":uid,"Description":"PATCH operation called","Reply":reply.headers["Error"]}
-                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2011,activity=activity))
+                        activity = {"User": uid, "Description": "PATCH operation called",
+                                    "Reply": reply.headers["Error"]}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP",
+                                                           action_type=request.method, log_code=2011,
+                                                           activity=activity))
                     return reply
-                #delete resource
+                # delete resource
                 elif request.method == "DELETE":
-                    logger.debug("Deleting resource called for resource: "+ str(resource_id))
+                    logger.debug("Deleting resource called for resource: " + str(resource_id))
                     reply = delete_resource(uma_handler, resource_id, response)
-                    activity = {"User":uid,"Description":"DELETE operation called on "+resource_id+".","Reply":reply.status_code}
-                    logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2012,activity=activity))
+                    activity = {"User": uid, "Description": "DELETE operation called on " + resource_id + ".",
+                                "Reply": reply.status_code}
+                    logger.info(log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP",
+                                                           action_type=request.method, log_code=2012,
+                                                           activity=activity))
                     return reply
             else:
-                activity = {"User":uid,"Description":"User not authorized for resource management","Resource":resource_id}
-                logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2014,activity=activity))
+                activity = {"User": uid, "Description": "User not authorized for resource management",
+                            "Resource": resource_id}
+                logger.info(
+                    log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                               log_code=2014, activity=activity))
                 return user_not_authorized(response)
         except Exception as e:
-            logger.debug("Error while redirecting to resource: "+str(e))
+            logger.debug("Error while redirecting to resource: " + str(e))
             response.status_code = 500
-            activity = {"User":uid,"Description":"Error occured: "+str(e)}
-            logger.info(log_handler.format_message(subcomponent="RESOURCE",action_id="HTTP",action_type=request.method,log_code=2010,activity=activity))
+            activity = {"User": uid, "Description": "Error occured: " + str(e)}
+            logger.info(
+                log_handler.format_message(subcomponent="RESOURCE", action_id="HTTP", action_type=request.method,
+                                           log_code=2010, activity=activity))
             return response
 
     def create_resource(uid, request, uma_handler, response):
@@ -311,13 +370,14 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                         data['resource_scopes'] = []
                         for scope in g_config["default_scopes"]:
                             data['resource_scopes'].append(scope)
-                    #Skip default scopes if registering scope is public or authenticated or open access
+                    # Skip default scopes if registering scope is public or authenticated or open access
                     elif not is_public_or_authenticated_or_open(data):
                         for scope in g_config["default_scopes"]:
                             if scope not in data.get("resource_scopes"):
                                 data['resource_scopes'].append(scope)
 
-                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"),
+                                                     data.get("description"), uid, data.get("icon_uri"))
                     data["ownership_id"] = uid
                     data["id"] = resource_id
                     return data
@@ -330,7 +390,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                 response.headers["Error"] = "Content-Type must be application/json"
                 return response
         except Exception as e:
-            logger.debug("Error while creating resource: "+str(e))
+            logger.debug("Error while creating resource: " + str(e))
             if "already exists for URI" in str(e):
                 response.status_code = 422
             else:
@@ -354,9 +414,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             data = request.get_json()
             if data.get("name") and data.get("resource_scopes"):
                 if "ownership_id" in data:
-                    uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
+                    uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"),
+                                       data.get("description"), data.get("ownership_id"), data.get("icon_uri"))
                 else:
-                    uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"), data.get("description"), uid, data.get("icon_uri"))
+                    uma_handler.update(resource_id, data.get("name"), data.get("resource_scopes"),
+                                       data.get("description"), uid, data.get("icon_uri"))
                 response.status_code = 200
                 return response
             else:
@@ -380,7 +442,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         '''
         resource = get_resource(custom_mongo, resource_id, response)
         if not isinstance(resource, Response):
-            #Get data from database resource
+            # Get data from database resource
             mem_data = {}
             mem_data['name'] = resource['name']
             mem_data['icon_uri'] = resource['icon_uri']
@@ -394,9 +456,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
                 if data.get("resource_scopes"):
                     if "ownership_id" in data:
-                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"), data.get("description"), data.get("ownership_id"), mem_data.get("icon_uri"))
+                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"),
+                                           data.get("description"), data.get("ownership_id"), mem_data.get("icon_uri"))
                     else:
-                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"), data.get("description"), uid, mem_data.get("icon_uri"))
+                        uma_handler.update(resource_id, mem_data.get("name"), data.get("resource_scopes"),
+                                           data.get("description"), uid, mem_data.get("icon_uri"))
                     response.status_code = 200
                     return response
                 else:
@@ -431,14 +495,15 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         '''
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
 
-        #If no resource was found, return a 404 Error
+        # If no resource was found, return a 404 Error
         if not resource:
             response.status_code = 404
             response.headers["Error"] = "Resource not found"
             return response
 
-        #We only want to return resource_id (as "_id") and name, so we prune the other entries
-        resource = {"_id": resource["resource_id"], "_name": resource["name"], "_reverse_match_url": resource["reverse_match_url"]}
+        # We only want to return resource_id (as "_id") and name, so we prune the other entries
+        resource = {"_id": resource["resource_id"], "_name": resource["name"],
+                    "_reverse_match_url": resource["reverse_match_url"]}
         return resource
 
     def get_resource_head(custom_mongo, resource_id, response):
@@ -453,13 +518,13 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         '''
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
 
-        #If no resource was found, return a 404 Error
+        # If no resource was found, return a 404 Error
         if not resource:
             response.status_code = 404
             response.headers["Error"] = "Resource not found"
             return response
 
-        #We only intend to return response headers, not the body, so we reply with a response instead of the resource
+        # We only intend to return response headers, not the body, so we reply with a response instead of the resource
         response.status_code = 200
         return response
 
@@ -475,9 +540,11 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
     def get_default_ownership_policy_cfg(resource_id, uid, action, config):
         if check_default_ownership(uid):
-            return { "resource_id": resource_id, "action": action, "T&C": config, "rules": [{ "AND": [ {"EQUAL": {"isOperator" : True } }] }] }
+            return {"resource_id": resource_id, "action": action, "T&C": config,
+                    "rules": [{"AND": [{"EQUAL": {"isOperator": True}}]}]}
         else:
-            return { "resource_id": resource_id, "action": action, "T&C": config, "rules": [{ "AND": [ {"EQUAL": {"id" : uid } }] }] }
+            return {"resource_id": resource_id, "action": action, "T&C": config,
+                    "rules": [{"AND": [{"EQUAL": {"id": uid}}]}]}
 
     def get_default_ownership_policy_body(resource_id, uid, scope, config):
         name = "Default Ownership Policy of " + str(resource_id) + " with action " + str(g_config[scope])

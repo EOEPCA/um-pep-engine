@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
-from eoepca_uma import rpt, resource
-from handlers.mongo_handler import Mongo_Handler
-from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
-from jwt_verification.signature_verification import JWT_Verification
-from typing import List
 import base64
 import json
-from datetime import datetime
 import logging
 import uuid
+from datetime import datetime
+from typing import List
+
+from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, \
+    KEY_UMA_V2_INTROSPECTION_ENDPOINT
+from eoepca_uma import rpt, resource
+from handlers.mongo_handler import Mongo_Handler
+from jwt_verification.signature_verification import JWT_Verification
+
 
 class UMA_Handler:
 
-    def __init__(self, wkhandler, oidc_handler, verify_ssl: bool = False ):
+    def __init__(self, wkhandler, oidc_handler, verify_ssl: bool = False):
         self.logger = logging.getLogger("PEP_ENGINE")
         self.wkh = wkhandler
-        self.mongo= Mongo_Handler("resource_db", "resources")
-        self.mongo_rpt= Mongo_Handler("rpt_db", "rpts")
+        self.mongo = Mongo_Handler("resource_db", "resources")
+        self.mongo_rpt = Mongo_Handler("rpt_db", "rpts")
         self.oidch = oidc_handler
         self.verify = verify_ssl
         self.registered_resources = None
@@ -31,11 +34,12 @@ class UMA_Handler:
         new_resource_id = ""
         if not 'open' in scopes:
             if self.resource_exists(icon_uri):
-                raise Exception("Resource already exists for URI "+icon_uri)
+                raise Exception("Resource already exists for URI " + icon_uri)
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
             pat = self.oidch.get_new_pat()
-            new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-            self.logger.debug("Created resource '"+name+"' with ID :"+new_resource_id)
+            new_resource_id = resource.create(pat, resource_registration_endpoint, name, scopes,
+                                              description=description, icon_uri=icon_uri, secure=self.verify)
+            self.logger.debug("Created resource '" + name + "' with ID :" + new_resource_id)
         else:
             if self.mongo.mongo_exists("reverse_match_url", icon_uri):
                 raise Exception("Resource already exists for URI " + icon_uri)
@@ -48,7 +52,8 @@ class UMA_Handler:
 
         return new_resource_id
 
-    def update(self, resource_id: str, name: str, scopes: List[str], description: str, ownership_id: str, icon_uri: str):
+    def update(self, resource_id: str, name: str, scopes: List[str], description: str, ownership_id: str,
+               icon_uri: str):
         """
         Updates an existing resource.
         Can throw exceptions
@@ -61,8 +66,9 @@ class UMA_Handler:
             if resource_registration_endpoint[-1] is not "/":
                 resource_registration_endpoint += "/"
             pat = self.oidch.get_new_pat()
-            new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes, description=description, icon_uri= icon_uri, secure = self.verify)
-            self.logger.debug("Updated resource '"+name+"' with ID :"+new_resource_id)
+            new_resource_id = resource.update(pat, resource_registration_endpoint, resource_id, name, scopes,
+                                              description=description, icon_uri=icon_uri, secure=self.verify)
+            self.logger.debug("Updated resource '" + name + "' with ID :" + new_resource_id)
 
         resp = self.mongo.insert_resource_in_mongo(resource_id, name, ownership_id, icon_uri)
         if resp:
@@ -77,16 +83,17 @@ class UMA_Handler:
         """
 
         self.logger.debug("Deleting resource through UMA Handler")
-        mongo_resource= self.mongo.get_from_mongo("resource_id", resource_id)
-        res_id=None
+        mongo_resource = self.mongo.get_from_mongo("resource_id", resource_id)
+        res_id = None
         try:
-            res_id= mongo_resource["_id"]
+            res_id = mongo_resource["_id"]
         except Exception as e:
-            self.logger.debug("Resource for ID "+resource_id+" does not exist")
+            self.logger.debug("Resource for ID " + resource_id + " does not exist")
         try:
-            scope_list= mongo_resource["scopes"]
+            scope_list = mongo_resource["scopes"]
         except Exception as e:
-            self.logger.debug("No scopes for ID "+resource_id+". Update the PEP version and clean the old resources")
+            self.logger.debug(
+                "No scopes for ID " + resource_id + ". Update the PEP version and clean the old resources")
 
         if not 'open' in mongo_resource.get("scopes"):
             resource_registration_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
@@ -94,7 +101,7 @@ class UMA_Handler:
                 resource_registration_endpoint += "/"
             pat = self.oidch.get_new_pat()
             try:
-                n = resource.delete(pat, resource_registration_endpoint, resource_id, secure = self.verify)
+                n = resource.delete(pat, resource_registration_endpoint, resource_id, secure=self.verify)
                 self.logger.info("Deleted resource in IDP... " + str(n))
             except Exception as e:
                 self.logger.debug("Failed to delete resource. " + str(e))
@@ -106,12 +113,12 @@ class UMA_Handler:
             else:
                 self.logger.debug('Failed to delete resource from DB')
         except Exception as e:
-            self.logger.debug("Error while deleting resource: "+str(e))
-
+            self.logger.debug("Error while deleting resource: " + str(e))
 
     # Usage of Python library for query mongodb instance
 
-    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, rpt_limit_uses: int, verify_signature: bool) -> bool:
+    def validate_rpt(self, user_rpt: str, resources: List[dict], margin_time_rpt_valid: float, rpt_limit_uses: int,
+                     verify_signature: bool) -> bool:
         """
         Returns True/False, if the RPT is valid for the resource(s) they are trying to access
         """
@@ -139,18 +146,20 @@ class UMA_Handler:
             decoded = decoded.decode('utf-8')
             rpt_class = json.loads(decoded)
         else:
-            rpt_class = rpt.introspect(rpt=user_rpt, pat=pat, introspection_endpoint=introspection_endpoint, secure=False)
+            rpt_class = rpt.introspect(rpt=user_rpt, pat=pat, introspection_endpoint=introspection_endpoint,
+                                       secure=False)
 
-        result = rpt.is_valid_now(user_rpt, pat, introspection_endpoint, resources, time_margin= margin_time_rpt_valid ,secure= self.verify )
+        result = rpt.is_valid_now(user_rpt, pat, introspection_endpoint, resources, time_margin=margin_time_rpt_valid,
+                                  secure=self.verify)
 
         if result is False:
             return False
 
         resource_id_mongo = resources[0]['resource_id']
 
-        #We see in the database if the rpt exists
+        # We see in the database if the rpt exists
         exists_rpt = self.mongo_rpt.mongo_exists("rpt", user_rpt)
-        #If it exists -> decrease rpt usage and check if you have limit_uses
+        # If it exists -> decrease rpt usage and check if you have limit_uses
         if exists_rpt is True:
             rpt_mongo_obj = self.mongo_rpt.get_from_mongo("rpt", user_rpt)
             limits = rpt_mongo_obj['rpt_limit_uses']
@@ -159,7 +168,7 @@ class UMA_Handler:
                 rpt_mongo_obj['rpt_limit_uses'] = limits - 1
                 self.mongo_rpt.update_in_mongo("rpt", rpt_mongo_obj)
         else:
-            #If it does not exist -> it is inserted into the database with all the limit_uses obtained from the env var or config
+            # If it does not exist -> it is inserted into the database with all the limit_uses obtained from the env var or config
             dateTimeObj = datetime.now()
             timestampStr = dateTimeObj.strftime("%d-%b-%Y (%H:%M:%S.%f)")
 
@@ -179,7 +188,6 @@ class UMA_Handler:
 
         return validator
 
-
     def resource_exists(self, icon_uri: str):
         """
         Checks if the resources managed already contain a resource with that URI.
@@ -187,7 +195,7 @@ class UMA_Handler:
         """
         pat = self.oidch.get_new_pat()
         resource_reg_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT)
-        r=self.mongo.get_id_from_uri(icon_uri)
+        r = self.mongo.get_id_from_uri(icon_uri)
         if not r:
             return False
         data = resource.read(pat, resource_reg_endpoint, r, self.verify)
@@ -218,11 +226,10 @@ class UMA_Handler:
             return data
         return None
 
-
     def request_access_ticket(self, resources):
         permission_endpoint = self.wkh.get(TYPE_UMA_V2, KEY_UMA_V2_PERMISSION_ENDPOINT)
         pat = self.oidch.get_new_pat()
-        return resource.request_access_ticket(pat, permission_endpoint, resources, secure = self.verify)
+        return resource.request_access_ticket(pat, permission_endpoint, resources, secure=self.verify)
 
     def status(self):
         """
@@ -233,14 +240,14 @@ class UMA_Handler:
         actual_resources = resource.list(pat, resource_reg_endpoint, self.verify)
 
         self.logger.debug("-----------STATUS-----------")
-        self.logger.debug(str(len(actual_resources))+ " Actual Resources registered in the AS, with IDS: "+str(actual_resources))
+        self.logger.debug(
+            str(len(actual_resources)) + " Actual Resources registered in the AS, with IDS: " + str(actual_resources))
         self.logger.debug("-----------LIVE INFORMATION FROM AS------")
         for r in actual_resources:
-            info = resource.read(pat, resource_reg_endpoint, r, secure= self.verify)
+            info = resource.read(pat, resource_reg_endpoint, r, secure=self.verify)
             self.logger.debug(info)
             self.logger.debug("++++++++++++++++")
         self.logger.debug("-----------STATUS END-------")
-
 
     def update_resources_from_as(self):
         """

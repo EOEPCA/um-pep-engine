@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-from requests import post
 import logging
+
+from requests import post
 
 '''
     Class to deal with PDP Policy calls from inside the PEP
 '''
+
+
 class policy_handler:
 
     def __init__(self, pdp_url: str, pdp_port: int, pdp_policy_endpoint: str):
         self.logger = logging.getLogger("PEP_ENGINE")
-        self.logger.debug("CONNECTED TO PDP AT "+pdp_url+":"+str(pdp_port)+pdp_policy_endpoint)
+        self.logger.debug("CONNECTED TO PDP AT " + pdp_url + ":" + str(pdp_port) + pdp_policy_endpoint)
         self.url = pdp_url
         self.port = str(pdp_port)
         self.endpoint = pdp_policy_endpoint
@@ -23,6 +26,7 @@ class policy_handler:
 
         Returns: HTTP reply from PDP Policy Endpoint
     '''
+
     def create_policy(self, policy_body, input_headers):
         headers = dict(input_headers)
         # Necessary to remove "Host" from headers because of redirects, otherwise you get a 404 error

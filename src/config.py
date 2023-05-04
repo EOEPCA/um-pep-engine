@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-import traceback
-from json import load, dump
-from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
-from WellKnownHandler import WellKnownHandler
-from WellKnownHandler import TYPE_UMA_V2, KEY_UMA_V2_RESOURCE_REGISTRATION_ENDPOINT, KEY_UMA_V2_PERMISSION_ENDPOINT, KEY_UMA_V2_INTROSPECTION_ENDPOINT
 import logging
+import os
+from json import load, dump
+
+from WellKnownHandler import WellKnownHandler
+from eoepca_scim import EOEPCA_Scim, ENDPOINT_AUTH_CLIENT_POST
+
 
 def load_config(config_path: str) -> dict:
     """
@@ -27,7 +26,8 @@ def save_config(config_path: str, data: dict):
     Saves updated config file
     """
     with open(config_path, 'w') as j:
-        dump(data,j)
+        dump(data, j)
+
 
 def get_verb_config(config_path: str, g_config):
     """
@@ -39,7 +39,6 @@ def get_verb_config(config_path: str, g_config):
         return g_config
     else:
         return load_config(config_path)
-    
 
 
 def get_config(config_path: str):
@@ -47,26 +46,26 @@ def get_config(config_path: str):
     Loads entire configuration onto memory
     """
     env_vars = [
-    "PEP_REALM",
-    "PEP_AUTH_SERVER_URL",
-    "PEP_SERVICE_HOST",
-    "PEP_PROXY_SERVICE_PORT",
-    "PEP_RESOURCES_SERVICE_PORT",
-    "PEP_S_MARGIN_RPT_VALID",
-    "PEP_CHECK_SSL_CERTS",
-    "PEP_USE_THREADS",
-    "PEP_DEBUG_MODE",
-    "PEP_RESOURCE_SERVER_ENDPOINT",
-    "PEP_API_RPT_UMA_VALIDATION",
-    "PEP_RPT_LIMIT_USES",
-    "PEP_PDP_URL",
-    "PEP_PDP_PORT",
-    "PEP_PDP_POLICY_ENDPOINT",
-    "PEP_VERIFY_SIGNATURE",
-    "PEP_DEFAULT_RESOURCE_PATH",
-    "PEP_WORKING_MODE"]
+        "PEP_REALM",
+        "PEP_AUTH_SERVER_URL",
+        "PEP_SERVICE_HOST",
+        "PEP_PROXY_SERVICE_PORT",
+        "PEP_RESOURCES_SERVICE_PORT",
+        "PEP_S_MARGIN_RPT_VALID",
+        "PEP_CHECK_SSL_CERTS",
+        "PEP_USE_THREADS",
+        "PEP_DEBUG_MODE",
+        "PEP_RESOURCE_SERVER_ENDPOINT",
+        "PEP_API_RPT_UMA_VALIDATION",
+        "PEP_RPT_LIMIT_USES",
+        "PEP_PDP_URL",
+        "PEP_PDP_PORT",
+        "PEP_PDP_POLICY_ENDPOINT",
+        "PEP_VERIFY_SIGNATURE",
+        "PEP_DEFAULT_RESOURCE_PATH",
+        "PEP_WORKING_MODE"]
 
-    #Sets logger
+    # Sets logger
     logger = logging.getLogger("PEP_ENGINE")
 
     use_env_var = True
@@ -108,16 +107,18 @@ def get_config(config_path: str):
 
     # Generate client dynamically if one is not configured.
     if "client_id" not in g_config or "client_secret" not in g_config:
-        print ("NOTICE: Client not found, generating one... ")
+        print("NOTICE: Client not found, generating one... ")
         scim_client = EOEPCA_Scim(g_config["auth_server_url"])
         new_client = scim_client.registerClient("PEP Dynamic Client",
-                                    grantTypes = ["client_credentials", "password"],
-                                    redirectURIs = [""],
-                                    logoutURI = "", 
-                                    responseTypes = ["code","token","id_token"],
-                                    scopes = ['openid', 'uma_protection', 'permission', 'profile', 'is_operator'],
-                                    token_endpoint_auth_method = ENDPOINT_AUTH_CLIENT_POST)
-        logger.debug("NEW CLIENT created with ID '"+new_client["client_id"]+"', since no client config was found on config.json or environment")
+                                                grantTypes=["client_credentials", "password"],
+                                                redirectURIs=[""],
+                                                logoutURI="",
+                                                responseTypes=["code", "token", "id_token"],
+                                                scopes=['openid', 'uma_protection', 'permission', 'profile',
+                                                        'is_operator'],
+                                                token_endpoint_auth_method=ENDPOINT_AUTH_CLIENT_POST)
+        logger.debug("NEW CLIENT created with ID '" + new_client[
+            "client_id"] + "', since no client config was found on config.json or environment")
 
         g_config["client_id"] = new_client["client_id"]
         g_config["client_secret"] = new_client["client_secret"]
@@ -128,7 +129,7 @@ def get_config(config_path: str):
             os.environ["PEP_CLIENT_SECRET"] = new_client["client_secret"]
         logger.debug("New client saved to config!")
     else:
-        logger.debug("Client found in config, using: "+g_config["client_id"])
+        logger.debug("Client found in config, using: " + g_config["client_id"])
 
     save_config(config_path, g_config)
 
@@ -139,9 +140,9 @@ def get_default_resources(path: str):
     """
     Loads Charts configuration file in addition with the alredy existent on the source path
     """
-    #Sets logger
+    # Sets logger
     logger = logging.getLogger("PEP_ENGINE")
-    g_config = {}    
+    g_config = {}
     # Global config objects
     # If path is the same as default one, return default values
     if path == "./config/default-resources.json":
@@ -153,5 +154,5 @@ def get_default_resources(path: str):
         if not any(d['resource_uri'] == k['resource_uri'] for d in g_config['default_resources']):
             g_config['default_resources'].append(k)
         else:
-            logger.debug("The default resource "+str(k)+" is already on the k8s definition")
+            logger.debug("The default resource " + str(k) + " is already on the k8s definition")
     return g_config
