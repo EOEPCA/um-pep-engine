@@ -60,9 +60,9 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                                                log_code=2001, activity=activity))
                 return response
 
-            activity = {"User": uid, "Description": "Returning matched resource by path: " + str(
-                {'_id': resource["resource_id"], '_name': resource["name"],
-                 '_reverse_match_url': resource["reverse_match_url"]})}
+            activity = {"User": uid, "Description": "Returning matched resource by path: "
+                                                    + str({'_id': resource["resource_id"], '_name': resource["name"],
+                                                           '_reverse_match_url': resource["reverse_match_url"]})}
             logger.info(
                 log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
                                            log_code=2007, activity=activity))
@@ -91,7 +91,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
 
         return json.dumps(valid_resources)
 
-    def authenticate_user_for_resource(custom_mongo, uid, is_operator, resource):
+    def authenticate_user_for_resource(mongo, uid, is_operator, resource):
         scopes = resource.get('scopes', [])
         if 'open' in scopes:
             return True, None
@@ -99,7 +99,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
             return False, 'No token found'
         if not is_operator:
             return False, 'User is not an operator'
-        if not custom_mongo.verify_uid(resource['resource_id'], uid):
+        if not mongo.verify_uid(resource['resource_id'], uid):
             return False, 'No permissions'
         return True, None
 
@@ -153,10 +153,6 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                                            log_code=2002, activity=activity))
             return response
 
-        # Above query returns a None in case of Exception, following condition asserts False for that case
-        if not is_operator:
-            is_operator = False
-
         if is_operator or custom_mongo.verify_previous_uri_ownership(uid, data.get("icon_uri")):
             resource_reply = create_resource(uid, request, uma_handler, response)
         else:
@@ -183,22 +179,28 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                                                log_code=2009, activity=activity))
                 return resource_reply
             # else, continue with ownership policies for default scopes
+            failed_scope = None
+            def_policy_reply = None
             for scope in g_config["default_scopes"]:
                 def_policy_reply = pdp_policy_handler.create_policy(
                     policy_body=get_default_ownership_policy_body(resource_id, uid, scope, config),
                     input_headers=request.headers)
                 if def_policy_reply.status_code != 200:
                     reply_failed = True
+                    failed_scope = scope
+                    def_policy_reply_text = def_policy_reply.text
                     break
             if not reply_failed:
                 activity = {"User": uid, "Description": "Resource created", "Resource_id": resource_id,
-                            str(g_config[scope]) + " Policy": def_policy_reply.text}
+                            str(g_config[failed_scope])
+                            + " Policy": def_policy_reply.text if def_policy_reply else None}
                 logger.info(
                     log_handler.format_message(subcomponent="RESOURCES", action_id="HTTP", action_type=request.method,
                                                log_code=2009, activity=activity))
                 return resource_reply
-            response.status_code = def_policy_reply.status_code
-            if "Error" in def_policy_reply.headers:
+            if def_policy_reply:
+                response.status_code = def_policy_reply.status_code
+            if def_policy_reply and "Error" in def_policy_reply.headers:
                 response.headers["Error"] = def_policy_reply.headers["Error"]
             else:
                 response.headers["Error"] = "Un-parseable error coming from server"
@@ -350,21 +352,21 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                                            log_code=2010, activity=activity))
             return response
 
-    def create_resource(uid, request, uma_handler, response):
+    def create_resource(uid, req, uma, response):
         '''
         Creates a new resource. Returns either the full resource data, or an error response
         :param uid: unique user ID used to register as owner of the resource
         :type uid: str
-        :param request: resource data in JSON format
-        :type request: Dictionary
-        :param uma_handler: Custom handler for UMA operations
-        :type uma_handler: Object of Class custom_uma
+        :param req: resource data in JSON format
+        :type req: Dictionary
+        :param uma: Custom handler for UMA operations
+        :type uma: Object of Class custom_uma
         :param response: response object
         :type response: Response
         '''
         try:
-            if request.is_json:
-                data = request.get_json()
+            if req.is_json:
+                data = req.get_json()
                 if data.get("name"):
                     if 'resource_scopes' not in data.keys():
                         data['resource_scopes'] = []
@@ -376,8 +378,8 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                             if scope not in data.get("resource_scopes"):
                                 data['resource_scopes'].append(scope)
 
-                    resource_id = uma_handler.create(data.get("name"), data.get("resource_scopes"),
-                                                     data.get("description"), uid, data.get("icon_uri"))
+                    resource_id = uma.create(data.get("name"), data.get("resource_scopes"),
+                                             data.get("description"), uid, data.get("icon_uri"))
                     data["ownership_id"] = uid
                     data["id"] = resource_id
                     return data
@@ -443,9 +445,7 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         resource = get_resource(custom_mongo, resource_id, response)
         if not isinstance(resource, Response):
             # Get data from database resource
-            mem_data = {}
-            mem_data['name'] = resource['name']
-            mem_data['icon_uri'] = resource['icon_uri']
+            mem_data = {'name': resource['name'], 'icon_uri': resource['icon_uri']}
 
             if request.is_json:
                 data = request.get_json()
@@ -468,32 +468,32 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     response.headers["Error"] = "Invalid request"
                     return response
 
-    def delete_resource(uma_handler, resource_id, response):
+    def delete_resource(uma, resource_id, response):
         '''
         Deletes an existing resource.
         :param resource_id: unique resource ID
         :type resource_id: str
-        :param uma_handler: Custom handler for UMA operations
-        :type uma_handler: Object of Class custom_uma
+        :param uma: Custom handler for UMA operations
+        :type uma: Object of Class custom_uma
         :param response: response object
         :type response: Response
         '''
         logger.debug("Deleting Resource...")
-        uma_handler.delete(resource_id)
+        uma.delete(resource_id)
         response.status_code = 204
         return response
 
-    def get_resource(custom_mongo, resource_id, response):
+    def get_resource(mongo, resource_id, response):
         '''
         Gets an existing resource from local database.
         :param resource_id: unique resource ID
         :type resource_id: str
-        :param custom_mongo: Custom handler for Mongo DB operations
-        :type custom_mongo: Object of Class custom_mongo
+        :param mongo: Custom handler for Mongo DB operations
+        :type mongo: Object of Class custom_mongo
         :param response: response object
         :type response: Response
         '''
-        resource = custom_mongo.get_from_mongo("resource_id", resource_id)
+        resource = mongo.get_from_mongo("resource_id", resource_id)
 
         # If no resource was found, return a 404 Error
         if not resource:
@@ -506,17 +506,17 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
                     "_reverse_match_url": resource["reverse_match_url"]}
         return resource
 
-    def get_resource_head(custom_mongo, resource_id, response):
+    def get_resource_head(mongo, resource_id, response):
         '''
         Gets an existing resource HEAD from local database.
         :param resource_id: unique resource ID
         :type resource_id: str
-        :param custom_mongo: Custom handler for Mongo DB operations
-        :type custom_mongo: Object of Class custom_mongo
+        :param mongo: Custom handler for Mongo DB operations
+        :type mongo: Object of Class custom_mongo
         :param response: response object
         :type response: Response
         '''
-        resource = custom_mongo.get_from_mongo("resource_id", resource_id)
+        resource = mongo.get_from_mongo("resource_id", resource_id)
 
         # If no resource was found, return a 404 Error
         if not resource:
