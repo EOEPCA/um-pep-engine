@@ -31,6 +31,7 @@ def get_jwt_keys():
 class JWTVerification:
 
     # https://stackoverflow.com/questions/53543117/how-to-setup-public-key-for-verifying-jwt-tokens-from-keycloak
+    # https://stackoverflow.com/a/56581663
 
     def __init__(self):
         self.SIGKEYS = KEYS()

@@ -40,17 +40,11 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
             try:
                 endpoint_path = request.full_path
                 cont = get(g_config["resource_server_endpoint"] + endpoint_path, headers=request.headers).content
-                activity = {"User": uid, "Description": "No resource found, forwarding request for path " + path}
-                logger.info(
-                    log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                               log_code=2105, activity=activity))
+                log(2105, request.method, {"User": uid, "Description": "No resource found, forwarding request for path " + path})
                 return cont
             except Exception as e:
                 response.status_code = 500
-                activity = {"User": uid, "Description": "Error while redirecting to resource:" + str(e)}
-                logger.info(
-                    log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                               log_code=2106, activity=activity))
+                log(2106, request.method, {"User": uid, "Description": "Error while redirecting to resource:" + str(e)})
                 return response
 
         resource_scopes = None
@@ -99,9 +93,9 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
                 new_header.add(key, value)
 
             # redirect to resource
-            activity = {"User": uid, "Resource": resource_id, "Description": "Token validated, forwarding to RM"}
-            logger.info(log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                                   log_code=2103, activity=activity))
+            log(2103, request.method, {"User": uid,
+                                       "Resource": resource_id,
+                                       "Description": "Token validated, forwarding to RM"})
             return proxy_request(request, new_header)
 
         logger.debug("Invalid RPT!, sending ticket")
@@ -116,12 +110,9 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
                                                            + ",as_uri=" + g_config["auth_server_url"] \
                                                            + ",ticket=" + ticket
                     response.status_code = 401  # Answer with "Unauthorized" as per the standard spec.
-                    activity = {"Ticket": ticket,
-                                "Description": "Invalid token, generating ticket for resource:" + resource_id}
-                    logger.info(
-                        log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP",
-                                                   action_type=request.method,
-                                                   log_code=2104, activity=activity))
+                    log(2104, request.method, {"Ticket": ticket,
+                                               "Description": "Invalid token, generating ticket for resource: "
+                                                              + resource_id})
                     return response
                 except Exception as e:
                     pass  # Resource is not registered with current scopes
@@ -131,9 +122,7 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
         except Exception as e:
             response.status_code = int(str(e).split(":")[1].strip())
             response.headers["Error"] = str(e)
-            activity = {"Ticket": None, "Error": str(e)}
-            logger.info(log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                                   log_code=2104, activity=activity))
+            log(2104, request.method, {"Ticket": None, "Error": str(e)})
             return response
 
     @proxy_bp.route('/', defaults={'path': ''}, methods=["GET", "POST", "PUT", "DELETE", "HEAD", "PATCH"])
@@ -151,9 +140,7 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
         if resource and "scopes" in resource:
             resource_scopes = resource.get('scopes') if resource else None
         if resource_scopes and 'open' in resource_scopes:
-            activity = {"Resource": resource_id, "Description": "Open resource, forwarding to RM"}
-            logger.info(log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                                   log_code=2103, activity=activity))
+            log(2103, request.method, {"Resource": resource_id, "Description": "Open resource, forwarding to RM"})
             headers_splitted = split_headers(str(request.headers))
             new_header = Headers()
             for key, value in headers_splitted.items():
@@ -179,10 +166,7 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
         rpt = request.headers.get('Authorization')
         if not rpt:
             response.status_code = 401
-            activity = {"Description: Token not found"}
-            logger.info(
-                log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=request.method,
-                                           log_code=2104, activity=activity))
+            log(2104, request.method, {"Description: Token not found"})
             return response
         logger.debug("Token found: " + rpt)
         rpt = rpt.replace("Bearer ", "").strip()
@@ -228,9 +212,9 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
                 new_header.add(key, value)
 
             # redirect to resource
-            activity = {"User": uid, "Resource": resource_id, "Description": "Token validated, forwarding to RM"}
-            logger.info(log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                                   log_code=2103, activity=activity))
+            log(2103, request.method, {"User": uid,
+                                       "Resource": resource_id,
+                                       "Description": "Token validated, forwarding to RM"})
             return proxy_request(request, new_header)
         logger.debug("Invalid RPT!, sending ticket")
         # In any other case, we have an invalid RPT, so send a ticket.
@@ -243,18 +227,15 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
                 for s in [scopes, ["Authenticated"], ["public_access"]]:
                     try:
                         # Ticket for default protected_XXX scopes
-                        ticket = uma_handler.request_access_ticket(
-                            [{"resource_id": resource_id, "resource_scopes": s}])
+                        ticket = uma_handler.request_access_ticket([{"resource_id": resource_id, "resource_scopes": s}])
                         response.headers["WWW-Authenticate"] = "UMA realm=" \
                                                                + g_config["realm"] \
                                                                + ",as_uri=" + g_config["auth_server_url"] \
                                                                + ",ticket=" + ticket
                         response.status_code = 401  # Answer with "Unauthorized" as per the standard spec.
-                        activity = {"Ticket": ticket,
-                                    "Description": "Invalid token, generating ticket for resource:" + resource_id}
-                        logger.info(log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP",
-                                                               action_type=request.method, log_code=2104,
-                                                               activity=activity))
+                        log(2104, request.method, {"Ticket": ticket,
+                                                   "Description": "Invalid token, generating ticket for resource: "
+                                                                  + resource_id})
                         return response
                     except Exception as e:
                         pass  # Resource is not registered with default scopes
@@ -263,10 +244,7 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
             except Exception as e:
                 response.status_code = int(str(e).split(":")[1].strip())
                 response.headers["Error"] = str(e)
-                activity = {"Ticket": None, "Error": str(e)}
-                logger.info(
-                    log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                               log_code=2104, activity=activity))
+                log(2104, request.method, {"Ticket": None, "Error": str(e)})
                 return response
         else:
             logger.debug("No matched resource, passing through to resource server to handle")
@@ -274,17 +252,12 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
             try:
                 endpoint_path = request.full_path
                 cont = get(g_config["resource_server_endpoint"] + endpoint_path, headers=request.headers).content
-                activity = {"User": uid, "Description": "No resource found, forwarding request for path " + path}
-                logger.info(
-                    log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                               log_code=2105, activity=activity))
+                log(2105, request.method, {"User": uid,
+                                           "Description": "No resource found, forwarding request for path " + path})
                 return cont
             except Exception as e:
                 response.status_code = 500
-                activity = {"User": uid, "Description": "Error while redirecting to resource:" + str(e)}
-                logger.info(
-                    log_handler.format_message(subcomponent="PROXY", action_id="HTTP", action_type=request.method,
-                                               log_code=2106, activity=activity))
+                log(2106, request.method, {"User": uid, "Description": "Error while redirecting to resource:" + str(e)})
                 return response
 
     def proxy_request(req, new_header):
@@ -361,5 +334,10 @@ def construct_blueprint(oidc_client, uma_handler, g_wkh, g_config, private_key):
             d[field] = value
 
         return d
+
+    def log(code, http_method, activity):
+        logger.info(log_handler.format_message(subcomponent="PROXY", action_id="HTTP",
+                                               action_type=http_method, log_code=code,
+                                               activity=activity))
 
     return proxy_bp

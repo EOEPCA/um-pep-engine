@@ -33,9 +33,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         resource_id = custom_mongo.get_id_from_uri(path)
         resource = custom_mongo.get_from_mongo("resource_id", resource_id)
         if resource and "scopes" in resource and 'open' in resource.get('scopes'):
-            activity = {"Resource": resource_id, "Description": "Scope is open"}
-            logger.info(log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=http_method,
-                                                   log_code=2103, activity=activity))
+            log(2103, request.method, {"Resource": resource_id, "Description": "Scope is open"})
             response.status_code = 200
             return response
 
@@ -82,10 +80,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
                                          s_margin_rpt_valid, rpt_limit_uses, verify_signature)):
                 logger.debug("RPT valid, accessing ")
                 # RPT validated, allow nginx to redirect request to Resource Server
-                activity = {"User": uid, "Resource": resource_id, "Description": "Token validated"}
-                logger.info(
-                    log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=http_method,
-                                               log_code=2103, activity=activity))
+                log(2103, request.method, {"User": uid, "Resource": resource_id, "Description": "Token validated"})
                 response.status_code = 200
                 return response
             logger.debug("Invalid RPT!, sending ticket")
@@ -97,9 +92,7 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
             logger.debug("No matched resource, forward to Resource Server.")
             # In this case, the PEP doesn't have that resource handled, so it replies a 200 so the request is forwarded to the Resource Server
             response.status_code = 200
-            activity = {"User": uid, "Description": "No resource found, forwarding to Resource Server."}
-            logger.info(log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=http_method,
-                                                   log_code=2105, activity=activity))
+            log(2105, request.method, {"User": uid, "Description": "No resource found, forwarding to Resource Server."})
             return response
 
         try:
@@ -112,11 +105,8 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
                                                            + g_config["realm"] + ",as_uri=" \
                                                            + g_config["auth_server_url"] + ",ticket=" + ticket
                     response.status_code = 401  # Answer with "Unauthorized" as per the standard spec.
-                    activity = {"Ticket": ticket,
-                                "Description": "Invalid token, generating ticket for resource:" + resource_id}
-                    logger.info(
-                        log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=http_method,
-                                                   log_code=2104, activity=activity))
+                    log(2104, request.method, {"Ticket": ticket,
+                                               "Description": "Invalid token, generating ticket for resource:" + resource_id})
                     return response
                 except Exception as e:
                     pass  # Resource is not registered with current scope
@@ -126,10 +116,12 @@ def construct_blueprint(oidc_client, uma_handler, g_config):
         except Exception as e:
             response.status_code = int(str(e).split(":")[1].strip())
             response.headers["Error"] = str(e)
-            activity = {"Ticket": None, "Error": str(e)}
-            logger.info(
-                log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP", action_type=http_method,
-                                           log_code=2104, activity=activity))
+            log(2104, request.method, {"Ticket": None, "Error": str(e)})
             return response
+
+    def log(code, http_method, activity):
+        logger.info(log_handler.format_message(subcomponent="AUTHORIZE", action_id="HTTP",
+                                               action_type=http_method, log_code=code,
+                                               activity=activity))
 
     return authorize_bp

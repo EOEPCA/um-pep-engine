@@ -16,10 +16,10 @@ class Mongo_Handler:
         self.db_obj = database_obj
 
     def mongo_exists(self, mongo_key, mongo_value):
-        '''
+        """
             Check the existence of the value inside the database
             Return boolean result
-        '''
+        """
         col = self.db[self.db_obj]
         myquery = {mongo_key: mongo_value}
         if col.find_one(myquery):
@@ -28,10 +28,10 @@ class Mongo_Handler:
             return False
 
     def verify_previous_uri_ownership(self, uid, url):
-        '''
+        """
             Recursive check of a resource existance by matching the reverse_match_uri and the subpath within of a specific UID
             Return boolean result 
-        '''
+        """
         # In case the first url is '/'
         if str(url) == '/': return False
         col = self.db[self.db_obj]
@@ -51,27 +51,27 @@ class Mongo_Handler:
                 return False
 
     def get_from_mongo(self, mongo_key, mongo_value):
-        '''
+        """
             Gets an existing object from the database, or None if not found
-        '''
+        """
         col = self.db[self.db_obj]
         myquery = {mongo_key: mongo_value}
         return col.find_one(myquery)
 
     def delete_in_mongo(self, mongo_key, mongo_value):
-        '''
+        """
             Check the existence of the key inside the database
             And deletes the document with that value
-        '''
+        """
         if self.mongo_exists(mongo_key, mongo_value):
             col = self.db[self.db_obj]
             myquery = {mongo_key: mongo_value}
             a = col.delete_one(myquery)
 
     def update_in_mongo(self, key_mongo, dict_data):
-        '''
+        """
         Find the object in the database by id, add or modify the changed values for the object
-        '''
+        """
         id = dict_data[key_mongo]
         col = self.db[self.db_obj]
         myquery = {key_mongo: id}
@@ -82,7 +82,7 @@ class Mongo_Handler:
     # Functions only for resources db
     def insert_resource_in_mongo(self, resource_id: str, name: str, ownership_id: str, reverse_match_url: str,
                                  scopes: List[str]):
-        '''
+        """
             Generates a document with:
                 -RESOURCE_ID: Unique id for each resource
                 -RESOURCE_NAME: Custom name for the resource (NO restrictions)
@@ -91,7 +91,7 @@ class Mongo_Handler:
             Check the existence of the resource to be registered on the database
             If alredy registered will return None
             If not registered will add it and return the query result
-        '''
+        """
         dblist = self.myclient.list_database_names()
         # Check if the database alredy exists
         if "resource_db" in dblist:
@@ -113,13 +113,12 @@ class Mongo_Handler:
             x = col.insert_one(myres)
             return x
 
-    # TODO move get_id_from_uri function out of mongo class
     def get_id_from_uri(self, uri):
-        '''
+        """
             Finds the most similar match with the uri given
             Generates a list of the possible matches
             Returns resource_id of the best match
-        '''
+        """
         total = '/'
         col = self.db[self.db_obj]
         k = []
@@ -154,9 +153,9 @@ class Mongo_Handler:
             return False
 
     def get_all_resources(self):
-        '''
+        """
             Gets all existing resources in database
-        '''
+        """
         col = self.db['resources']
         return col.find()
 
@@ -169,7 +168,7 @@ class Mongo_Handler:
 
     # Functions for rpt db
     def insert_rpt_in_mongo(self, rpt: str, rpt_limit_uses: int, timestamp: str):
-        '''
+        """
             Generates a document with:
                 -RPT: Unique id for each rpt
                 -RPT_LIMIT_USES: Limit of uses
@@ -177,7 +176,7 @@ class Mongo_Handler:
             Check the existence of the rpt to be registered on the database
             If alredy registered will return None
             If not registered will add it and return the query result
-        '''
+        """
         dblist = self.myclient.list_database_names()
         # Check if the database alredy exists
         if "rpt_db" in dblist:
