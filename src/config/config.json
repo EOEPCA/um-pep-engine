@@ -1,6 +1,8 @@
 {
     "realm": "eoepca",
     "auth_server_url": "https://keycloak.develop.eoepca.org/",
+    "token_url": "https://keycloak.develop.eoepca.org/realms/master/protocol/openid-connect/token",
+    "openid_configuration_url": "https://keycloak.develop.eoepca.org/realms/master/.well-known/openid-configuration",
     "service_host": "0.0.0.0",
     "proxy_service_port": 5566,
     "resources_service_port": 5576,

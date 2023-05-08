@@ -39,8 +39,7 @@ class PEPProtectedAction(unittest.TestCase):
             "client_secret": cls.g_config["client_secret"]
         }
         session = requests.Session()
-        r = session.post(cls.g_config["auth_server_url"] + "/oxauth/restv1/token", headers=headers, data=data,
-                         verify=False)
+        r = session.post(cls.g_config["token_url"], headers=headers, data=data,verify=False)
         # print(r.json())
         id_token = r.json()["id_token"]
         oauth_token = r.json()["access_token"]
@@ -56,8 +55,7 @@ class PEPProtectedAction(unittest.TestCase):
             "client_secret": cls.g_config["client_secret"]
         }
         session2 = requests.Session()
-        r2 = session2.post(cls.g_config["auth_server_url"] + "/oxauth/restv1/token", headers=headers2, data=data2,
-                           verify=False)
+        r2 = session2.post(cls.g_config["token_url"], headers=headers2, data=data2, verify=False)
         id_token2 = r2.json()["id_token"]
         oauth_token2 = r2.json()["access_token"]
         cls.jwt_id2 = id_token2

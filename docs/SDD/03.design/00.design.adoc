@@ -53,6 +53,8 @@ The parameters that are accepted, and their meaning, are as follows. For the `co
 
 - **realm**: 'realm' parameter answered for each UMA ticket. Default is "eoepca"
 - **auth_server_url**: complete url (with "https") of the Authorization server.
+- **token_url**: complete url (with "https") of the URL to generate a token from the Authorization server.
+- **openid_configuration_url**: complete url (with "https") of the URL get openid configuration from the Authorization server.
 - **service_host**: Host for the proxy to listen on. For example, "0.0.0.0" will listen on all interfaces
 - **proxy_service_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
 - **resources_service_port**: Port for the resources to listen on. By default, **5576**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.

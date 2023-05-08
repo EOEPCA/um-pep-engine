@@ -23,7 +23,7 @@ def decode_jwt(jwt):
 def get_jwt_keys():
     g_config = load_config("./config/config.json")
     headers = {'content-type': "application/json", "cache-control": "no-cache"}
-    res = requests.get(g_config["auth_server_url"] + "/oxauth/restv1/jwks", headers=headers, verify=False)
+    res = requests.get(g_config["token_url"], headers=headers, verify=False)
     json_dict = json.loads(res.text)
     return json_dict
 

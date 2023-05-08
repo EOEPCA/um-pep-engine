@@ -48,6 +48,8 @@ def get_config(config_path: str):
     env_vars = [
         "PEP_REALM",
         "PEP_AUTH_SERVER_URL",
+        "PEP_TOKEN_URL",
+        "PEP_OPENID_CONFIGURATION_URL",
         "PEP_SERVICE_HOST",
         "PEP_PROXY_SERVICE_PORT",
         "PEP_RESOURCES_SERVICE_PORT",

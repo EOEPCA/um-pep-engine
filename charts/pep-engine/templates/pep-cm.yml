@@ -5,6 +5,8 @@ metadata:
 data:
   PEP_REALM: {{ .Values.global.realm | quote }}
   PEP_AUTH_SERVER_URL: https://{{ .Values.global.domain }}
+  PEP_TOKEN_URL: https://{{ .Values.global.tokenUrl }}
+  PEP_OPENID_CONFIGURATION_URL: https://{{ .Values.global.openIdConfigurationUrl }}
   PEP_SERVICE_HOST: {{ .Values.global.serviceHost | quote }}
   PEP_SERVICE_PORT: {{ .Values.global.proxyServicePort | quote }}
   PEP_S_MARGIN_RPT_VALID: {{ .Values.configMap.margin | quote }}
