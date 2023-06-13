@@ -26,7 +26,7 @@ from handlers.policy_handler import policy_handler
 class PEPProtectedAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open("../src/config/config.json") as j:
+        with open("../auth_proxy_server/logging/config.json") as j:
             cls.g_config = json.load(j)
 
         headers = {'cache-control': "no-cache"}

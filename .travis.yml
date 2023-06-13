@@ -8,7 +8,7 @@ services:
 jobs:
   include:
     - stage: Testing
-      install: pip3 install -r src/requirements.txt
+      install: pip3 install -r requirements.txt
       script: python3 -m unittest tests/testMongo.py
     
     - stage: Static Code Analysis    

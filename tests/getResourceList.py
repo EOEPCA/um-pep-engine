@@ -18,7 +18,7 @@ from WellKnownHandler import WellKnownHandler, TYPE_SCIM, TYPE_OIDC, KEY_SCIM_US
 from eoepca_uma import rpt, resource
 
 g_config = {}
-with open("../src/config/config.json") as j:
+with open("../auth_proxy_server/logging/config.json") as j:
     g_config = json.load(j)
 
 wkh = WellKnownHandler(g_config["auth_server_url"], secure=False)

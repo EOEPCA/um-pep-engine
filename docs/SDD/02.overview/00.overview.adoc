@@ -113,11 +113,6 @@ In case it is disabled, the signature will not be verified but the other steps a
 The UUID of the End-User will be included as attribute of the Resource description document (extending the data model) upon resource creation (with an “ownership_id” field).
 Subsequent requests to the specific Resource ID will perform a JWT or OAuth2.0 check, cross-checking against the “ownership_id” before performing actions and answering back with a 401 Unauthorized if there is no match.
 
-==== Policy API (to Policy Decision Point)
-When registering a new resource, the PEP will consume the Policy API to register a default policy with the PDP. The endpoint for this is:
-
-* <pdp_url>/policy
-
 == Required resources
 
 [NOTE]

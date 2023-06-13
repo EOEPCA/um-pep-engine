@@ -19,7 +19,7 @@ from eoepca_uma import rpt, resource
 class PEPResourceTest:
     def __init__(self):
         self.g_config = {}
-        with open("../src/config/config.json") as j:
+        with open("../auth_proxy_server/logging/config.json") as j:
             self.g_config = json.load(j)
         wkh = WellKnownHandler(self.g_config["auth_server_url"], secure=False)
         self.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)

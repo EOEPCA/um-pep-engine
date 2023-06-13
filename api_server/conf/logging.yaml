@@ -1,0 +1,29 @@
+version: 1
+disable_existing_loggers: true
+
+formatters:
+  verbose:
+    format: '%(asctime)s:%(levelname)s:%(message)s'
+    datefmt: '%Y-%m-%dT%H:%M:%S%z'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: verbose
+    stream: ext://sys.stdout
+
+  log:
+    class: logging.handlers.RotatingFileHandler
+    filename: ../../logs/api_server.log
+    formatter: verbose
+    level: DEBUG
+    maxBytes: 1073741824   ## 1 GB log file size before rotation
+    backupCount: 10        ## Saves 10 most recent log files
+
+loggers:
+  API_SERVER:
+    level: DEBUG
+    handlers: [ console, log ]
+    qualname: API_SERVER
+    propagate: false
