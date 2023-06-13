@@ -1,4 +1,4 @@
-# runkeycloak-setup script to configure Keycloak
+# run keycloak-setup to configure Keycloak
 FROM python:alpine
 WORKDIR /app
 COPY keycloak_setup/ keycloak_setup/

@@ -63,6 +63,13 @@ This is an example of how to list things you need to use the software and how to
 
 The full getting started guide starts in the Wiki home page
 
+### Build
+
+```shell
+docker build . -t auth-proxy
+docker run --rm -dp 4180:4180 --name auth-proxy auth-proxy
+```
+
 ## Roadmap
 
 See the [open issues](https://github.com/EOEPCA/um-pep-engine/issues) for a list of proposed features (and known

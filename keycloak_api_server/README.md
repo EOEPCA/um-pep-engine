@@ -6,3 +6,11 @@ Includes three main paths:
 - **Resources** - CRUD operations to manage resources
 - **Policies** - CRUD operations to manage policies
 - **Permissions** - CRUD operations to manage permissions
+
+
+### Build and Execute
+
+```shell
+docker build -f keycloak_api_server/Dockerfile . -t keycloak-api-server
+docker run --rm -dp 5566:5566 --name keycloak_api_server keycloak_api_server
+```
