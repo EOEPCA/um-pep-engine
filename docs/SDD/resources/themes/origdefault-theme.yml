@@ -20,11 +20,11 @@ font:
       italic: mplus1p-regular-fallback.ttf
       bold_italic: mplus1p-regular-fallback.ttf
   fallbacks:
-  - M+ 1p Fallback
+    - M+ 1p Fallback
 page:
   background_color: ffffff
   layout: portrait
-  margin: [0.5in, 0.67in, 0.67in, 0.67in]
+  margin: [ 0.5in, 0.67in, 0.67in, 0.67in ]
   # margin_inner and margin_outer keys are used for recto/verso print margins when media=prepress
   margin_inner: 0.75in
   margin_outer: 0.59in
@@ -141,7 +141,7 @@ abstract:
 admonition:
   column_rule_color: $base_border_color
   column_rule_width: $base_border_width
-  padding: [0, $horizontal_rhythm, 0, $horizontal_rhythm]
+  padding: [ 0, $horizontal_rhythm, 0, $horizontal_rhythm ]
   #icon:
   #  tip:
   #    name: far-lightbulb
@@ -156,7 +156,7 @@ blockquote:
   border_color: $base_border_color
   border_width: 5
   # FIXME disable negative padding bottom once margin collapsing is implemented
-  padding: [0, $horizontal_rhythm, $block_margin_bottom * -0.75, $horizontal_rhythm + $blockquote_border_width / 2]
+  padding: [ 0, $horizontal_rhythm, $block_margin_bottom * -0.75, $horizontal_rhythm + $blockquote_border_width / 2 ]
   cite_font_size: $base_font_size_small
   cite_font_color: 999999
 # code is used for source blocks (perhaps change to source or listing?)
@@ -183,7 +183,7 @@ example:
   border_width: 0.75
   background_color: ffffff
   # FIXME reenable padding bottom once margin collapsing is implemented
-  padding: [$vertical_rhythm, $horizontal_rhythm, 0, $horizontal_rhythm]
+  padding: [ $vertical_rhythm, $horizontal_rhythm, 0, $horizontal_rhythm ]
 image:
   align: left
 prose:
@@ -195,7 +195,7 @@ sidebar:
   border_radius: $base_border_radius
   border_width: $base_border_width
   # FIXME reenable padding bottom once margin collapsing is implemented
-  padding: [$vertical_rhythm, $vertical_rhythm * 1.25, 0, $vertical_rhythm * 1.25]
+  padding: [ $vertical_rhythm, $vertical_rhythm * 1.25, 0, $vertical_rhythm * 1.25 ]
   title:
     align: center
     font_color: $heading_font_color
@@ -246,7 +246,7 @@ footer:
   border_width: 0.25
   height: $base_line_height_length * 2.5
   line_height: 1
-  padding: [$base_line_height_length / 2, 1, 0, 1]
+  padding: [ $base_line_height_length / 2, 1, 0, 1 ]
   vertical_align: top
   #image_vertical_align: <alignment> or <number>
   # additional attributes for content:

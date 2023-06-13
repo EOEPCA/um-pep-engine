@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-from elasticsearch import Elasticsearch
 import logging
+
+from elasticsearch import Elasticsearch
 
 logger = logging.getLogger("PEP")
 
@@ -91,7 +92,8 @@ class ElasticSearch:
                 }
             }
             res = self.elastic_search.search(index=self.db, body=query_body)
-            self.elastic_search.delete(index=self.db, doc_type=self.db_obj, id=res["hits"]["hits"][0]["_id"], refresh="true")
+            self.elastic_search.delete(index=self.db, doc_type=self.db_obj, id=res["hits"]["hits"][0]["_id"],
+                                       refresh="true")
 
     def insert(self, value):
         """

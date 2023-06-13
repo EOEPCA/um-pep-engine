@@ -8,14 +8,13 @@ from string import ascii_lowercase
 
 from flask import Flask
 from flask_swagger_ui import get_swaggerui_blueprint
-
-import blueprints.resources as resources
-import blueprints.policies as policies
-import blueprints.permissions as permissions
-from utils.configuration import load_configuration
-import utils.logger as logger
-
 from waitress import serve
+
+import blueprints.permissions as permissions
+import blueprints.policies as policies
+import blueprints.resources as resources
+import utils.logger as logger
+from utils.configuration import load_configuration
 from utils.keycloak_client import KeycloakClient
 
 config_path = os.path.join(os.path.dirname(__file__), "../conf/config.ini")
@@ -58,16 +57,12 @@ def start_api_server():
         )
 
 
-
-
-
 if __name__ == '__main__':
     config = load_configuration(config_path)
     keycloak = KeycloakClient(server_url=config.get("Keycloak", "auth_server_url"),
                               realm=config.get("Keycloak", "realm"),
-                              resource_server=config.get("Keycloak", "resource_server_endpoint"),
+                              resource_server_endpoint=config.get("Keycloak", "resource_server_endpoint"),
                               username=config.get("Keycloak", "admin_username"),
-                              password=config.get("Keycloak", "admin_password"),
-                              init=True
+                              password=config.get("Keycloak", "admin_password")
                               )
     start_api_server()

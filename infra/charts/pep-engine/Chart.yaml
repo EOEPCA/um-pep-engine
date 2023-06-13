@@ -2,7 +2,7 @@ apiVersion: v1
 name: pep-engine
 description: A Helm chart for PEP Engine
 maintainers:
-    - name: eoepca
+  - name: eoepca
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives

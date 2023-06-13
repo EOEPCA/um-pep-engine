@@ -12,7 +12,7 @@
     <img src="images/logo.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">um-pep-engine</h3>
+<h3 align="center">um-pep-engine</h3>
 
   <p align="center">
     Policy Enforcement Point for EOEPCA project
@@ -28,7 +28,7 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-  - [Built With](#built-with)
+    - [Built With](#built-with)
 - [Getting Started](#getting-started)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -65,12 +65,13 @@ The full getting started guide starts in the Wiki home page
 
 ## Roadmap
 
-See the [open issues](https://github.com/EOEPCA/um-pep-engine/issues) for a list of proposed features (and known issues).
-
+See the [open issues](https://github.com/EOEPCA/um-pep-engine/issues) for a list of proposed features (and known
+issues).
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any
+contributions you make are **greatly appreciated**.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
@@ -92,17 +93,27 @@ Project Link: [https://github.com/EOEPCA/um-pep-engine](https://github.com/EOEPC
 
 ## Acknowledgements
 
-- README.md is based on [this template](https://github.com/othneildrew/Best-README-Template) by [Othneil Drew](https://github.com/othneildrew).
-
+- README.md is based on [this template](https://github.com/othneildrew/Best-README-Template)
+  by [Othneil Drew](https://github.com/othneildrew).
 
 [contributors-shield]: https://img.shields.io/github/contributors/EOEPCA/um-pep-engine.svg?style=flat-square
+
 [contributors-url]: https://github.com/EOEPCA/um-pep-engine/graphs/contributors
+
 [forks-shield]: https://img.shields.io/github/forks/EOEPCA/um-pep-engine.svg?style=flat-square
+
 [forks-url]: https://github.com/EOEPCA/um-pep-engine/network/members
+
 [stars-shield]: https://img.shields.io/github/stars/EOEPCA/um-pep-engine.svg?style=flat-square
+
 [stars-url]: https://github.com/EOEPCA/um-pep-engine/stargazers
+
 [issues-shield]: https://img.shields.io/github/issues/EOEPCA/um-pep-engine.svg?style=flat-square
+
 [issues-url]: https://github.com/EOEPCA/um-pep-engine/issues
+
 [license-shield]: https://img.shields.io/github/license/EOEPCA/um-pep-engine.svg?style=flat-square
+
 [license-url]: https://github.com/EOEPCA/um-pep-engine/blob/master/LICENSE
+
 [build-shield]: https://www.travis-ci.com/EOEPCA/um-pep-engine.svg?branch=master

@@ -1,33 +1,27 @@
-import unittest
-import subprocess
-import os
-import requests
-import json
-import sys
-import base64
-import time
-import traceback
-import urllib
-import logging
 import datetime
-from jwkest.jws import JWS
-from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
-from jwkest.jwk import load_jwks
+import json
+import os
+import time
+import unittest
+
+import requests
 from Crypto.PublicKey import RSA
-from WellKnownHandler import WellKnownHandler, TYPE_SCIM, TYPE_OIDC, KEY_SCIM_USER_ENDPOINT, KEY_OIDC_TOKEN_ENDPOINT, KEY_OIDC_REGISTRATION_ENDPOINT, KEY_OIDC_SUPPORTED_AUTH_METHODS_TOKEN_ENDPOINT, TYPE_UMA_V2, KEY_UMA_V2_PERMISSION_ENDPOINT
-from eoepca_uma import rpt, resource
+from WellKnownHandler import WellKnownHandler, TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT
+from jwkest.jwk import RSAKey, import_rsa_key
+from jwkest.jws import JWS
+
 
 class ROChangeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.g_config = {}
-        with open("../auth_proxy_server/logging/config.json") as j:
+        with open("../keycloak_setup/logging/config.json") as j:
             cls.g_config = json.load(j)
 
         wkh = WellKnownHandler(cls.g_config["auth_server_url"], secure=False)
         cls.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)
 
-        #Generate ID Token
+        # Generate ID Token
         _rsakey = RSA.generate(2048)
         _private_key = _rsakey.exportKey()
         _public_key = _rsakey.publickey().exportKey()
@@ -40,35 +34,35 @@ class ROChangeTest(unittest.TestCase):
         file_out.write(_public_key)
         file_out.close()
 
-        #Admin JWT
+        # Admin JWT
         _rsajwk = RSAKey(kid='RSA1', key=import_rsa_key(_private_key))
-        _payload = { 
-                    "iss": cls.g_config["client_id"],
-                    "sub": cls.g_config["client_id"],
-                    "aud": cls.__TOKEN_ENDPOINT,
-                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600,
-                    "isOperator": False
-                }
+        _payload = {
+            "iss": cls.g_config["client_id"],
+            "sub": cls.g_config["client_id"],
+            "aud": cls.__TOKEN_ENDPOINT,
+            "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+            "exp": int(time.time()) + 3600,
+            "isOperator": False
+        }
         _jws = JWS(_payload, alg="RS256")
         cls.jwt_admin = _jws.sign_compact(keys=[_rsajwk])
 
-        #ROTest user JWT
-        _payload = { 
-                    "iss": cls.g_config["client_id"],
-                    "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
-                    "aud": cls.__TOKEN_ENDPOINT,
-                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600,
-                    "isOperator": False
-                }
+        # ROTest user JWT
+        _payload = {
+            "iss": cls.g_config["client_id"],
+            "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
+            "aud": cls.__TOKEN_ENDPOINT,
+            "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+            "exp": int(time.time()) + 3600,
+            "isOperator": False
+        }
         _jws = JWS(_payload, alg="RS256")
         cls.jwt_rotest = _jws.sign_compact(keys=[_rsajwk])
 
         cls.scopes = 'public_access'
         cls.resourceName = "TestROChangePEP"
         cls.PEP_HOST = "http://localhost:5566"
-    
+
     @classmethod
     def tearDownClass(cls):
         os.remove("private.pem")
@@ -81,16 +75,19 @@ class ROChangeTest(unittest.TestCase):
         return self.jwt_rotest
 
     def createTestResource(self, id_token="filler"):
-        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res = requests.post(self.PEP_HOST+"/resources/"+self.resourceName, headers=headers, json=payload, verify=False)
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName, "name": self.resourceName}
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + str(id_token)}
+        res = requests.post(self.PEP_HOST + "/resources/" + self.resourceName, headers=headers, json=payload,
+                            verify=False)
         if res.status_code == 200:
             return 200, res.text
         return 500, None
 
     def getResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.get(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        res = requests.get(self.PEP_HOST + "/resources/" + self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 200:
@@ -100,8 +97,9 @@ class ROChangeTest(unittest.TestCase):
         return 500, None
 
     def deleteResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.delete(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        res = requests.delete(self.PEP_HOST + "/resources/" + self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 403:
@@ -111,9 +109,11 @@ class ROChangeTest(unittest.TestCase):
         return 500, None
 
     def updateResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        payload = {"resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName, "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
-        res = requests.put(self.PEP_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName, "name": self.resourceName,
+                   "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
+        res = requests.put(self.PEP_HOST + "/resources/" + self.resourceID, headers=headers, json=payload, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 403:
@@ -122,24 +122,24 @@ class ROChangeTest(unittest.TestCase):
             return 200, None
         return 500, None
 
-    #Monolithic test to avoid jumping through hoops to implement ordered tests
-    #This test case assumes v0.3 of the PEP engine
+    # Monolithic test to avoid jumping through hoops to implement ordered tests
+    # This test case assumes v0.3 of the PEP engine
     def test_resource(self):
-        #Use a JWT token as id_token
+        # Use a JWT token as id_token
         id_token_admin = self.getJWTAdmin()
         id_token_rotest = self.getJWTROTest()
 
-        #Create resource with owner ADMIN
+        # Create resource with owner ADMIN
         status, self.resourceID = self.createTestResource(id_token_admin)
         self.assertEqual(status, 200)
-        print("Create resource: Resource created with id: "+self.resourceID)
+        print("Create resource: Resource created with id: " + self.resourceID)
         del status
         print("=======================")
         print("")
 
-        #self.resourceID = "7dec4bd4-e6c2-4b4e-9425-3d720cc8b33d"
+        # self.resourceID = "7dec4bd4-e6c2-4b4e-9425-3d720cc8b33d"
 
-        #Change ownership with user ROTEST - should fail
+        # Change ownership with user ROTEST - should fail
         status, _ = self.updateResource(id_token_rotest)
         self.assertEqual(status, 403)
         del status
@@ -147,7 +147,7 @@ class ROChangeTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Change ownership with user ADMIN - should succeed
+        # Change ownership with user ADMIN - should succeed
         status, _ = self.updateResource(id_token_admin)
         self.assertEqual(status, 200)
         del status
@@ -155,7 +155,7 @@ class ROChangeTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Delete created resource
+        # Delete created resource
         status, reply = self.deleteResource(id_token_rotest)
         self.assertEqual(status, 204)
         print("Delete resource: Resource deleted.")

@@ -58,7 +58,7 @@ The parameters that are accepted, and their meaning, are as follows. For the `co
 - **proxy_port**: Port for the proxy to listen on. By default, **5566**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
 - **resources_service_port**: Port for the resources to listen on. By default, **5576**. Keep in mind you will have to edit the docker file and/or kubernetes yaml file in order for all the prot forwarding to work.
 - **response_permissions_limit**: An integer representing how many seconds of "margin" do we want when checking RPT. For example, using **5** will make sure the provided RPT is valid now AND AT LEAST in the next 5 seconds.
-- **resource_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
+- **proxy_server_endpoint**: Complete url (with "https" and any port) of the Resource Server to protect with this PEP.
 - **verify_signature**: Toggle on/off (bool) the usage of signature validation for the JWT.
 - **working_mode**: PEP working mode, FULL or PARTIAL.
 - **client_id**: string indicating a client_id for an already registered and configured client. **This parameter is optional**. When not supplied, the PEP will generate a new client for itself and store it in this key inside the JSON.

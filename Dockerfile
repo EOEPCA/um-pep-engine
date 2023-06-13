@@ -8,14 +8,14 @@ RUN go install github.com/oauth2-proxy/oauth2-proxy/v7@latest
 # run auth-proxy-server script to configure Keycloak
 FROM python:alpine as auth-proxy-server
 WORKDIR /app
-COPY auth_proxy_server/ auth_proxy_server/
-COPY utils/ auth_proxy_server/src/utils/
-RUN pip install -r auth_proxy_server/requirements.txt
-RUN python auth_proxy_server/src/main.py
+COPY keycloak_setup/ keycloak_setup/
+COPY utils/ keycloak_setup/src/utils/
+RUN pip install -r keycloak_setup/requirements.txt
+RUN python keycloak_setup/src/main.py
 
 # build final image to run oauth2-proxy
 FROM alpine
 COPY --from=oauth2-proxy /go/bin/oauth2-proxy oauth2-proxy
-COPY --from=auth-proxy-server /app/auth_proxy_server/conf/keycloak.cfg .
+COPY --from=auth-proxy-server /app/keycloak_setup/conf/keycloak.cfg .
 EXPOSE 4180
 ENTRYPOINT ["./oauth2-proxy", "--config=keycloak.cfg"]

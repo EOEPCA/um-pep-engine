@@ -1,66 +1,58 @@
-import unittest
-import subprocess
-import os
-import requests
-import json
-import sys
-import base64
-import time
-import traceback
-import urllib
-import logging
 import datetime
+import json
+import time
+import unittest
+
+import requests
+from WellKnownHandler import WellKnownHandler, TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT
+from jwkest.jwk import RSAKey, import_rsa_key_from_file
 from jwkest.jws import JWS
-from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
-from jwkest.jwk import load_jwks
-from Crypto.PublicKey import RSA
-from WellKnownHandler import WellKnownHandler, TYPE_SCIM, TYPE_OIDC, KEY_SCIM_USER_ENDPOINT, KEY_OIDC_TOKEN_ENDPOINT, KEY_OIDC_REGISTRATION_ENDPOINT, KEY_OIDC_SUPPORTED_AUTH_METHODS_TOKEN_ENDPOINT, TYPE_UMA_V2, KEY_UMA_V2_PERMISSION_ENDPOINT
-from eoepca_uma import rpt, resource
+
 
 class PEPResourceTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.g_config = {}
-        with open("../auth_proxy_server/logging/config.json") as j:
+        with open("../keycloak_setup/logging/config.json") as j:
             cls.g_config = json.load(j)
 
         wkh = WellKnownHandler(cls.g_config["auth_server_url"], secure=False)
         cls.__TOKEN_ENDPOINT = wkh.get(TYPE_OIDC, KEY_OIDC_TOKEN_ENDPOINT)
 
         _rsajwk = RSAKey(kid="RSA1", key=import_rsa_key_from_file("../src/config/private.pem"))
-        _payload = { 
-                    "iss": cls.g_config["client_id"],
-                    "sub": cls.g_config["client_id"],
-                    "aud": cls.__TOKEN_ENDPOINT,
-                    "user_name": "admin",
-                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600,
-                    "isOperator": True
-                }
+        _payload = {
+            "iss": cls.g_config["client_id"],
+            "sub": cls.g_config["client_id"],
+            "aud": cls.__TOKEN_ENDPOINT,
+            "user_name": "admin",
+            "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+            "exp": int(time.time()) + 3600,
+            "isOperator": True
+        }
         _jws = JWS(_payload, alg="RS256")
 
         # Needs to generate test user for this. Insert user inum instead of user name
         cls.delegated_user_id = ""
 
-        _payload_ownership = { 
-                    "iss": cls.g_config["client_id"],
-                    "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
-                    "aud": cls.__TOKEN_ENDPOINT,
-                    "user_name": "admin",
-                    "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
-                    "exp": int(time.time())+3600,
-                    "isOperator": False
-                }
+        _payload_ownership = {
+            "iss": cls.g_config["client_id"],
+            "sub": "54d10251-6cb5-4aee-8e1f-f492f1105c94",
+            "aud": cls.__TOKEN_ENDPOINT,
+            "user_name": "admin",
+            "jti": datetime.datetime.today().strftime('%Y%m%d%s'),
+            "exp": int(time.time()) + 3600,
+            "isOperator": False
+        }
         _jws_ownership = JWS(_payload_ownership, alg="RS256")
 
         cls.jwt = _jws.sign_compact(keys=[_rsajwk])
         cls.jwt_rotest = _jws_ownership.sign_compact(keys=[_rsajwk])
-        #cls.scopes = 'public_access'
+        # cls.scopes = 'public_access'
         cls.scopes = 'protected_access'
         cls.resourceName = "TestResourcePEP3"
         cls.PEP_HOST = "http://localhost:5566"
         cls.PEP_RES_HOST = "http://localhost:5576"
-       
+
     def getJWT(self):
         return self.jwt
 
@@ -68,8 +60,9 @@ class PEPResourceTest(unittest.TestCase):
         return self.jwt_rotest
 
     def getResourceList(self, id_token="filler"):
-        headers = { 'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token)}
-        res = requests.get(self.PEP_RES_HOST+"/resources", headers=headers, verify=False)
+        headers = {'content-type': "application/x-www-form-urlencoded", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + str(id_token)}
+        res = requests.get(self.PEP_RES_HOST + "/resources", headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 404:
@@ -79,24 +72,28 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def createTestResource(self, id_token="filler"):
-        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName }
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName, "name": self.resourceName}
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + str(id_token)}
+        res = requests.post(self.PEP_RES_HOST + "/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
             return 200, res.json()["id"]
         return 500, None
 
     def createDelegatedTestResource(self, id_token="filler"):
-        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName, "name": self.resourceName, "uuid": self.delegated_user_id}
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName, "name": self.resourceName,
+                   "uuid": self.delegated_user_id}
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + str(id_token)}
+        res = requests.post(self.PEP_RES_HOST + "/resources", headers=headers, json=payload, verify=False)
         if res.status_code == 200:
             return 200, res.text
         return 500, None
 
     def getResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.get(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        res = requests.get(self.PEP_RES_HOST + "/resources/" + self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 200:
@@ -106,8 +103,9 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def getResourceByPath(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.get(self.PEP_RES_HOST+"/resources?path=/", headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        res = requests.get(self.PEP_RES_HOST + "/resources?path=/", headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 200:
@@ -117,8 +115,9 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def deleteResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res = requests.delete(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        res = requests.delete(self.PEP_RES_HOST + "/resources/" + self.resourceID, headers=headers, verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 204:
@@ -126,9 +125,12 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def updateResource(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        payload = { "resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod" }
-        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName,
+                   "name": self.resourceName + "Mod"}
+        res = requests.put(self.PEP_RES_HOST + "/resources/" + self.resourceID, headers=headers, json=payload,
+                           verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 200:
@@ -136,9 +138,12 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def updateResourceRO(self, id_token="filler"):
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        payload = {"resource_scopes":[ self.scopes], "icon_uri":"/"+self.resourceName, "name":self.resourceName+"Mod", "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
-        res = requests.put(self.PEP_RES_HOST+"/resources/"+self.resourceID, headers=headers, json=payload, verify=False)
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + id_token}
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName,
+                   "name": self.resourceName + "Mod", "ownership_id": "54d10251-6cb5-4aee-8e1f-f492f1105c94"}
+        res = requests.put(self.PEP_RES_HOST + "/resources/" + self.resourceID, headers=headers, json=payload,
+                           verify=False)
         if res.status_code == 401:
             return 401, res.headers["Error"]
         if res.status_code == 403:
@@ -148,62 +153,66 @@ class PEPResourceTest(unittest.TestCase):
         return 500, None
 
     def swaggerUI(self):
-        reply = requests.get(self.PEP_HOST+"/swagger-ui")
+        reply = requests.get(self.PEP_HOST + "/swagger-ui")
         self.assertEqual(200, reply.status_code)
         print("=================")
         print("Get Web Page: 200 OK!")
         print("=================")
         page = reply.text
-        page_title = page[page.find("<title>")+7: page.find('</title>')]
+        page_title = page[page.find("<title>") + 7: page.find('</title>')]
         print("Get Page Title found: " + page_title)
         self.assertEqual("Policy Enforcement Point Interfaces", page_title)
         print("Get Page: OK!")
 
     def access_enforcement(self, id_token="filler"):
-        #Create a new resource
-        payload = { "resource_scopes":[ self.scopes ], "icon_uri":"/"+self.resourceName+"_access_enforcement", "name": self.resourceName+"_access_enforcement" }
-        headers = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res = requests.post(self.PEP_RES_HOST+"/resources", headers=headers, json=payload, verify=False)
+        # Create a new resource
+        payload = {"resource_scopes": [self.scopes], "icon_uri": "/" + self.resourceName + "_access_enforcement",
+                   "name": self.resourceName + "_access_enforcement"}
+        headers = {'content-type': "application/json", "cache-control": "no-cache",
+                   "Authorization": "Bearer " + str(id_token)}
+        res = requests.post(self.PEP_RES_HOST + "/resources", headers=headers, json=payload, verify=False)
         resource_id = res.text
 
-        #Access to the resource without token
-        headers2 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer filler" }
-        res2 = requests.get(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers2, verify=False)
+        # Access to the resource without token
+        headers2 = {'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer filler"}
+        res2 = requests.get(self.PEP_RES_HOST + "/resources/" + resource_id, headers=headers2, verify=False)
         print("Tried to access to the resource without token, return 500")
         self.assertEqual(500, res2.status_code)
         print("=======================")
         print("")
 
-        #Access to the resource with token
-        headers3 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+str(id_token) }
-        res3 = requests.get(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers3, verify=False)
+        # Access to the resource with token
+        headers3 = {'content-type': "application/json", "cache-control": "no-cache",
+                    "Authorization": "Bearer " + str(id_token)}
+        res3 = requests.get(self.PEP_RES_HOST + "/resources/" + resource_id, headers=headers3, verify=False)
         print("Tried to access to the resource with token, return 200")
         self.assertEqual(200, res3.status_code)
 
-        #Delete resource
-        headers4 = { 'content-type': "application/json", "cache-control": "no-cache", "Authorization": "Bearer "+id_token }
-        res4 = requests.delete(self.PEP_RES_HOST+"/resources/"+resource_id, headers=headers4, verify=False)
+        # Delete resource
+        headers4 = {'content-type': "application/json", "cache-control": "no-cache",
+                    "Authorization": "Bearer " + id_token}
+        res4 = requests.delete(self.PEP_RES_HOST + "/resources/" + resource_id, headers=headers4, verify=False)
 
-    #Monolithic test to avoid jumping through hoops to implement ordered tests
-    #This test case assumes v0.3 of the PEP engine
+    # Monolithic test to avoid jumping through hoops to implement ordered tests
+    # This test case assumes v0.3 of the PEP engine
     def test_resource(self):
-        #Use a JWT token as id_token
+        # Use a JWT token as id_token
         id_token = self.getJWT()
         id_token_ro = self.getJWT_RO()
 
-        #Create resource
+        # Create resource
         status, self.resourceID = self.createTestResource(id_token)
         self.assertEqual(status, 200)
-        print("Create resource: Resource created with id: "+self.resourceID)
+        print("Create resource: Resource created with id: " + self.resourceID)
         del status
         print("=======================")
         print("")
 
-        #Get created resource
+        # Get created resource
         status, reply = self.getResource(id_token)
         self.assertEqual(status, 200)
-        #And we check if the returned id matches the id we got on creation
-        #The reply message is in JSON format
+        # And we check if the returned id matches the id we got on creation
+        # The reply message is in JSON format
         self.assertEqual(reply["_id"], self.resourceID)
         print("Get resource: Resource found.")
         print(reply)
@@ -211,11 +220,11 @@ class PEPResourceTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Get resource list
+        # Get resource list
         status, reply = self.getResourceList(id_token)
         self.assertEqual(status, 200)
-        #And we finally check if the returned list contains our created resource
-        #The reply message is a list of resources in JSON format
+        # And we finally check if the returned list contains our created resource
+        # The reply message is a list of resources in JSON format
         found = False
         for r in reply:
             if r["_id"] == self.resourceID: found = True
@@ -225,15 +234,15 @@ class PEPResourceTest(unittest.TestCase):
         del status, reply
         print("=======================")
         print("")
-        
-        #Modify created resource
-        #This will simply test if we can modify the pre-determined resource name with "Mod" at the end
+
+        # Modify created resource
+        # This will simply test if we can modify the pre-determined resource name with "Mod" at the end
         status, _ = self.updateResource(id_token)
         self.assertEqual(status, 200)
-        #Get resource to check if modification actually was successfull
+        # Get resource to check if modification actually was successfull
         status, reply = self.getResource(id_token)
         self.assertEqual(reply["_id"], self.resourceID)
-        self.assertEqual(reply["_name"], self.resourceName+"Mod")
+        self.assertEqual(reply["_name"], self.resourceName + "Mod")
         print("Update resource: Resource properly modified.")
         print(reply)
         del status, reply
@@ -264,7 +273,7 @@ class PEPResourceTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Get resource to make sure it was deleted
+        # Get resource to make sure it was deleted
         status, _ = self.getResource(id_token)
         self.assertEqual(status, 404)
         print("Get resource: Resource correctly not found.")
@@ -272,34 +281,35 @@ class PEPResourceTest(unittest.TestCase):
         print("=======================")
         print("")
 
-        #Get resource list to make sure the resource was removed from internal cache
+        # Get resource list to make sure the resource was removed from internal cache
         status, reply = self.getResourceList(id_token)
         self.assertEqual(status, 404)
         print("Get resource list: Resource correctly removed from Internal List.")
         print("=======================")
         print("")
 
-        #Swagger UI Endpoint
+        # Swagger UI Endpoint
         print("Swagger UI Endpoint ")
         self.swaggerUI()
         print("=======================")
         print("")
 
-        #Access Enforcement
+        # Access Enforcement
         print("Access Enforcement")
         self.access_enforcement(id_token)
         print("=======================")
         del status, reply
         print("")
 
-        #Create delegated resource onto a second user
-        print("Create delegated resource: Delegating resource for user: "+self.delegated_user_id)
+        # Create delegated resource onto a second user
+        print("Create delegated resource: Delegating resource for user: " + self.delegated_user_id)
         status, self.resourceID = self.createDelegatedTestResource(id_token)
         self.assertEqual(status, 200)
-        print("Create delegated resource: Delegated resource created with id: "+self.resourceID)
+        print("Create delegated resource: Delegated resource created with id: " + self.resourceID)
         del status
         print("=======================")
         print("")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,4 @@
-import json
-
-from flask import Blueprint, request
+from flask import Blueprint
 
 
 def construct_blueprint(keycloak_client):

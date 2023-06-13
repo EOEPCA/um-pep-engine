@@ -9,7 +9,7 @@ data:
   PEP_PROXY_HOST: {{ .Values.global.serviceHost | quote }}
   PEP_SERVICE_PORT: {{ .Values.global.proxyServicePort | quote }}
   PEP_RESPONSE_PERMISSIONS_LIMIT: {{ .Values.configMap.margin | quote }}
-  PEP_RESOURCE_SERVER_ENDPOINT: {{ .Values.configMap.resourceServer | quote }}
+  PEP_PROXY_SERVER_ENDPOINT: {{ .Values.configMap.resourceServer | quote }}
   PEP_PDP_POLICY_ENDPOINT: {{ .Values.configMap.pdpPolicy | quote }}
   PEP_VERIFY_SIGNATURE: {{ .Values.configMap.verifySignature | quote }}
   PEP_PROXY_PORT: {{ .Values.global.proxyServicePort | quote }}
@@ -22,7 +22,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: custom-resources  
+  name: custom-resources
 data:
   {{ if .Files.Get "scripts/default-resources.json" }}
   default-resources.json: {{ .Files.Get "scripts/default-resources.json" | quote  }}

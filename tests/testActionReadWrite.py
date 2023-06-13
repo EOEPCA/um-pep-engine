@@ -1,23 +1,10 @@
-import unittest
-import subprocess
-import requests
-import json
-import sys
 import base64
-import time
-import traceback
-import urllib
-import logging
-import datetime
-from jwkest.jws import JWS
-from jwkest.jwk import RSAKey, import_rsa_key_from_file, load_jwks_from_url, import_rsa_key
-from jwkest.jwk import load_jwks
-from Crypto.PublicKey import RSA
-from WellKnownHandler import WellKnownHandler, TYPE_SCIM, TYPE_OIDC, KEY_SCIM_USER_ENDPOINT, KEY_OIDC_TOKEN_ENDPOINT, \
-    KEY_OIDC_REGISTRATION_ENDPOINT, KEY_OIDC_SUPPORTED_AUTH_METHODS_TOKEN_ENDPOINT, TYPE_UMA_V2, \
-    KEY_UMA_V2_PERMISSION_ENDPOINT
-from eoepca_uma import rpt, resource
+import json
 import os
+import sys
+import unittest
+
+import requests
 
 sys.path.append('../src/')
 from handlers.policy_handler import policy_handler
@@ -26,7 +13,7 @@ from handlers.policy_handler import policy_handler
 class PEPProtectedAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with open("../auth_proxy_server/logging/config.json") as j:
+        with open("../keycloak_setup/logging/config.json") as j:
             cls.g_config = json.load(j)
 
         headers = {'cache-control': "no-cache"}
@@ -39,7 +26,7 @@ class PEPProtectedAction(unittest.TestCase):
             "client_secret": cls.g_config["client_secret"]
         }
         session = requests.Session()
-        r = session.post(cls.g_config["token_url"], headers=headers, data=data,verify=False)
+        r = session.post(cls.g_config["token_url"], headers=headers, data=data, verify=False)
         # print(r.json())
         id_token = r.json()["id_token"]
         oauth_token = r.json()["access_token"]

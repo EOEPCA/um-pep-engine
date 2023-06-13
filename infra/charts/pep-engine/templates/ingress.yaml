@@ -3,32 +3,32 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ .Values.context }}-service
-  
+
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: {{ printf "%s.%s" .Values.context .Values.global.domain | quote }}
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: {{ .Values.global.pep }}
-          servicePort: {{ .Values.global.proxyServicePort }}
+    - host: {{ printf "%s.%s" .Values.context .Values.global.domain | quote }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Values.global.pep }}
+              servicePort: {{ .Values.global.proxyServicePort }}
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: {{ .Values.context }}-resources
-  
+
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: {{ printf "%s-pepapi.%s" .Values.context .Values.global.domain | quote }}
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: {{ .Values.global.pep }}
-          servicePort: {{ .Values.global.resourcesServicePort }}
+    - host: {{ printf "%s-pepapi.%s" .Values.context .Values.global.domain | quote }}
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: {{ .Values.global.pep }}
+              servicePort: {{ .Values.global.resourcesServicePort }}
