@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import pymongo
 import logging
+from typing import List
 
 class Mongo_Handler:
 
@@ -78,7 +79,7 @@ class Mongo_Handler:
         return
     
     #Functions only for resources db
-    def insert_resource_in_mongo(self, resource_id: str, name: str, ownership_id: str, reverse_match_url: str):   
+    def insert_resource_in_mongo(self, resource_id: str, name: str, ownership_id: str, reverse_match_url: str, scopes: List[str]):   
         '''
             Generates a document with:
                 -RESOURCE_ID: Unique id for each resource
@@ -93,7 +94,7 @@ class Mongo_Handler:
         # Check if the database alredy exists
         if "resource_db" in dblist:
             col = self.db['resources']
-            myres = { "resource_id": resource_id, "name": name, "ownership_id": ownership_id, "reverse_match_url": reverse_match_url }
+            myres = { "resource_id": resource_id, "name": name, "ownership_id": ownership_id, "reverse_match_url": reverse_match_url, "scopes": [x.lower() for x in scopes] }
             # Check if the resource is alredy registered in the collection
             x=None
             if self.mongo_exists("resource_id", resource_id):
@@ -104,7 +105,7 @@ class Mongo_Handler:
             return x
         else:
             col = self.db['resources']
-            myres = { "resource_id": resource_id, "name": name, "ownership_id": ownership_id, "reverse_match_url": reverse_match_url }
+            myres = { "resource_id": resource_id, "name": name, "ownership_id": ownership_id, "reverse_match_url": reverse_match_url, "scopes": [x.lower() for x in scopes] }
             x = col.insert_one(myres)
             return x
 

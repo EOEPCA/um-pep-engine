@@ -181,7 +181,10 @@ def deploy_default_resources():
                 _jws_ownership = JWS(_payload_ownership, alg="RS256")
                 jwt = _jws_ownership.sign_compact(keys=[_rsajwk])
                 headers = { 'content-type': "application/json", "Authorization": "Bearer "+ str(jwt) }
-                payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"] }
+                if "T&C" in k:
+                    payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"], "T&C":k["T&C"] }
+                else:
+                    payload = { "resource_scopes": k["scopes"], "icon_uri": k["resource_uri"], "name":k["name"], "description":k["description"] }
                 res = post("http://"+g_config["service_host"]+":"+str(g_config["resources_service_port"])+"/resources", headers=headers, json=payload, verify=False)
                 id_res = res.text
                 logger.info("==========New Resource for URI: \""+k["resource_uri"]+"\" with ID: \""+id_res+"\"==========")
