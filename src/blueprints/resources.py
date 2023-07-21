@@ -492,6 +492,6 @@ def construct_blueprint(oidc_client, uma_handler, pdp_policy_handler, g_config):
         return True
 
     def is_public_or_authenticated_or_open(data):
-        return any(x in data['resource_scopes'] for x in ["public_access", "Authenticated", "open"])
+        return any(x in data['resource_scopes'] for x in ["public_access", "Authenticated", "authenticated", "open"])
 
     return resources_bp
