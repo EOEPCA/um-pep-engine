@@ -5,6 +5,13 @@
 [![MIT License][license-shield]][license-url]
 ![Build][build-shield]
 
+<hr class="solid">
+<h3 align="center"> End of Life Notice </h3>
+</p>
+<h4 align="center"> This repository has archived due to being replaced by a User Management solution based on Keycloak available at: </h3>
+<h4 align="center"> https://github.com/eoepca/um-identity-service </h4>
+<hr class="solid">
+
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
